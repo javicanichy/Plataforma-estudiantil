@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}UNGE - Facultad de Ciencias de la Salud{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--Iconos de Bootstrap-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <!-- CSS del proyecto -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+    <!-- HEADER / NAVEGACIÓN -->
+    <header class="bg-primary text-white py-3">
+        <div class="container container-narrow d-flex justify-content-between align-items-center">
+            <!--Logo y titulo-->
+            <div class="d-flex align-items-center gap-2">
+                <img src="{{ url_for('static', filename='img/logo_unge.jpeg') }}" alt="logo_unge" width="50" height="50">
+                <div>
+                    <h5 class="mb-0">Universidad Nacional de Guinea Ecuatorial</h5>
+                    <small>Facultad de Ciencias de la Salud</small>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav nav-inlines">
+                    <li class="nav-item"><a class="nav-link text-white" href="/">Inicio</a></li>
+                    <!-- Si NO hay sesión: mostrar Login y Registro -->
+                    {% if not logueado %}
+                        <li class="nav-item"><a class="nav-link text-white" href="/registro">Registro</a></li>
+                    {% else %}
+                        <!-- Si HAY sesión: mostrar opciones del usuario -->
+                        <li class="nav-item"><a class="nav-link text-white" href="/notas">Mis Notas</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="/mensajes">Mensajes</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="/perfil">Mi Perfil</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                {{ usuario }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/perfil">Editar Perfil</a></li>
+                                <li><a class="dropdown-item" href="/expedientes">Mis Expedientes</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout" onclick="if(confirm('¿Cerrar sesión?')) { window.location.href='/logout'; setTimeout(() => location.reload(), 300); return false; }">Cerrar sesión</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="nav-item"><a class="nav-link text-white" href="/noticias">Noticias</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="/contacto">Contacto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL (bloque dinámico) -->
+    <main class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-primary text-white text-center py-3 mt-5">
+        <div class="container container-narrow">
+            <div>© 2025 UNGE - Facultad de Ciencias de la Salud</div>
+            <div class="small">Diseñado por el equipo técnico de la FCS</div>
+        </div>
+    </footer>
+<!-- Botón del sidebar -->
+<button id="btn-sidebar" class="btn btn-primary position-fixed top-0 start-0 m-3" style="z-index: 1001; transition: opacity 0.3s ease;">
+    ☰ Menú
+</button>
+
+<!-- Sidebar transparente -->
+<div id="sidebar" class="position-fixed start-0 top-0 h-100 p-3" style="width: 300px; z-index: 1000; transform: translateX(-100%); transition: transform 0.3s ease; overflow-y: auto; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-right: 1px solid rgba(255, 255, 255, 0.2);">
+    <button id="btn-close-sidebar" class="btn btn-close position-absolute top-0 end-0 m-2" style="background: rgba(0,0,0,0.1);"></button>
+
+    <h4 class="fw-bold mb-3 mt-4" style="color: #333;">Oficinas UNGE</h4>
+    <hr>
+
+    <ul class="list-group list-group-flush" style="background: transparent;">
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/decanato" class="text-decoration-none text-dark">Decanato</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/vicedecano" class="text-decoration-none text-dark">Vicedecano</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/enfermeria" class="text-decoration-none text-dark">Departamento de Enfermería</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/medicina" class="text-decoration-none text-dark">Departamento de Medicina</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/nuevas-tecnologias" class="text-decoration-none text-dark">Departamento de Nuevas Tecnologías</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/secretaria" class="text-decoration-none text-dark">Secretaría</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/investigacion-posgrado" class="text-decoration-none text-dark">Departamento de Investigación y Posgrado</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/practicas-externas" class="text-decoration-none text-dark">Departamento de Prácticas Externas y Salud Pública</a></li>
+    </ul>
+</div>
+
+<!-- Overlay para cerrar sidebar -->
+<div id="sidebar-overlay" class="position-fixed w-100 h-100" style="z-index: 999; background: rgba(0,0,0,0.3); display: none; top: 0; left: 0; transition: background 0.3s ease;"></div>
+
+<!-- JS del proyecto -->
+<script type="module" src="/static/main.js"></script>
+
+    
+    <!-- Bootstrap JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JS del proyecto -->
+<script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
+
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

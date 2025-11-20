@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Notas - Estudiante{% endblock %}
+
+{% block content %}
+<section class="container my-5">
+    <h2 class="mb-4">Mis Notas</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Asignatura</th>
+                    <th>Nota</th>
+                    <th>Profesor</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-notas">
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

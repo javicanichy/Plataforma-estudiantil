@@ -1,0 +1,96 @@
+/* Contenedor principal de los menús: horizontal */
+
+
+/* Contenedor de cada dropdown */
+.hover-dropdown {
+  position: relative;
+}
+
+/* Enlace principal */
+.hover-dropdown > a {
+  color: #000;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 10px 5px;
+  display: block;
+  cursor: pointer;
+}
+
+/* Submenú oculto por defecto */
+.hover-dropdown .dropdown-menu {
+  display: flex;
+  flex-direction: row; /* horizontal */
+  gap: 50px; /* separación grande entre cada contenedor del enlace */
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100vw; /* ocupa todo el ancho de la pantalla */
+  padding: 20px 40px; /* padding alrededor de los bloques */
+  margin: 0;
+  background-color: #fff;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  border-radius: 6px;
+  transform: translateY(-15px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+}
+
+/* Cada enlace dentro de su contenedor */
+.hover-dropdown .dropdown-item {
+  flex: 1; /* ocupa el ancho del bloque */
+  text-align: center;
+  padding: 20px 40px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #333;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.hover-dropdown .dropdown-item:hover {
+  background-color: #e0e0e0;
+  transform: translateY(-2px); /* pequeño efecto al pasar el ratón */
+}
+
+/* Mostrar submenú al pasar el ratón */
+.hover-dropdown:hover .dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* ===== Responsive: móvil y tablet ===== */
+@media (max-width: 768px) {
+  .d-flex {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hover-dropdown .dropdown-menu {
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    width: 100%;
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    box-shadow: none;
+  }
+
+  .hover-dropdown .dropdown-item {
+    width: 100%;
+    padding: 15px 20px;
+  }
+
+  /* Ocultar submenú hasta tocar */
+  .hover-dropdown .dropdown-menu {
+    display: none;
+  }
+
+  /* Mostrar al tocar */
+  .hover-dropdown.active .dropdown-menu {
+    display: flex;
+  }
+}

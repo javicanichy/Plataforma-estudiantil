@@ -1,0 +1,42 @@
+<!-- Botón del sidebar (SUPERIOR IZQUIERDO) -->
+    <button id="btn-sidebar" class="btn btn-primary position-fixed top-0 start-0 m-3" style="z-index: 1001; transition: opacity 0.3s ease;">
+        ☰ Menú
+    </button>
+
+    <!-- Sidebar (TOTALMENTE TRANSPARENTE CON GLASSMORPHISM) -->
+    <div id="sidebar" class="position-fixed start-0 top-0 h-100 p-3" style="width: 300px; z-index: 1000; transform: translateX(-100%); transition: transform 0.3s ease; overflow-y: auto; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-right: 1px solid rgba(255, 255, 255, 0.2);">
+        <button id="btn-close-sidebar" class="btn btn-close position-absolute top-0 end-0 m-2" style="background: rgba(0,0,0,0.1);"></button>
+        
+        <h4 class="fw-bold mb-3 mt-4" style="color: #333;">Oficinas UNGE</h4>
+        <hr>
+
+        <ul class="list-group list-group-flush" style="background: transparent;">
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/decanato" class="text-decoration-none text-dark">Decanato</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/vicedecano" class="text-decoration-none text-dark">Vicedecano</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/enfermeria" class="text-decoration-none text-dark">Departamento de Enfermería</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/medicina" class="text-decoration-none text-dark">Departamento de Medicina</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/nuevas-tecnologias" class="text-decoration-none text-dark">Departamento de Nuevas Tecnologías</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/secretaria" class="text-decoration-none text-dark">Secretaría</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/investigacion-posgrado" class="text-decoration-none text-dark">Departamento de Investigación y Posgrado</a>
+            </li>
+            <li class="list-group-item border-0" style="background: transparent;">
+                <a href="/oficinas/practicas-externas" class="text-decoration-none text-dark">Departamento de Prácticas Externas y Salud Pública</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Overlay para cerrar sidebar -->
+    <div id="sidebar-overlay" class="position-fixed w-100 h-100" style="z-index: 999; background: rgba(0,0,0,0.3); display: none; top: 0; left: 0; transition: background 0.3s ease;"></div>

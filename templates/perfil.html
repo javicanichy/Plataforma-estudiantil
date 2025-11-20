@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perfil</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/perfil.css">
+
+  <!-- Iconos -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Perfil</h1>
+    <p class="subtitulo">Soy un desarrollador web PHP creativo</p>
+
+    <div class="perfil-wrapper">
+
+      <!-- Sección izquierda: Acerca de mí -->
+      <div class="perfil-texto">
+        <h2>Acerca de mí</h2>
+        <p id="bio">
+          (Cargando información...)
+        </p>
+      </div>
+
+      <!-- Foto en el centro -->
+      <div class="perfil-foto">
+        <img id="foto-perfil" src="/static/img/default-user.png" alt="Foto de perfil" />
+      </div>
+
+      <!-- Sección derecha: Detalles -->
+      <div class="perfil-detalles">
+        <h2>Detalles</h2>
+
+        <p><b>Nombre:</b> <span id="nombre">Cargando...</span></p>
+        <p><b>Edad:</b> <span id="edad">Cargando...</span></p>
+        <p><b>Ubicación:</b> <span id="ubicacion">Cargando...</span></p>
+
+        <div class="social-icons">
+          <i class="fab fa-facebook-f"></i>
+          <i class="fab fa-twitter"></i>
+          <i class="fab fa-instagram"></i>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JS -->
+  <script type="module" src="/static/js/perfil.js"></script>
+
+</body>
+</html>

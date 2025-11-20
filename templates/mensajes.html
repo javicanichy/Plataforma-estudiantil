@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Mensajes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <!-- Lista de conversaciones -->
+    <div class="col-4">
+      <h5>Conversaciones</h5>
+      <ul id="mensajes-list" class="list-group">
+        <li class="list-group-item">Cargando...</li>
+      </ul>
+    </div>
+
+    <!-- Chat y envío -->
+    <div class="col-8">
+      <h5>Chat</h5>
+      <ul id="chat-list" class="list-group mb-3"></ul>
+      
+    <form id="form-mensaje" enctype="multipart/form-data">
+        <input type="text" id="receptor" placeholder="ID del receptor" class="form-control mb-2">
+        <textarea id="contenido" placeholder="Escribe tu mensaje..." class="form-control mb-2"></textarea>
+        <input type="file" id="archivo" class="form-control mb-2">
+        <button type="submit" class="btn btn-primary">Enviar</button>
+    </form>
+      <div id="mensaje-info" class="mt-2"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

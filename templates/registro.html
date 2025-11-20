@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Registro - UNGE Facultad de Ciencias de la Salud{% endblock %}
+
+{% block content %}
+<!--
+  registro.html — Formulario de registro de nuevo usuario
+  IDs y names DEBEN coincidir con main.js y backend:
+  - nombre (id="nombre", name="nombre")
+  - correo (id="correo", name="correo")
+  - clave (id="clave", name="clave") — IMPORTANTE: NO password_hash
+  - codigo_estudiante (id="codigo_estudiante", name="codigo_estudiante")
+  - form-registro (id obligatorio para main.js)
+  - registro-mensaje (id para mostrar errores)
+-->
+<section class="container container-narrow my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">Crear nueva cuenta</h2>
+
+          <!-- Formulario id obligatorio: form-registro -->
+          <form id="form-registro" novalidate>
+            <!-- Campo nombre -->
+            <div class="mb-3">
+              <label for="nombre" class="form-label">Nombre completo</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="nombre" 
+                name="nombre" 
+                placeholder="Tu nombre completo"
+                required
+              >
+              <div class="invalid-feedback">El nombre es obligatorio.</div>
+            </div>
+
+            <!-- Campo correo -->
+            <div class="mb-3">
+              <label for="correo" class="form-label">Correo electrónico</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="correo" 
+                name="correo" 
+                placeholder="tu@correo.com"
+                required
+              >
+              <div class="invalid-feedback">Introduce un correo válido.</div>
+            </div>
+
+            <!-- Campo contraseña: id/name DEBE ser 'clave' (NO password_hash) -->
+            <div class="mb-3">
+              <label for="clave" class="form-label">Contraseña</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="clave" 
+                name="clave" 
+                placeholder="Mínimo 8 caracteres"
+                required
+              >
+              <div class="invalid-feedback">La contraseña es obligatoria.</div>
+            </div>
+
+            <!-- Campo código de estudiante: OBLIGATORIO por backend -->
+            <div class="mb-3">
+              <label for="codigo_estudiante" class="form-label">Código de estudiante</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="codigo_estudiante" 
+                name="codigo_estudiante" 
+                placeholder="Código proporcionado por la universidad"
+                required
+              >
+              <div class="invalid-feedback">El código de estudiante es obligatorio.</div>
+            </div>
+
+            <!-- Mensaje de estado (error/éxito) — id obligatorio: registro-mensaje -->
+            <div id="registro-mensaje" class="mb-3 text-center" role="status" aria-live="polite"></div>
+
+            <!-- Botón enviar -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-success btn-lg">Crear cuenta</button>
+            </div>
+
+            <!-- Enlace a login -->
+            <p class="text-center mt-3 small">
+              ¿Ya tienes cuenta? <a href="/login" class="fw-bold">Inicia sesión</a>
+            </p>
+          </form>
+          <!-- fin formulario -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!--
+  Script local para mostrar el rol oculto (opcional).
+  El campo rol se gestiona vía localStorage/sesión tras autenticación.
+-->
+<script>
+if (!window.__registro_init__) {
+  window.__registro_init__ = true;
+  console.log('Registro.html cargado con IDs compatibles: form-registro, nombre, correo, clave, codigo_estudiante, registro-mensaje');
+}
+</script>
+{% endblock %}

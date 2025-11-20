@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión - UNGE Facultad de Ciencias de la Salud{% endblock %}
+
+{% block content %}
+<!--
+  login.html — Formulario de autenticación
+  IDs y names coherentes con main.js y backend:
+  - correo (type email)
+  - clave (type password) — IMPORTANTE: NO password_hash
+-->
+<section class="container container-narrow my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="card-title text-center mb-4">Iniciar sesión</h2>
+
+          <!-- Formulario id obligatorio: form-login -->
+          <form id="form-login" novalidate>
+            <!-- Campo correo -->
+            <div class="mb-3">
+              <label for="correo" class="form-label">Correo electrónico</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="correo" 
+                name="correo" 
+                placeholder="tu@correo.com"
+                autocomplete="email"
+                required
+              >
+              <div class="invalid-feedback">Introduce un correo válido.</div>
+            </div>
+
+            <!-- Campo contraseña: id/name DEBE ser 'clave' (NO password_hash) -->
+            <div class="mb-3">
+              <label for="clave" class="form-label">Contraseña</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="clave" 
+                name="clave" 
+                placeholder="Tu contraseña"
+                autocomplete="current-password"
+                required
+              >
+              <div class="invalid-feedback">Introduce tu contraseña.</div>
+            </div>
+
+            <!-- Mensaje de estado (error/éxito) -->
+            <div id="login-mensaje" class="mb-3 text-center text-danger" role="status" aria-live="polite"></div>
+
+            <!-- Botón enviar -->
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
+            </div>
+
+            <!-- Opciones adicionales -->
+            <div class="text-center mt-3">
+              <small><a href="/contacto">¿Olvidaste la contraseña?</a></small>
+            </div>
+          </form>
+          <!-- fin formulario -->
+        </div>
+      </div>
+
+      <!-- Enlace a registro -->
+      <p class="text-center mt-3">
+        ¿No tienes cuenta? <a href="/registro" class="fw-bold">Regístrate aquí</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!--
+  Manejador de envío: POST /login con JSON { correo, clave }
+  Muestra errores en #login-mensaje y redirige si login es correcto.
+-->
+<script>
+if (!window.__login_handler_init__) {
+  window.__login_handler_init__ = true;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form-login');
+    const msgDiv = document.getElementById('login-mensaje');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msgDiv.textContent = '';
+      msgDiv.className = 'mb-3 text-center text-danger';
+
+      const correo = document.getElementById('correo').value.trim();
+      const clave = document.getElementById('clave').value;
+
+      // Validación básica
+      if (!correo || !clave) {
+        msgDiv.textContent = 'Completa todos los campos.';
+        form.classList.add('was-validated');
+        return;
+      }
+
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo, clave })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          // Si login correcto, guardar id de usuario (opcional) y redirigir
+          const usuario = data.usuario || data.user || null;
+          if (usuario && usuario.id) {
+            try {
+              localStorage.setItem('usuario_id', usuario.id);
+              localStorage.setItem('usuario_rol', usuario.rol || 'estudiante');
+            } catch (err) {
+              console.warn('No se pudo guardar en localStorage:', err);
+            }
+          }
+          // Redirigir al dashboard
+          msgDiv.textContent = 'Iniciando sesión...';
+          msgDiv.className = 'mb-3 text-center text-success';
+          setTimeout(() => {
+            window.location.href = '/notas';
+          }, 800);
+        } else {
+          // Error desde el servidor
+          const msg = data.mensaje || data.error || 'Credenciales incorrectas';
+          msgDiv.textContent = msg;
+          msgDiv.className = 'mb-3 text-center text-danger';
+        }
+      } catch (err) {
+        console.error('Error en petición POST /login:', err);
+        msgDiv.textContent = 'Error de red. Intenta más tarde.';
+        msgDiv.className = 'mb-3 text-center text-danger';
+      }
+    });
+  });
+}
+</script>
+{% endblock %}
