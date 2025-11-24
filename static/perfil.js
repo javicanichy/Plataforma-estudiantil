@@ -1,67 +1,51 @@
 // perfil.js — módulo de perfil
 // ================================================
 
-export function initPerfil($id) {
-  const fotoInput = $id('perfil-foto-input');
-  const fotoImg = $id('perfil-foto-img');
-  const nombreInput = $id('perfil-nombre');
-  const guardarBtn = $id('perfil-guardar');
-  const mensajeDiv = $id('perfil-mensaje');
+// perfil.js — carga datos del perfil y muestra acciones según rol
+// perfil.js — carga datos del perfil y muestra acciones según rol
+document.addEventListener('DOMContentLoaded', async () => {
+  const $id = id => document.getElementById(id);
+  const usuario_id = localStorage.getItem('usuario_id');
+  const usuario_rol = localStorage.getItem('usuario_rol'); // 'estudiante', 'profesor', 'directivo'
 
-  if (!fotoInput || !fotoImg || !nombreInput || !guardarBtn || !mensajeDiv) return;
+  const nombreEl = $id('nombre');
+  const edadEl = $id('edad');
+  const ubicacionEl = $id('ubicacion');
+  const bioEl = $id('bio');
+  const fotoEl = $id('foto-perfil');
+  const accionesEl = $id('perfil-acciones');
 
-  // 1️⃣ Cargar datos del usuario al iniciar
-  fetch('/api/usuario_sesion')
-    .then(res => res.json())
-    .then(data => {
-      if (data.logueado) {
-        nombreInput.value = data.nombre || '';
-        // Foto, si tienes endpoint para foto del usuario
-        fotoImg.src = `/uploads/${data.foto || 'default.png'}`;
-      }
-    })
-    .catch(err => console.error('Error cargando perfil:', err));
+  // Función para mostrar acciones según rol
+  if (accionesEl && (usuario_rol === 'profesor' || usuario_rol === 'directivo')) {
+    const btn = document.createElement('a');
+    btn.textContent = 'Crear noticia';
+    btn.href = '/nueva_noticia'; // Página correcta
+    btn.className = 'btn btn-primary mt-3';
+    accionesEl.appendChild(btn);
+  }
 
-  // 2️⃣ Cambiar foto al seleccionar archivo
-  fotoInput.addEventListener('change', () => {
-    const file = fotoInput.files[0];
-    if (!file) return;
+  // Función para cargar datos del usuario desde backend
+  if (!usuario_id) {
+    nombreEl.textContent = 'Invitado';
+    bioEl.textContent = 'Inicia sesión para ver tu perfil completo.';
+    return;
+  }
 
-    if (!['image/png','image/jpeg'].includes(file.type)) {
-      mensajeDiv.textContent = 'Solo se permiten PNG o JPEG';
-      return;
+  try {
+    const res = await fetch(`/api/usuarios/${usuario_id}`);
+    const data = await res.json();
+
+    if (res.ok && data.usuario) {
+      const u = data.usuario;
+      nombreEl.textContent = u.nombre || 'Sin nombre';
+      edadEl.textContent = u.edad || 'No especificado';
+      ubicacionEl.textContent = u.ubicacion || 'No especificado';
+      bioEl.textContent = u.bio || 'Sin descripción';
+      fotoEl.src = u.foto || '/static/img/default-user.png';
+    } else {
+      console.warn('No se pudo cargar el perfil', data);
     }
-
-    const reader = new FileReader();
-    reader.onload = e => fotoImg.src = e.target.result;
-    reader.readAsDataURL(file);
-  });
-
-  // 3️⃣ Guardar cambios
-  guardarBtn.addEventListener('click', async () => {
-    mensajeDiv.textContent = '';
-
-    const formData = new FormData();
-    formData.append('nombre', nombreInput.value);
-
-    if (fotoInput.files[0]) {
-      formData.append('foto', fotoInput.files[0]);
-    }
-
-    try {
-      const res = await fetch('/api/actualizar_perfil', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await res.json();
-      if (result.ok) {
-        mensajeDiv.textContent = 'Perfil actualizado correctamente ✅';
-      } else {
-        mensajeDiv.textContent = `Error: ${result.msg}`;
-      }
-    } catch (err) {
-      console.error('Error actualizando perfil:', err);
-      mensajeDiv.textContent = 'Error al actualizar perfil';
-    }
-  });
-}
+  } catch (err) {
+    console.error('Error cargando perfil:', err);
+  }
+});

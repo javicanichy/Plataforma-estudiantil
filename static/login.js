@@ -1,37 +1,74 @@
 // login.js
-import { fetchJSON, mostrarMensaje } from './helpers.js';
-import { actualizarSesion } from './sesion.js';
 
-export function initLogin($id) {
-  const formLogin = $id('form-login');
-  const loginMensaje = $id('login-mensaje');
-  if (!formLogin) return;
+if (!window.__login_handler_init__) {
+  window.__login_handler_init__ = true;
 
-  formLogin.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    mostrarMensaje(loginMensaje, '');
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('form-login');
+    const msgDiv = document.getElementById('login-mensaje');
+    if (!form) return;
 
-    const correo = ($id('correo')?.value || '').trim();
-    const clave = $id('clave')?.value || '';
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msgDiv.textContent = '';
+      msgDiv.className = 'mb-3 text-center text-danger';
 
-    if (!correo || !clave) {
-      mostrarMensaje(loginMensaje, 'Correo y contraseña son obligatorios', 'text-danger');
-      return;
-    }
+      const correo = document.getElementById('correo').value.trim();
+      const clave = document.getElementById('clave').value;
 
-    const { ok, data } = await fetchJSON('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo, clave })
+      // Validación básica
+      if (!correo || !clave) {
+        msgDiv.textContent = 'Completa todos los campos.';
+        form.classList.add('was-validated');
+        return;
+      }
+
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ correo, clave })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok) {
+          // Si login correcto, guardar id de usuario (opcional) y redirigir
+          const usuario = data.usuario || data.user || null;
+          if (usuario && usuario.id) {
+            try {
+              localStorage.setItem('usuario_id', usuario.id);
+              localStorage.setItem('usuario_rol', usuario.rol || 'estudiante');
+            } catch (err) {
+              console.warn('No se pudo guardar en localStorage:', err);
+            }
+          }
+          // Redirigir al dashboard
+          msgDiv.textContent = 'Iniciando sesión...';
+          msgDiv.className = 'mb-3 text-center text-success';
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 800);
+        } else {
+          // Error desde el servidor
+          const msg = data.mensaje || data.error || 'Credenciales incorrectas';
+          msgDiv.textContent = msg;
+          msgDiv.className = 'mb-3 text-center text-danger';
+        }
+      } catch (err) {
+        console.error('Error en petición POST /login:', err);
+        msgDiv.textContent = 'Error de red. Intenta más tarde.';
+        msgDiv.className = 'mb-3 text-center text-danger';
+      }
+
+      // Añadir autor_id al formData si es necesario
+      const autor_id = localStorage.getItem('usuario_id');
+      if (!autor_id) {
+        alert("Error: No se ha identificado al usuario. Vuelve a iniciar sesión.");
+        return;
+                }
+      formData.append("autor_id", autor_id);
+
     });
-
-    if (ok) {
-      await actualizarSesion();
-      mostrarMensaje(loginMensaje, 'Login exitoso', 'text-success');
-      formLogin.reset();
-      setTimeout(() => window.location.href = '/', 350);
-    } else {
-      mostrarMensaje(loginMensaje, data?.mensaje || 'Error de inicio de sesión', 'text-danger');
-    }
   });
 }

@@ -1,19 +1,34 @@
 import os
 import datetime
+from datetime import date
 from functools import wraps
 from flask import (
-    Flask, jsonify, request, redirect, url_for,
-    render_template, send_file, session, abort
+    Flask, jsonify, request, redirect, url_for, send_file,
+    render_template, send_file, session, abort, flash
 )
+
+from docx import Document
+import io
+import bleach
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, BooleanField, FileField, SubmitField
+from wtforms.validators import DataRequired
+
+
+from forms import NoticiaForm
+
 from models import (
     db, Usuario, Estudiante, Nota, Mensaje, Calendario, Evento,
-    Matricula, CodigoEstudiante, Asignatura, EstudianteAsignatura
+    Matricula, CodigoEstudiante, Asignatura, EstudianteAsignatura, Noticia
 )
 from config import Config
+from flask_migrate import Migrate
+
 
 
 """=========================================
@@ -38,6 +53,15 @@ app.config.from_object(Config)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_key')
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+# Permitir subir archivos
+app.config['SECRET_KEY'] = 'tu_clave_secreta'
+app.config['UPLOAD_FOLDER'] = 'static/uploads'  # carpeta donde se guardan imágenes
+app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # máximo 2MB
+
+# Mirgraciones
+migrate = Migrate(app, db)
+
+
 
 CORS(app)
 db.init_app(app)
@@ -45,11 +69,12 @@ db.init_app(app)
 # ===== INYECTAR VARIABLES GLOBALES EN TODOS LOS TEMPLATES (ANTES DE CUALQUIER RUTA) =====
 @app.context_processor
 def inyectar_contexto():
-    """Inyecta logueado, usuario, rol en TODOS los templates automáticamente"""
+    """Inyecta logueado, usuario, rol, usuario_id en TODOS los templates automáticamente"""
     return {
         'logueado': 'usuario_id' in session,
         'usuario': session.get('nombre', ''),
-        'rol': session.get('rol', '')
+        'rol': session.get('rol', ''),
+        'usuario_id': session.get('usuario_id')
     }
 
 # ==========================================================
@@ -62,8 +87,13 @@ ALLOWED_EXT = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
 
+# Carpeta donde se guardarán los archivos subidos
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_IMAGE_EXT = {'jpg', 'jpeg', 'png', 'gif'}
+ALLOWED_VIDEO_EXT = {'mp4', 'mov', 'avi'}
+
 # ==========================================================
-# DECORADORES PROFESIONALES
+# DECORADORES PROFESIONALES. Rol restrintion
 # ==========================================================
 def requiere_login(f):
     @wraps(f)
@@ -88,7 +118,8 @@ def requiere_rol(*roles):
 # ==========================================================
 @app.route('/')
 def inicio():
-    return render_template('index.html')
+    noticias_recientes = Noticia.query.order_by(Noticia.fecha.desc()).limit(9).all()
+    return render_template('index.html', noticias=noticias_recientes)
 
 @app.route('/login')
 def login_page():
@@ -98,9 +129,10 @@ def login_page():
 def registro_page():
     return render_template('registro.html')
 
-@app.route('/noticias')
+@app.route("/noticias")
 def noticias_page():
-    return render_template('noticias.html')
+    noticias = Noticia.query.order_by(Noticia.fecha.desc()).all()
+    return render_template("noticias.html", noticias=noticias)
 
 @app.route('/contacto')
 def contacto_page():
@@ -134,9 +166,6 @@ def mensajes_page():
 def ver_perfil():
     return render_template('perfil.html')
 
-# Nota: se eliminó la definición simple de /perfil porque la implementación
-# completa (GET/POST con @requiere_login) aparece más abajo en este archivo.
-# Mantener sólo la implementación única evita el error de endpoint duplicado.
 
 # ==========================================================
 # API: SESIÓN DE USUARIO
@@ -315,6 +344,10 @@ def buzon():
 
     return redirect(url_for('inicio'))
 
+
+# ==========================================================
+# CERRAR SESION
+# ==========================================================
 @app.route('/logout')
 def logout():
     """Cierra la sesión del usuario y redirige a inicio"""
@@ -831,12 +864,144 @@ def eliminar_evento(evento_id):
 # RUTA PERFIL
 # ==========================
 
+# ==========================
+# NOTICIAS
+# ==========================
+# Lista de etiquetas permitidas
+tags_permitidas = ['p','b','i','u','ul','li','a','img','strong','em','br','h1','h2','h3']
+
+# Atributos permitidos
+atributos_permitidos = {
+    'a': ['href', 'title', 'target'],
+    'img': ['src', 'alt', 'title', 'width', 'height'],
+}
+
+
+
+
+@app.route('/nueva_noticia', methods=['GET', 'POST'])
+@requiere_login  # Proteger la ruta si no hay sesion
+def nueva_noticia():
+    form = NoticiaForm()
+
+    if form.validate_on_submit():
+        # Obtener el ID del usuario desde la sesión
+        autor_id = session.get('usuario_id')
+        
+        if not autor_id:
+            flash("Error: no se pudo identificar al autor de la noticia.", "danger")
+            return redirect(url_for("nueva_noticia"))
+        
+        # Manejar archivo Word/PDF
+        archivo = form.archivo.data
+        nombre_archivo = None
+        tipo_archivo = None
+
+        # Guardar archivo si se ha subido
+        if archivo:
+            nombre_archivo = secure_filename(archivo.filename)
+            archivo.save(os.path.join(UPLOAD_FOLDER, nombre_archivo))
+
+            ext = nombre_archivo.rsplit('.', 1)[1].lower()
+
+            if ext in ALLOWED_IMAGE_EXT:
+                tipo_archivo = 'imagen'
+            elif ext in ALLOWED_VIDEO_EXT:
+                tipo_archivo = 'video'
+            else:
+                flash('Formato de archivo no permitido', 'danger')
+                return redirect(url_for('nueva_noticia'))
+            
+        # Guardar documento Word o PDF
+        documento = form.documento.data
+        nombre_documento = None
+        if documento:
+            nombre_documento = secure_filename(documento.filename)
+            documento.save(os.path.join(UPLOAD_FOLDER, nombre_documento))
+
+        
+
+                # Crear noticia con autor_id
+        noticia = Noticia(
+            titulo=form.titulo.data,
+            contenido=form.contenido.data,
+            fecha=date.today(),
+            archivo=nombre_archivo,
+            tipo_archivo=tipo_archivo,
+            destacado=form.destacado.data,
+            documento=nombre_documento,  # <-- aquí guardamos el Word/PDF
+            autor_id=autor_id   # Aquí guardamos el autor desde la sesión
+        )
+
+        db.session.add(noticia)
+        db.session.commit()
+
+        flash('Noticia publicada correctamente', 'success')
+        return redirect(url_for('noticias_page'))
+
+    return render_template('nueva_noticia.html', form=form)
+
+# Noticia completa
+@app.route('/noticias/<int:noticia_id>')
+def noticia_completa(noticia_id):
+    noticia = Noticia.query.get_or_404(noticia_id)
+    return render_template('noticia_completa.html', noticia=noticia)
+
+
+# Lista de todas las noticias
+@app.route('/lista_noticias')
+def lista_noticias():
+    noticias = Noticia.query.order_by(Noticia.fecha.desc()).all()
+    return render_template('lista_noticias.html', noticias=noticias)
+
+
+# Eliminar noticia
+@app.route('/eliminar_noticia/<int:noticia_id>', methods=['POST'])
+@requiere_login
+def eliminar_noticia(noticia_id):
+    noticia = Noticia.query.get_or_404(noticia_id)
+    usuario_actual_id = session.get('usuario_id')
+    
+    if noticia.autor_id != usuario_actual_id:
+        flash("No tienes permisos para eliminar esta noticia.", "danger")
+        return redirect(url_for('noticias_page'))
+
+    db.session.delete(noticia)
+    db.session.commit()
+    flash("Noticia eliminada correctamente.", "success")
+    return redirect(url_for('ver_perfil'))
+
+# Descargar documento asociado a noticia
+@app.route('/descargar_noticia/<int:noticia_id>')
+@requiere_login
+def descargar_noticia(noticia_id):
+    noticia = Noticia.query.get_or_404(noticia_id)
+    if not noticia.documento:
+        flash('No hay documento disponible', 'warning')
+        return redirect(url_for('noticias_page'))
+
+    return send_file(
+        os.path.join(UPLOAD_FOLDER, noticia.documento),
+        as_attachment=True
+    )
+
+#Ordenar noticas por fecha descendente.Mostrar solo hasta 9 noticias
+@app.route('/noticias')
+def noticias_destacadas():
+    noticias = Noticia.query.order_by(Noticia.fecha.desc()).limit(9).all()
+    return render_template("noticias.html", noticias=noticias)
+
+
+
+
 
 # ==========================================================
 # INICIAR SERVIDOR
 # ==========================================================
 with app.app_context():
-    db.create_all()
+    # db.create_all()
+    pass
+    
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1", port=5000, debug=True)

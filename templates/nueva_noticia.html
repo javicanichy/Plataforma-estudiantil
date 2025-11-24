@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="noticia-layout" style="display: flex; gap: 30px; flex-wrap: wrap;">
+
+  <!-- COLUMNA IZQUIERDA: Instrucciones / Políticas -->
+  <div class="noticia-instrucciones" style="flex: 1; min-width: 250px; padding-right: 20px; border-right: 2px solid #ccc;">
+    <h2>Instrucciones para crear noticias</h2>
+    <hr>
+    <p>Antes de publicar una noticia, asegúrate de cumplir con las siguientes políticas:</p>
+    <ul>
+      <li>El contenido debe ser relevante y verídico.</li>
+      <li>No se permite publicar información personal de terceros.</li>
+      <li>Evita lenguaje ofensivo o discriminatorio.</li>
+      <li>Se recomienda agregar imágenes o videos relacionados con la noticia.</li>
+      <li>Las noticias destacadas aparecerán en la página principal.</li>
+    </ul>
+    <p>Sigue estas recomendaciones para mantener la calidad y confiabilidad de las publicaciones.</p>
+  </div>
+
+  <!-- COLUMNA DERECHA: Formulario -->
+  <div class="noticia-formulario" style="flex: 1; min-width: 300px; padding-left: 20px;">
+    <h1 class="ugr-titulo-noticia">Agregar Nueva Noticia</h1>
+    <hr>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <p>
+            {{ form.titulo.label(class_="ugr-label") }}<br>
+            {{ form.titulo(class_="ugr-input") }}
+        </p>
+
+        <p>
+            {{ form.contenido.label(class_="ugr-label") }}<br>
+            {{ form.contenido(class_="ugr-textarea") }}
+        </p>
+
+        <p>
+            {{ form.archivo.label(class_="ugr-label") }}<br>
+            {{ form.archivo(class_="ugr-input") }}
+        </p>
+
+        <p>
+            {{ form.pie_archivo.label(class_="ugr-label") }}<br>
+            {{ form.pie_archivo(class_="ugr-input") }}
+        </p>
+
+        <p>
+          {{ form.documento.label(class_="ugr-label") }}<br>
+          {{ form.documento(class_="ugr-input") }}
+        </p>
+
+        <p>
+            {{ form.destacado() }} {{ form.destacado.label(class_="ugr-label") }}
+        </p>
+
+        <input type="hidden" name="autor_id" id="autor_id">
+
+        <button type="submit" class="ugr-boton">{{ form.submit.label.text }}</button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

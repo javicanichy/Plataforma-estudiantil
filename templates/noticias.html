@@ -1,0 +1,94 @@
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+  {% for noticia in noticias %}
+  <!-- CONTENEDOR DE NOTICIA EN DOS COLUMNAS -->
+  <div class="noticia-layout" style="display: flex; gap: 30px; flex-wrap: wrap;">
+
+    <!-- COLUMNA IZQUIERDA (Texto) -->
+    <div class="noticia-texto" style="flex: 1; min-width: 250px;">
+
+      <!-- MIGAS DE PAN -->
+      <nav class="ugr-breadcrumb">
+        <a href="{{ url_for('inicio') }}">Inicio</a> /
+        <a href="{{ url_for('noticias_destacadas') }}">Noticias</a> /
+        <span>{{ noticia.titulo }}</span>
+      </nav>
+
+      <!-- TÍTULO -->
+      <h1 class="ugr-titulo-noticia">
+        {{ noticia.titulo }}
+      </h1>
+
+      <!-- FECHA -->
+      <p class="ugr-fecha-noticia">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
+
+      <!--Mostrar el autor-->
+      <p class="ugr-autor-noticia">Autor: {{ noticia.autor.nombre }}</p>
+
+      <hr>
+
+      <!-- CUERPO -->
+      <div class="ugr-cuerpo-noticia">
+        {{ noticia.contenido | safe }}
+      </div>
+
+      <br><br><br><br>
+      <hr>
+
+      
+
+      <!-- COMPARTIR -->
+      <div class="ugr-compartir">
+          <span>Compartir en:</span>
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-x-twitter"></i></a>
+          <a href="#"><i class="fab fa-linkedin"></i></a>
+          <a href="#"><i class="fab fa-telegram"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+          <a href="#"><i class="fas fa-envelope"></i></a>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      {% if logueado and usuario_id == noticia.autor_id %}
+        <form action="{{ url_for('eliminar_noticia', noticia_id=noticia.id) }}" method="POST" 
+            onsubmit="return confirm('¿Seguro que quieres eliminar esta noticia?');">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+          </form>
+      {% endif %}
+
+    
+    <!--Leer mas informacion-->
+    <a href="{{ url_for('descargar_noticia', noticia_id=noticia.id) }}" target="_blank" class="ugr-compartir">Leer mas...</a>
+    
+
+    </div>
+
+    <!-- COLUMNA DERECHA (Archivo: imagen o video) -->
+    <div class="noticia-imagen" style="flex: 1; min-width: 300px;">
+      {% if noticia.archivo %}
+        {% if noticia.tipo_archivo == 'imagen' %}
+          <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" 
+               alt="{{ noticia.titulo }}" style="width: 100%; height: auto;">
+        {% elif noticia.tipo_archivo == 'video' %}
+          <video controls style="width: 100%; height: auto;">
+            <source src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" type="video/mp4">
+            Tu navegador no soporta la reproducción de videos.
+          </video>
+        {% endif %}
+      {% endif %}
+
+      {% if noticia.pie_foto %}
+        <p class="ugr-pie-foto">{{ noticia.pie_foto }}</p>
+      {% endif %}
+    </div>
+
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}

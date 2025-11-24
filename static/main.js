@@ -8,7 +8,6 @@ import { initNotas } from './notas.js';
 import { initMensajes } from './mensajes.js';
 import { initInscripcion } from './inscripcion.js';
 import { initCalendario } from './calendario.js';
-import { initSidebar } from './sidebar.js';
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -24,7 +23,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   initMensajes($id);
   initInscripcion($id);
   initCalendario($id);
-
-  // Inicializa el sidebar
-  initSidebar();
 });

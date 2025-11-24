@@ -1,8 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
-from datetime import datetime
+from datetime import date
+
 
 db = SQLAlchemy()
+
 
 # ============================================================
 #   TABLA 0: PRE-MATRÍCULA (antes de tener cuenta)
@@ -253,3 +255,25 @@ class Evento(db.Model):
     def __repr__(self):
         return f"<Evento {self.fecha} {self.hora} {self.descripcion}>"
     
+
+# ============================================================
+#   TABLA 13: NOTICIAS
+# ============================================================
+class Noticia(db.Model):
+    __tablename__ = 'noticias'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    fecha = db.Column(db.Date, nullable=False, default=date.today)
+    archivo = db.Column(db.String(255), nullable=True)  # nombre del archivo (imagen o video)
+    tipo_archivo = db.Column(db.String(10), nullable=True)  # 'imagen' o 'video'
+    pie_archivo = db.Column(db.String(255), nullable=True)
+    enlace_programa = db.Column(db.String(255), nullable=True)
+    autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # relaciona la noticia con un usuario
+    autor = db.relationship('Usuario', backref='noticias')  # permite acceder al autor desde la noticia
+    destacado = db.Column(db.Boolean, default=False)
+    documento = db.Column(db.String(255), nullable=True)  # nombre del documento adjunto (PDF u otro)
+
+    def __repr__(self):
+        return f"<Noticia {self.id} {self.titulo}>"
+

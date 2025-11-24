@@ -1,0 +1,184 @@
+
+/* SECCION NOTICIAS */
+/* Noticias 1 */
+/* CONTENEDOR GENERAL */
+.noticia-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin: 40px auto;
+  max-width: 1200px;
+  padding: 0 20px;
+}
+
+/* COLUMNA IZQUIERDA */
+.noticia-texto {
+  flex: 2;
+}
+
+/* COLUMNA DERECHA */
+/* Imagen  y pie*/
+.noticia-imagen {
+    position: relative; /* necesario para top/left */
+    top: 135px;          /* mueve hacia abajo */
+    left: 150px;         /* mueve hacia la derecha */
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* para que el pie quede debajo centrado */
+}
+
+.noticia-imagen img {
+    width: 100%;
+    max-width: 350px; /* tamaño controlado */
+    border-radius: 8px;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+}
+
+.ugr-pie-foto {
+    margin-top: 6px;
+    font-size: 14px;
+    color: green;
+    text-align: center;
+}
+
+/* COMPARTIR */
+.ugr-compartir {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    margin-left: 470px; /* Mover a la derecha */
+}
+
+.ugr-compartir span {
+    color: green;
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+.ugr-compartir a {
+    font-size: 20px;
+    color: green;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+
+.ugr-compartir a:hover {
+    color: green;
+    transform: scale(1.2);
+}
+
+
+
+
+/* MIGAS DE PAN */
+.ugr-breadcrumb {
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  color: green;
+}
+
+.ugr-breadcrumb a {
+  text-decoration: none;
+  color: green;
+}
+
+/* TÍTULO */
+.ugr-titulo-noticia {
+  font-size: 2.3rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: green;
+  text-align: center;
+}
+
+/* FECHA */
+.ugr-fecha-noticia {
+  color: green;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+/* CATEGORÍA */
+.ugr-categoria {
+  text-transform: lowercase;
+  font-weight: 600;
+  color: #b30000;
+  margin-bottom: 25px;
+}
+
+/* PÁRRAFOS */
+.ugr-cuerpo-noticia p {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  margin-bottom: 18px;
+  color: #333;
+  text-align: justify;
+}
+
+/* RESPONSIVE PARA MÓVIL */
+@media (max-width: 900px) {
+  .noticia-layout {
+    flex-direction: column;
+  }
+
+  /* Imagen */
+  .noticia-imagen {
+    order: -1;
+    margin-bottom: 10px;
+  }
+}
+
+
+
+/* Enlace al programa completo */
+/* Enlace estilo UGR */
+.ugr-enlace-programa a {
+  font-weight: 600;
+  color: green;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.ugr-enlace-programa a:hover {
+  text-decoration: underline;
+}
+
+
+/* Formulario de nueva noticia */
+/* Formulario de noticias */
+.ugr-label {
+    font-weight: 600;
+    color: green;
+}
+
+.ugr-input, .ugr-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 4px;
+    margin-bottom: 12px;
+    border: 1px solid green;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.ugr-textarea {
+    height: 150px;
+    resize: vertical;
+}
+
+.ugr-boton {
+    background-color: green;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.ugr-boton:hover {
+    background-color: darkgreen;
+}

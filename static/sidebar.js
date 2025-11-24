@@ -1,34 +1,37 @@
-export function initSidebar() {
-    document.addEventListener('click', function(e) {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const btn = document.getElementById('btn-sidebar');
-        const btnClose = document.getElementById('btn-close-sidebar');
+document.addEventListener("DOMContentLoaded", () => {
 
-        if (!sidebar || !overlay || !btn || !btnClose) return;
+    const btnSidebar = document.getElementById("btn-sidebar");
+    const sidebar = document.getElementById("sidebar");
+    const btnClose = document.getElementById("btn-close-sidebar");
+    const overlay = document.getElementById("sidebar-overlay");
 
-        // Click en botón abrir
-        if (e.target === btn) {
-            sidebar.style.transform = 'translateX(0)';
-            overlay.style.display = 'block';
-            btn.style.opacity = '0';
-            btn.style.pointerEvents = 'none';
-        }
+    // Abrir sidebar
+    btnSidebar.addEventListener("click", () => {
+        sidebar.style.transform = "translateX(0)";
+        overlay.style.display = "block";
+        overlay.style.background = "rgba(0,0,0,0.3)";
 
-        // Click en botón cerrar o overlay
-        if (e.target === btnClose || e.target === overlay) {
-            sidebar.style.transform = 'translateX(-100%)';
-            overlay.style.display = 'none';
-            btn.style.opacity = '1';
-            btn.style.pointerEvents = 'auto';
-        }
-
-        // Click en cualquier enlace dentro del sidebar
-        if (sidebar.contains(e.target) && e.target.tagName === 'A') {
-            sidebar.style.transform = 'translateX(-100%)';
-            overlay.style.display = 'none';
-            btn.style.opacity = '1';
-            btn.style.pointerEvents = 'auto';
-        }
+        // Ocultar botón del menú cuando el sidebar está abierto
+        btnSidebar.style.opacity = "0";
+        btnSidebar.style.pointerEvents = "none";   // Evita clics invisibles
     });
-}
+
+    // Cerrar sidebar
+    function cerrarSidebar() {
+        sidebar.style.transform = "translateX(-100%)";
+        overlay.style.background = "rgba(0,0,0,0)";
+
+        // Mostrar el botón del menú otra vez
+        setTimeout(() => {
+            overlay.style.display = "none";
+            btnSidebar.style.opacity = "1";
+            btnSidebar.style.pointerEvents = "auto";
+        }, 300); // coincide con la animación del CSS
+    }
+
+    // Botón de cerrar
+    btnClose.addEventListener("click", cerrarSidebar);
+
+    // Overlay para cerrar
+    overlay.addEventListener("click", cerrarSidebar);
+});

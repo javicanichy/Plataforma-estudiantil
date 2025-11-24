@@ -1,0 +1,19 @@
+.noticia-imagen {
+  position: relative;
+}
+.noticia-imagen img{
+  position: absolute;
+  top: 135px; /* Mover arriba-abajo */
+  right: 1px;
+  width: 300px;
+  left: 100px; /* Mover izquierda-derecha */
+  }
+
+
+  .ugr-pie-foto {
+
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+
+}

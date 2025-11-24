@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="container mt-4">
+    <h2 class="mb-4">Todas las Noticias</h2>
+    <div class="row">
+        {% for noticia in noticias %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if noticia.archivo and noticia.tipo_archivo == 'imagen' %}
+                <img src="{{ url_for('static', filename='uploads/' + noticia.archivo) }}" class="card-img-top" alt="{{ noticia.titulo }}">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ noticia.titulo }}</h5>
+                    <p class="card-text">{{ noticia.contenido[:100] }}...</p>
+                    <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" class="btn btn-primary">Leer más</a>
+                </div>
+                <div class="card-footer text-muted">
+                    {{ noticia.fecha.strftime('%d/%m/%Y') }} - Autor: {{ noticia.autor.nombre }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

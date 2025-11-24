@@ -1,32 +1,18 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perfil</title>
+{% extends "base.html" %}
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="/static/perfil.css">
+{% block title %}Perfil - UNGE Facultad de Ciencias de la Salud{% endblock %}
 
-  <!-- Iconos -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-</head>
-
-<body>
-
+{% block content %}
+<div class="perfil-page">
   <div class="container">
-
     <h1>Perfil</h1>
     <p class="subtitulo">Soy un desarrollador web PHP creativo</p>
 
     <div class="perfil-wrapper">
-
       <!-- Sección izquierda: Acerca de mí -->
       <div class="perfil-texto">
         <h2>Acerca de mí</h2>
-        <p id="bio">
-          (Cargando información...)
-        </p>
+        <p id="bio">(Cargando información...)</p>
       </div>
 
       <!-- Foto en el centro -->
@@ -37,7 +23,6 @@
       <!-- Sección derecha: Detalles -->
       <div class="perfil-detalles">
         <h2>Detalles</h2>
-
         <p><b>Nombre:</b> <span id="nombre">Cargando...</span></p>
         <p><b>Edad:</b> <span id="edad">Cargando...</span></p>
         <p><b>Ubicación:</b> <span id="ubicacion">Cargando...</span></p>
@@ -48,13 +33,11 @@
           <i class="fab fa-instagram"></i>
         </div>
       </div>
-
     </div>
 
+    <!-- Acciones según rol -->
+    <div id="perfil-acciones"></div>
+
   </div>
-
-  <!-- JS -->
-  <script type="module" src="/static/js/perfil.js"></script>
-
-</body>
-</html>
+</div>
+{% endblock %}
