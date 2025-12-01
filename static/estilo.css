@@ -104,13 +104,13 @@
 }
 
 
-/* PRESENTACION */
+/* PRESENTACION INICIO*/
 #presentacion {
     margin-top: 0px;
     margin-bottom: 0px;
     justify-content: center;
     /* color de texto */
-    color: blue;
+    color: green;
 }
 
 
@@ -188,7 +188,7 @@
 }
 
 
-/* CONTENEDOR GENERAL */
+/* CONTENEDOR GENERAL  DE NOTICIAS*/
 /* --- CONTENEDOR GENERAL --- */
 #noticias .noticia-card {
     position: relative;
@@ -213,7 +213,7 @@
     bottom: 0;
     padding: 20px;
     width: 100%;
-    color: white;
+    color: black;
     /* Quitar el degradado si no lo quieres */
     background: transparent;
 }
@@ -243,7 +243,7 @@
 
 /* Color de fondo */
 #noticias .noticia-overlay {
-    background: rgba(0, 68, 170, 0.6); /* azul */
+    background: rgba(13, 189, 42, 0.6); /* azul */
     padding: 15px;
     border-radius: 8px;
 }

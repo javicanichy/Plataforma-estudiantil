@@ -35,15 +35,20 @@
       <div class="ugr-cuerpo-noticia">
         {{ noticia.contenido | safe }}
       </div>
+      <br>
+      <a href="{{ url_for('descargar_noticia', noticia_id=noticia.id) }}" target="_blank" class="leer-mas">Leer todo el documnto...</a>
+        
 
-      <br><br><br><br>
+      <br>
       <hr>
+      <!--Leer mas informacion-->
+ 
 
       
 
       <!-- COMPARTIR -->
       <div class="ugr-compartir">
-          <span>Compartir en:</span>
+          <span>Compartir:</span>
           <a href="#"><i class="fab fa-facebook"></i></a>
           <a href="#"><i class="fab fa-x-twitter"></i></a>
           <a href="#"><i class="fab fa-linkedin"></i></a>
@@ -51,6 +56,7 @@
           <a href="#"><i class="fab fa-whatsapp"></i></a>
           <a href="#"><i class="fas fa-envelope"></i></a>
       </div>
+      <hr>
 
       <!-- BOTONES DE ACCIÓN -->
       {% if logueado and usuario_id == noticia.autor_id %}
@@ -60,12 +66,12 @@
           </form>
       {% endif %}
 
-    
     <!--Leer mas informacion-->
-    <a href="{{ url_for('descargar_noticia', noticia_id=noticia.id) }}" target="_blank" class="ugr-compartir">Leer mas...</a>
-    
+ 
 
     </div>
+
+    
 
     <!-- COLUMNA DERECHA (Archivo: imagen o video) -->
     <div class="noticia-imagen" style="flex: 1; min-width: 300px;">
@@ -81,8 +87,8 @@
         {% endif %}
       {% endif %}
 
-      {% if noticia.pie_foto %}
-        <p class="ugr-pie-foto">{{ noticia.pie_foto }}</p>
+      {% if noticia.pie_archivo %}
+        <p class="ugr-pie-foto">{{ noticia.pie_archivo }}</p>
       {% endif %}
     </div>
 

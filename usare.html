@@ -1,69 +1,380 @@
-<!-- MIGAS DE PAN -->
-<nav class="ugr-breadcrumb">
-  <a href="/">Inicio</a/>
-  <a href="/noticias">Noticias</a> /
-  <span>Curso de Simulación Clínica</span>
-</nav>
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-4">
+  <h3>Editar perfil</h3>
+  <form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label>Nombre</label>
+      <input type="text" name="nombre" class="form-control" value="{{ usuario.nombre }}">
+    </div>
+    <div class="mb-3">
+      <label>Correo</label>
+      <input type="email" name="correo" class="form-control" value="{{ usuario.correo }}">
+    </div>
+    <div class="mb-3">
+      <label>Foto de perfil</label>
+      <input type="file" name="foto_perfil" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a href="{{ url_for('ver_perfil', usuario_id=usuario.id) }}" class="btn btn-secondary">Cancelar</a>
 
-<!-- TÍTULO -->
-<h1 class="ugr-titulo-noticia">
-  CURSO DE SIMULACIÓN CLÍNICA
-</h1>
+    <div class="mb-3">
+      <label>Foto de portada</label>
+      <input type="file" name="foto_portada" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    <a href="{{ url_for('ver_perfil', usuario_id=usuario.id)}}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}
 
-<!-- FECHA -->
-<p class="ugr-fecha-noticia">20/11/2025</p>
 
-<!-- CATEGORÍA -->
-<p class="ugr-categoria">eventos</p>
 
-<!-- IMAGEN DESTACADA (PON AQUÍ TU IMAGEN) -->
-<div class="ugr-imagen-destacada">
-  <img src="noticias2" alt="Curso de simulación clínica">
-  <p class="ugr-pie-foto">Curso de simulación clínica – Anfiteatro Facultad</p>
+
+JS
+
+
+ const fotoPortadaInput = document.getElementById('foto_portada_input');
+  const previewContainer = document.getElementById('portada-slide-preview');
+
+  let intervalID;
+  let allFiles = []; // <-- guardamos todas las fotos seleccionadas
+
+  if (fotoPortadaInput && previewContainer) {
+    fotoPortadaInput.addEventListener('change', function(event) {
+        const files = Array.from(event.target.files);
+        allFiles = allFiles.concat(files).slice(0, 3); // máximo 3 fotos
+
+        previewContainer.innerHTML = '';
+        const previews = [];
+        let index = 0;
+
+        allFiles.forEach((file, i) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('portada-slide-preview');
+                previewContainer.appendChild(img);
+                previews.push(img);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        if (intervalID) clearInterval(intervalID);
+        if (previews.length > 1) {
+            intervalID = setInterval(() => {
+                previews.forEach((img, i) => img.style.display = 'none');
+                previews[index].style.display = 'block';
+                index = (index + 1) % previews.length;
+            }, 1000);
+        }
+    });
+  }
+
+  // Carrusel de vista previa
+  document.addEventListener('DOMContentLoaded', () => {
+  const slides = document.querySelectorAll('.portada-slide');
+  if (slides.length === 0) return; // no hay imágenes, no hacer nada
+
+    let index = 0;
+
+    setInterval(() => {
+        slides.forEach((img) => img.style.display = 'none'); // ocultar todas
+        slides[index].style.display = 'block';               // mostrar la actual
+        index = (index + 1) % slides.length;                // siguiente índice
+    }, 2000); // cambia cada 2 segundos
+  });
+
+
+
+
+
+
+
+OTRO JS
+
+
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-4">
+  <h3>{{ item and 'Editar recurso' or 'Añadir recurso' }}</h3>
+
+  <form method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <!-- TÍTULO -->
+    <div class="mb-3">
+      {{ form.titulo.label }}
+      {{ form.titulo(class="form-control") }}
+      {% for error in form.titulo.errors %}
+        <div class="text-danger">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- DESCRIPCIÓN -->
+    <div class="mb-3">
+      {{ form.descripcion.label }}
+      {{ form.descripcion(class="form-control") }}
+      {% for error in form.descripcion.errors %}
+        <div class="text-danger">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- TIPO (PDF o LINK) -->
+    <div class="mb-3">
+      {{ form.tipo.label }}
+      {{ form.tipo(class="form-control", id="tipo-select") }}
+      {% for error in form.tipo.errors %}
+        <div class="text-danger">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- BLOQUE PDF -->
+    <div id="pdf-block" class="mb-3" {% if form.tipo.data == 'link' %}style="display:none"{% endif %}>
+      {{ form.archivo_pdf.label }}
+      {{ form.archivo_pdf() }}
+      {% if item and item.archivo %}
+        <small>Archivo actual: 
+          <a target="_blank" href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}">{{ item.archivo }}</a>
+        </small>
+      {% endif %}
+      {% for error in form.archivo_pdf.errors %}
+        <div class="text-danger">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- BLOQUE LINK -->
+    <div id="link-block" class="mb-3" {% if form.tipo.data == 'pdf' %}style="display:none"{% endif %}>
+      {{ form.enlace.label }}
+      {{ form.enlace(class="form-control") }}
+      {% for error in form.enlace.errors %}
+        <div class="text-danger">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- TIPO DE PUBLICACIÓN: LIBRO / TFG -->
+    <div class="mb-3">
+      {{ form.tipo_libro.label }}
+      {{ form.tipo_libro(class="form-control") }}
+      {% for error in form.tipo_libro.errors %}
+        <div class="text-danger">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- PUBLICO -->
+    <div class="form-check mb-3">
+      {{ form.publico(class="form-check-input", id="publico") }}
+      <label class="form-check-label" for="publico">Público</label>
+    </div>
+
+    <!-- BOTONES -->
+    {{ form.submit(class="btn btn-primary") }}
+    <a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-secondary">Cancelar</a>
+  </form>
+
 </div>
 
-<!-- CUERPO DE LA NOTICIA -->
-<div class="ugr-cuerpo-noticia">
+<script>
+document.getElementById("tipo-select").addEventListener("change", function() {
+  if (this.value === "pdf") {
+    document.getElementById("pdf-block").style.display = "block";
+    document.getElementById("link-block").style.display = "none";
+  } else {
+    document.getElementById("pdf-block").style.display = "none";
+    document.getElementById("link-block").style.display = "block";
+  }
+});
+</script>
 
-  <p>
-    Este evento ha tenido lugar en la Facultad de Ciencias de la Salud, en el Anfiteatro. 
-    En la apertura pudimos contar con la presencia del Vicerrector 
-    <strong>Crissantos Asumu</strong>, el Decano de la Facultad de Ciencias de la Salud 
-    <strong>Bismar Hernández Reyes</strong> y la Vice Decana de Enfermería 
-    <strong>María Flora Esono Nchama</strong>.
-  </p>
+{% endblock %}
 
-  <p>
-    Dicho evento tuvo una duración de tres días, del <strong>18 al 20 de noviembre 2025</strong>, 
-    en horario de <strong>8:15 a 9:45 h</strong>. Los facilitadores, de nacionalidad española, 
-    hicieron énfasis en los primeros pasos a realizar cuando un paciente se encuentra en 
-    una situación de vida o muerte.
-  </p>
 
-  <p>
-    Se resaltó la importancia de los primeros auxilios: colocar al paciente en la posición 
-    correcta, trabajar en equipo, proteger, avisar y socorrer.
-  </p>
 
-  <p>
-    Como herramientas para la enseñanza se utilizaron proyectores, vídeos ilustrativos 
-    e imágenes animadas. La simulación fue la clave del éxito del intercambio de conocimientos, 
-    proporcionando un medio práctico que facilitó el entendimiento.
-  </p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-4">
+
+  <h2>Biblioteca</h2>
+
+  <!-- Cómo acceder -->
+  <div class="card p-3 mb-4">
+    <h4>¿Cómo acceder a la biblioteca?</h4>
+    <ul>
+      <li>Debes estar registrado y tener tu usuario activo.</li>
+      <li>Se requiere DNI y validación del rol según el tipo de material.</li>
+      <li>Libros TFG son visibles gratuitamente.</li>
+    </ul>
+  </div>
+
+  <!-- Opciones principales -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card p-3 text-center">
+        <h5>1. Libros en físico</h5>
+        <p><a href="{{ url_for('biblioteca_fisicos') }}" class="btn btn-primary">Acceder</a></p>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-3 text-center">
+        <h5>2. Libros en digital</h5>
+        <p><a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-primary">Acceder</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Libros TFG visibles -->
+  <div class="card p-3">
+    <h4>Libros de TFG de la Facultad de Ciencias de la Salud</h4>
+    <div class="list-group mt-2">
+      {% for item in tfg_publicos %}
+        <a href="{% if item.tipo == 'pdf' %}{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}{% else %}{{ item.enlace }}{% endif %}"
+           target="_blank" class="list-group-item list-group-item-action">
+           {{ item.titulo }}
+        </a>
+      {% else %}
+        <p class="text-muted">No hay TFG disponibles.</p>
+      {% endfor %}
+    </div>
+  </div>
 
 </div>
 
-<!-- COMPARTIR -->
-<div class="ugr-compartir">
-  <span>Compartir en</span>
-  <a href="#">Facebook</a>
-  <a href="#">X</a>
-  <a href="#">LinkedIn</a>
-  <a href="#">Telegram</a>
-  <a href="#">WhatsApp</a>
-  <a href="#">Email</a>
+{% endblock %}
+
+
+
+
+
+BIBLIOTECA EDITAR
+
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5">
+  <div class="card shadow-sm mx-auto biblioteca-editar" style="max-width: 700px;">
+    <div class="card-body">
+      <h3 class="card-title mb-4 text-center">
+        {{ item and 'Editar recurso' or 'Añadir recurso' }}
+      </h3>
+
+      <form method="POST" enctype="multipart/form-data">
+
+        {{ form.hidden_tag() }}
+
+        <!-- TÍTULO -->
+        <div class="mb-3">
+          {{ form.titulo.label(class="form-label") }}
+          {{ form.titulo(class="form-control", placeholder="Título del libro") }}
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="mb-3">
+          {{ form.descripcion.label(class="form-label") }}
+          {{ form.descripcion(class="form-control", placeholder="Descripción (opcional)", rows="3") }}
+        </div>
+
+        <!-- TIPO (PDF o LINK) -->
+        <div class="mb-3">
+          {{ form.tipo.label(class="form-label") }}
+          {{ form.tipo(class="form-select", id="tipo-select") }}
+        </div>
+
+        <!-- BLOQUE PDF -->
+        <div id="pdf-block" class="mb-3" style="{% if item and item.tipo=='link' %}display:none{% endif %}">
+          {{ form.archivo_pdf.label(class="form-label") }}
+          {{ form.archivo_pdf(class="form-control") }}
+          {% if item and item.archivo %}
+            <small>Archivo actual: 
+              <a target="_blank" href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}">{{ item.archivo }}</a>
+            </small>
+          {% endif %}
+        </div>
+
+        <!-- BLOQUE LINK -->
+        <div id="link-block" class="mb-3" style="{% if not item or item.tipo=='pdf' %}display:none{% endif %}">
+          {{ form.enlace.label(class="form-label") }}
+          {{ form.enlace(class="form-control", placeholder="https://...") }}
+        </div>
+
+        <!-- TIPO DE MATERIAL: LIBRO / TFG -->
+        <div class="mb-3">
+          {{ form.tipo_libro.label(class="form-label") }}
+          {{ form.tipo_libro(class="form-select") }}
+        </div>
+
+        <!-- PUBLICO -->
+        <div class="form-check mb-3">
+          {{ form.publico(class="form-check-input", id="publico") }}
+          <label class="form-check-label" for="publico">Público</label>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="d-flex justify-content-between">
+          <div>
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-secondary">Cancelar</a>
+          </div>
+
+          {% if item %}
+          <!-- BOTÓN ELIMINAR -->
+          <form method="POST" action="{{ url_for('biblioteca_eliminar', item_id=item.id) }}" 
+                onsubmit="return confirm('¿Deseas eliminar este libro?');">
+            <button type="submit" class="btn btn-danger">Eliminar</button>
+          </form>
+          {% endif %}
+        </div>
+
+      </form>
+    </div>
+  </div>
 </div>
 
+<!-- JS: Mostrar PDF o LINK -->
+<script>
+document.getElementById("tipo-select").addEventListener("change", function() {
+  if (this.value === "pdf") {
+    document.getElementById("pdf-block").style.display = "block";
+    document.getElementById("link-block").style.display = "none";
+  } else {
+    document.getElementById("pdf-block").style.display = "none";
+    document.getElementById("link-block").style.display = "block";
+  }
+});
+</script>
+
+{% endblock %}
 
 
 
@@ -72,15 +383,127 @@
 
 
 
+APP.PY DE BIBLIOTECA
+
+# ==========================================================
+# BIBLIOTECA
+# ==========================================================
+
+# Metodo para guardar un PDF
+def save_pdf_file(f):
+    if not f or getattr(f, 'filename', '') == '':
+        return None
+    filename = secure_filename(f.filename)
+    ext = filename.rsplit('.', 1)[-1].lower()
+    if ext != 'pdf':
+        return None
+    unique_name = f"{uuid.uuid4().hex}_{filename}"
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    f.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
+    return unique_name
+
+# Metodo para guardar portadas de los documentos
+def save_portada_file(file):
+    filename = secure_filename(file.filename)
+    path = os.path.join(app.root_path, "static/uploads/portadas", filename)
+    file.save(path)
+    return filename
 
 
+# Rutas que quieren login
+@app.route('/biblioteca/fisicos')
+@requiere_login
+def biblioteca_fisicos():
+    return render_template('libros_fisicos.html')
 
+@app.route('/biblioteca/digitales')
+@requiere_login
+def biblioteca_digitales():
+    libros = Biblioteca.query.filter_by(tipo_libro='libro').all()
+    return render_template('libros_digitales.html', libros=libros)
 
+# Agregar nuevo libro en digital
+@app.route('/biblioteca/editar', methods=['GET', 'POST'])
+@app.route('/biblioteca/editar/<int:item_id>', methods=['GET', 'POST'])
+@requiere_login
+def biblioteca_editar(item_id=None):
+    item = Biblioteca.query.get(item_id) if item_id else None
+    form = BibliotecaForm(obj=item)
 
+    if item:
+        # Pre-fill checkbox
+        form.publico.data = bool(item.publico)
 
+    if form.validate_on_submit():
+        portada_file = form.portada.data
+        if portada_file and portada_file.filename != "":
+            portada_filename = save_portada_file(portada_file)
+            if item:
+                item.portada = portada_filename
+        else:
+            nuevo.portada = portada_filename
 
+        tipo = form.tipo.data
+        filename = None
+        enlace = None
 
+        # PDF
+        if tipo == 'pdf':
+            archivo_pdf = form.archivo_pdf.data
+            if archivo_pdf:
+                filename = save_pdf_file(archivo_pdf)
+            if not filename and not (item and item.archivo):
+                flash("Debes subir un PDF válido.", "warning")
+                return redirect(request.url)
 
+        # LINK
+        elif tipo == 'link':
+            enlace = form.enlace.data
+            if not enlace:
+                flash("Debes introducir un enlace válido.", "warning")
+                return redirect(request.url)
 
+        # Actualizar
+        if item:
+            item.titulo = form.titulo.data
+            item.descripcion = form.descripcion.data
+            item.tipo = tipo
+            item.enlace = enlace
+            item.tipo_libro = form.tipo_libro.data
+            item.publico = bool(form.publico.data)
+            if filename:
+                item.archivo = filename
+        else:
+            nuevo = Biblioteca(
+                titulo=form.titulo.data,
+                descripcion=form.descripcion.data,
+                tipo=tipo,
+                archivo=filename,
+                enlace=enlace,
+                tipo_libro=form.tipo_libro.data,
+                publico=bool(form.publico.data),
+                usuario_id=session['usuario_id'],
+                portada=form.portada.data
+            )
+            db.session.add(nuevo)
 
+        db.session.commit()
+        flash("Elemento guardado correctamente.", "success")
+        return redirect(url_for('biblioteca_digitales'))
 
+    return render_template('biblioteca_editar.html', form=form, item=item)
+
+# Para eliminar un libro
+@app.route('/biblioteca/eliminar/<int:item_id>', methods=['POST'])
+@requiere_login
+def biblioteca_eliminar(item_id):
+    item = Biblioteca.query.get_or_404(item_id)
+    if item.archivo:
+        try:
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], item.archivo))
+        except:
+            pass
+    db.session.delete(item)
+    db.session.commit()
+    flash("Elemento eliminado.", "success")
+    return redirect(url_for('biblioteca_digitales'))

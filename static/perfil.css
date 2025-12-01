@@ -1,76 +1,95 @@
-.perfil-page body, .perfil-page html {
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  background: #ffffff;
-  color: #333;
+
+
+/* FOTO DE PERFIL */
+.perfil-img {
+    width: 120px;        /* Ajusta ancho */
+    height: 120px;       /* Ajusta alto */
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
 }
 
-.perfil-page .container {
-  width: 90%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 60px 0;
-  text-align: center;
+.perfil-img-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #083e6c;
+    color: white;
+    font-size: 2rem;
 }
 
-.perfil-page h1 {
-  font-size: 2.7rem;
-  margin-bottom: 5px;
+/* FOTO DE PORTADA */
+/* Contenedor de la portada */
+.portada-card {
+    width: 500px;       /* Igual que perfil */
+    height: 350px;      /* Igual que perfil */
+    overflow: hidden;
+    border-radius: 10px;
+    margin: 0 auto;
+    position: relative;  /* <-- Agregar */
 }
 
-.perfil-page .subtitulo {
-  font-size: 1.2rem;
-  color: #555;
-  margin-bottom: 40px;
+/* Imagen de portada */
+.portada-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;   /* Se ajusta al contenedor sin deformarse */
+    position: absolute;  /* <-- Agregar */
+    top: 0;
+    left: 0;
 }
 
-.perfil-page .perfil-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 30px;
-  gap: 20px;
+/* vista previa */
+/* Contenedor de la vista previa */
+#portada-slide-preview {
+    display: flex;        /* Alinea horizontalmente */
+    gap: 5px;             /* Espacio entre imágenes */
+    margin-top: 10px;
 }
 
-.perfil-page .perfil-texto { width: 30%; text-align: left; }
-.perfil-page .perfil-texto h2 { font-size: 1.4rem; margin-bottom: 10px; }
-.perfil-page .perfil-texto p { color: #555; font-size: 0.95rem; line-height: 1.5rem; }
-
-.perfil-page .perfil-foto img {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  object-fit: cover;
+/* Imágenes de vista previa */
+.portada-slide-preview {
+    width: 120px;         /* ancho pequeño */
+    height: 80px;         /* altura proporcional */
+    object-fit: cover;    /* recorta sin deformar */
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
-.perfil-page .perfil-detalles { width: 30%; text-align: left; }
-.perfil-page .perfil-detalles h2 { font-size: 1.4rem; margin-bottom: 15px; }
-.perfil-page .perfil-detalles p { font-size: 1rem; margin: 8px 0; }
-.perfil-page .perfil-detalles b { color: #000; }
 
-.perfil-page .social-icons i { font-size: 1.4rem; margin-right: 10px; cursor: pointer; }
-
-/* Acciones */
-.perfil-page #perfil-acciones { margin-top: 20px; text-align: center; }
-.perfil-page #perfil-acciones .btn {
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 5px;
-  text-decoration: none;
-  color: #fff;
-  background-color: #007bff;
-  transition: background-color 0.3s ease;
-}
-.perfil-page #perfil-acciones .btn:hover { background-color: #0056b3; }
-
-/* Responsivo */
-@media (max-width: 900px) {
-  .perfil-page .perfil-wrapper {
+/* TARJETAS 3x3 */
+.tarjeta {
+    height: 85px;      /* Ajusta altura de cada tarjeta */
+    display: flex;
     flex-direction: column;
-  }
-  .perfil-page .perfil-texto, .perfil-page .perfil-detalles {
-    width: 90%;
-    text-align: center;
-  }
+    justify-content: center; /* Centra contenido vertical */
+    background-color: red;
+}
+
+/* AJUSTES DE TARJETAS Y COLUMNAS */
+.ajustes-card, .perfil-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 6px wheat;
+    height: 100%;        /* Ocupa altura completa de la columna si quieres */
+    background-color: red;
+}
+
+/* MÁRGENES GENERALES */
+.row.g-4 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+
+
+/* Botones flotantes sobre la fila superior */
+.botones-flotantes {
+    position: sticky; /* Se puede cambiar a fixed si quieres que flote siempre */
+    top: 20px;        /* Distancia desde el top */
+    z-index: 10;      /* Para que esté encima de los demás elementos */
+}
+
+/* Íconos (usando Bootstrap Icons) */
+.btn i {
+    margin-right: 5px;
 }

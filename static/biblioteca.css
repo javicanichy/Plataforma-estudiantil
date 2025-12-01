@@ -1,0 +1,15 @@
+/* Color de fonde de toda la biblioteca */
+.libros-fisicos{
+    background-color: darkgray;
+}
+
+/* Seccion de libros digitales */
+.libros-digitales{
+    background-color: darkgray;
+}
+
+/* Formulario libros digitales*/
+.biblioteca-editar{
+    background-color: darkgray;
+}
+

@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
-from datetime import date
+from datetime import date, datetime
 
 
 db = SQLAlchemy()
@@ -43,15 +43,29 @@ class Usuario(db.Model):
     __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100), nullable=False)
+    apellido = db.Column(db.String(100), nullable=True)
     correo = db.Column(db.String(100), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    rol = db.Column(db.String(20), nullable=False)  # estudiante, profesor, directivo
+    rol = db.Column(db.String(20), nullable=False)  # estudiante, profesor, directivo, administrador
     fecha_creacion = db.Column(db.DateTime, server_default=func.now())
+    foto_perfil = db.Column(db.String(255), nullable=True)  # ruta a la foto de perfil
+    curso = db.Column(db.String(100), nullable=True)
+    fecha_nacimiento = db.Column(db.String(20), nullable=True)
+    foto_portada = db.Column(db.PickleType, nullable=True)
+    telefono = db.Column(db.String(20), nullable=True)
+    biografia = db.Column(db.Text, nullable=True)
+    pais = db.Column(db.String(100), nullable=True)
+    residencia = db.Column(db.String(100), nullable=True)
+    notificaciones_activas = db.Column(db.Boolean, default=True)  # recibir notificaciones por correo
+
+    # Relación con las notificaciones
+    notificaciones = db.relationship("Notificacion", backref="usuario", lazy=True)
 
     # Relaciones 1 a 1
     estudiante = db.relationship('Estudiante', backref='usuario', uselist=False)
     profesor = db.relationship('Profesor', backref='usuario', uselist=False)
     directivo = db.relationship('Directivo', backref='usuario', uselist=False)
+    administrador = db.relationship('Administrador', backref='usuario', uselist=False)
 
     # Relaciones mensajes
     mensajes_enviados = db.relationship(
@@ -277,3 +291,88 @@ class Noticia(db.Model):
     def __repr__(self):
         return f"<Noticia {self.id} {self.titulo}>"
 
+
+# ============================================================
+#   TABLA 14: DEBATES
+# ============================================================
+class Debate(db.Model):
+    __tablename__ = 'debates'
+    id = db.Column(db.Integer, primary_key=True)
+    autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
+    archivo = db.Column(db.String(255), nullable=True)
+    tipo_archivo = db.Column(db.String(20), nullable=True)
+
+    comentarios = db.relationship('Comentario', backref='debate', cascade='all, delete-orphan')
+
+    
+# ============================================================
+#   TABLA 15: COMENTARIOS
+# ============================================================
+class Comentario(db.Model):
+    __tablename__ = 'comentarios'
+    id = db.Column(db.Integer, primary_key=True)
+    debate_id = db.Column(db.Integer, db.ForeignKey('debates.id'), nullable=False)  # <-- rename column
+    autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
+
+    autor = db.relationship('Usuario', backref='comentarios')
+
+    def __repr__(self):
+        return f"<Comentario {self.id} debate={self.debate_id} autor={self.autor_id}>"
+
+# ============================================================
+#   TABLA 16: NOTIFICACIONES
+# ============================================================
+class Notificacion(db.Model):
+    __tablename__ = 'notificaciones'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)  # 'noticia', 'evento', 'debate'
+    referencia_id = db.Column(db.Integer, nullable=True)  # id de noticia, evento o debate
+    mensaje = db.Column(db.String(255), nullable=False)
+    leida = db.Column(db.Boolean, default=False)
+    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
+
+    # 🔗 Relación al usuario
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
+    
+    def __repr__(self):
+        return f"<Notificacion {self.id} usuario={self.usuario_id} tipo={self.tipo}>"
+
+
+
+# ============================================================
+#   TABLA 17: ADMINISTRADOR
+# ============================================================
+class Administrador(db.Model):
+    __tablename__ = "administradores"
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), unique=True, nullable=False)
+    cargo = db.Column(db.String(100), nullable=True)
+    permisos_especiales = db.Column(db.String(200), nullable=True)
+
+
+
+# ============================================================
+#   TABLA 18: BIBLIOTECA
+# ============================================================
+class Biblioteca(db.Model):
+    __tablename__ = 'biblioteca'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    titulo = db.Column(db.String(250), nullable=False)
+    descripcion = db.Column(db.Text, nullable=True)
+    tipo = db.Column(db.String(10), nullable=False)  # 'pdf' o 'link'
+    archivo = db.Column(db.String(255), nullable=True)  # nombre de archivo en /static/uploads/libros
+    enlace = db.Column(db.String(1000), nullable=True)  # si tipo == 'link'
+    publico = db.Column(db.Boolean, default=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # quien lo subió
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    tipo_libro = db.Column(db.String(10), nullable=False)  # 'libro' o 'tfg' pero en PDF
+    portada = db.Column(db.String(300), nullable=True)
+    titulacion = db.Column(db.String(20), nullable=True)
+
+    # Relaciones
+    uploader = db.relationship('Usuario', backref='biblioteca_items')

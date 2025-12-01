@@ -49,13 +49,13 @@
     align-items: center;
     gap: 12px;
     font-size: 15px;
-    margin-left: 470px; /* Mover a la derecha */
+    margin-left: 50px; /* Mover a la derecha */
 }
 
 .ugr-compartir span {
     color: green;
-    font-weight: 600;
-    margin-right: 10px;
+    font-weight: 700;
+    margin-right: 70px;
 }
 
 .ugr-compartir a {
@@ -69,6 +69,23 @@
     color: green;
     transform: scale(1.2);
 }
+
+/* Clase personalizada para el enlace "Leer más" */
+.leer-mas {
+    text-decoration: none;   /* Quita subrayado */
+    color: green;          /* Color azul tipo Bootstrap */
+    font-weight: bold;        /* Negrita */
+    float: right;             /* Colocado a la derecha por defecto */
+    margin-top: 10px;         /* Separación arriba */
+    transition: color 0.3s;   /* Efecto suave al pasar el mouse */
+}
+
+/* Efecto hover */
+.leer-mas:hover {
+    color: green;           /* Azul más oscuro al pasar el cursor */
+    text-decoration: none;    /* Asegura que no aparezca subrayado */
+}
+
 
 
 

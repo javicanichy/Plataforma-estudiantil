@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5 libros-digitales" style="max-width: 900px;">
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">📚 Libros Digitales</h2>
+
+        <a href="{{ url_for('biblioteca_editar') }}"
+           class="btn btn-primary shadow-sm">
+            ➕ Agregar nuevo libro
+        </a>
+    </div>
+
+    <p class="text-muted">
+        Solo usuarios registrados pueden acceder a libros y bases de datos digitales.
+    </p>
+
+    <!-- LISTA PROFESIONAL DE LIBROS -->
+    <div class="mt-4">
+
+        {% if libros %}
+            {% for libro in libros %}
+                <div class="card mb-3 shadow-sm border-0 rounded-3">
+                    <div class="card-body">
+
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title mb-1">{{ libro.titulo }}</h5>
+                                {% if libro.descripcion %}
+                                    <p class="text-muted mb-2">{{ libro.descripcion }}</p>
+                                {% endif %}
+                            </div>
+
+                            <a href="{% if libro.tipo == 'pdf' %}
+                                        {{ url_for('static', filename='uploads/libros/' ~ libro.archivo) }}
+                                     {% else %}
+                                        {{ libro.enlace }}
+                                     {% endif %}"
+                               target="_blank"
+                               class="btn btn-outline-primary btn-sm">
+                                📥 Abrir
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted text-center mt-3">No hay libros digitales disponibles.</p>
+        {% endif %}
+
+    </div>
+
+
+    <!-- BASES DE DATOS INTERNACIONALES -->
+    <div class="mt-5">
+        <h5 class="mb-3">🌐 Bases de datos internacionales</h5>
+        <ul class="list-unstyled">
+            <li>
+                <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" class="text-decoration-none">
+                    ➤ PubMed
+                </a>
+            </li>
+            <li>
+                <a href="https://www.medline.com/" target="_blank" class="text-decoration-none">
+                    ➤ Medline
+                </a>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+{% endblock %}

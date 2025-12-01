@@ -44,6 +44,9 @@
         <p>
             {{ form.pie_archivo.label(class_="ugr-label") }}<br>
             {{ form.pie_archivo(class_="ugr-input") }}
+            {% for error in form.pie_archivo.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </p>
 
         <p>

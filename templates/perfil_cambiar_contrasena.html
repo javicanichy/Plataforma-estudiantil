@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-4">
+  <h3>Cambiar contraseña</h3>
+  <form method="POST">
+    <div class="mb-3">
+      <label>Contraseña actual</label>
+      <input type="password" name="actual" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label>Nueva contraseña</label>
+      <input type="password" name="nueva" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label>Confirmar nueva contraseña</label>
+      <input type="password" name="confirmar" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+    <a href="{{ url_for('ver_perfil', usuario_id=session.get('usuario_id')) }}" class="btn btn-secondary">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

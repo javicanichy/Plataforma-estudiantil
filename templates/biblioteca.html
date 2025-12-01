@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<!--Estilo para modicar base.html (fondo, etc) desde flask (no puede ir en archivo externo de css)-->
+<style>
+    
+/* Fondo solo para biblioteca.html */
+body.biblioteca-page {
+    background-image: url("{{ url_for('static', filename='img/foto.jpg') }}");
+    background-size: cover;       /* Ocupa toda la pantalla */
+    background-position: center;  /* Centrado */
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* Se mantiene al hacer scroll */
+}
+
+/* Opcional: hacer que el contenido tenga fondo semitransparente */
+.container-biblioteca {
+    background-color:  rgba(255, 255, 255, 0.85);
+    padding: 20px;
+    border-radius: 10px;
+}
+/* Para sobre escribir los fondos */
+.fondo-tfg {
+    background-color: /*transparent !important;*/ rgba(255, 255, 255, 0.1) !important; /* blanco 60% opacidad */
+    border: none !important;
+}
+
+</style>
+
+
+<!--Para que todo este transparente    style= "background-color: transparent;"-->
+<div class="container container-biblioteca my-4 fondo-tfg"> 
+
+    <div class="container my-4">
+
+  <h2>Biblioteca</h2>
+
+  <!-- Cómo acceder -->
+  <div class="card p-3 mb-4 fondo-tfg" >
+    <h4>¿Cómo acceder a la biblioteca?</h4>
+    <ul>
+      <li>Debes estar registrado y tener tu usuario activo.</li>
+      <li>Se requiere DNI y validación del rol según el tipo de material.</li>
+      <li>Libros TFG son visibles gratuitamente.</li>
+    </ul>
+  </div>
+
+  <!-- Opciones principales -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card p-3 text-center fondo-tfg">
+        <h5>1. Libros en físico</h5>
+        <p><a href="{{ url_for('biblioteca_fisicos') }}" class="btn btn-primary">Acceder</a></p>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-3 text-center fondo-tfg">
+        <h5>2. Libros en digital</h5>
+        <p><a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-primary">Acceder</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!--Filtro de libros por titulacion para la busqueda-->
+  <!-- Filtro por Titulación -->
+<div class="mb-3 d-flex align-items-center">
+  <label for="filtro_titulacion" class="me-2 fw-bold">Filtrar por titulación:</label>
+  <form method="GET" id="form-filtro-titulacion">
+    <div class="input-group">
+      <select name="titulacion" id="filtro_titulacion" class="form-select">
+        <option value="">-- Todas --</option>
+        <option value="medicina" {% if request.args.get('titulacion') == 'medicina' %}selected{% endif %}>Medicina</option>
+        <option value="enfermeria grado II" {% if request.args.get('titulacion') == 'enfermeria grado II' %}selected{% endif %}>Enfermería grado II</option>
+        <option value="fisioterapia" {% if request.args.get('titulacion') == 'fisioterapia' %}selected{% endif %}>Fisioterapia</option>
+        <option value="anestesiologia grado I" {% if request.args.get('titulacion') == 'anestesiologia grado I' %}selected{% endif %}>Anestesiología grado I</option>
+        <option value="ginecobstetricia" {% if request.args.get('titulacion') == 'ginecobstetricia' %}selected{% endif %}>Ginecobstetricia</option>
+        <option value="laboratorio" {% if request.args.get('titulacion') == 'laboratorio' %}selected{% endif %}>Laboratorio</option>
+        <option value="higiene y epidemiologia" {% if request.args.get('titulacion') == 'higiene y epidemiologia' %}selected{% endif %}>Higiene y Epidemiología</option>
+        <option value="imagenologia" {% if request.args.get('titulacion') == 'imagenologia' %}selected{% endif %}>Imagenología</option>
+        <option value="enfermeria grado I" {% if request.args.get('titulacion') == 'enfermeria grado I' %}selected{% endif %}>Enfermería grado I</option>
+      </select>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
+    </div>
+  </form>
+</div>
+
+<!-- Libros TFG visibles -->
+<div class="card p-3 fondo-tfg">
+  <h4>Libros de Trabajo Fin de Grado</h4>
+  ...
+</div>
+
+
+  <!-- Libros TFG visibles -->
+  <div class="card p-3 fondo-tfg">
+    <h4>Libros de Trabajo Fin de Grado</h4>
+
+    <div class="list-group mt-2">
+
+      {% for item in tfg_publicos %}
+      <div class="list-group-item py-3 fondo-tfg">
+
+        <div class="d-flex">
+
+          <!-- PORTADA -->
+          <div style="width:90px;height:120px;overflow:hidden;border-radius:6px;" class="me-3">
+            {% if item.portada %}
+              <img src="{{ url_for('static', filename='uploads/portadas/' ~ item.portada) }}"
+                   class="img-fluid"
+                   style="object-fit: cover; width:100%; height:100%;">
+            {% else %}
+              <img src="{{ url_for('static', filename='img/default_cover.png') }}"
+                   class="img-fluid"
+                   style="object-fit: cover; width:100%; height:100%;">
+            {% endif %}
+          </div>
+
+          <!-- INFORMACIÓN Y DETALLES DEL LIBRO TFG-->
+          <div class="flex-grow-1" style= "background-color: transparent;">
+            <h5 class="fw-bold">{{ item.titulo }}</h5>
+
+            {% if item.tipo_libro == 'tfg' and item.titulacion %}
+              <p class="text-white-50 small"><strong>Titulación:</strong> {{ item.titulacion }}</p>
+            {% endif %}
+
+            <p class="text-info small">
+              Publicado por:
+              <a href="{{ url_for('ver_perfil', usuario_id=item.usuario_id) }}" class="text-decoration-none text-info">
+                {{ item.uploader.nombre }} {{ item.uploader.apellidos }}
+              </a>
+            </p>
+
+
+            {% if item.descripcion %}
+              <p class="text-muted small">{{ item.descripcion }}</p>
+            {% endif %}
+
+            <!-- ENLACE O PDF -->
+            {% if item.tipo == 'pdf' %}
+              <a class="btn btn-success btn-sm"
+                 href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}"
+                 target="_blank">📄 Ver PDF</a>
+            {% else %}
+              <a class="btn btn-info btn-sm"
+                 href="{{ item.enlace }}" target="_blank">🌐 Abrir enlace</a>
+            {% endif %}
+
+            <!--Solo el usuario id puede ver esos botones-->
+            {% if item.usuario_id == session['usuario_id'] %}
+            <!-- EDITAR -->
+            <a href="{{ url_for('biblioteca_editar', item_id=item.id) }}"
+               class="btn btn-warning btn-sm ms-2">✏️ Editar</a>
+
+            <!-- ELIMINAR -->
+            <form action="{{ url_for('biblioteca_eliminar', item_id=item.id) }}"
+                  method="POST" class="d-inline"
+                  onsubmit="return confirm('¿Eliminar este TFG?');">
+              <button class="btn btn-danger btn-sm">🗑 Eliminar</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+      {% else %}
+        <p class="text-muted">No hay TFG disponibles.</p>
+      {% endfor %}
+
+    </div>
+  </div>
+
+    </div>
+
+
+</div>
+
+{% endblock %}

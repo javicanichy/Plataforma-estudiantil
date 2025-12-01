@@ -189,7 +189,7 @@
               <div class="noticia-overlay">
                 <p class="fecha">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
                 <h5 class="titulo">{{ noticia.titulo }}</h5>
-                <a href="/noticias/{{ noticia.id }}" class="stretched-link"></a>
+                <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" class="stretched-link"></a>
               </div>
             </div>
         </div>
@@ -394,7 +394,7 @@
               <div class="noticia-overlay">
                 <p class="fecha">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
                 <h5 class="titulo">{{ noticia.titulo }}</h5>
-                <a href="/noticias/{{ noticia.id }}" class="stretched-link"></a>
+                <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" class="stretched-link"></a>
               </div>
             </div>
         </div>

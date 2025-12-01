@@ -1,3 +1,4 @@
+from msilib.schema import File
 import os
 import datetime
 from datetime import date
@@ -10,6 +11,7 @@ from flask import (
 from docx import Document
 import io
 import bleach
+import uuid
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -17,14 +19,18 @@ from flask_cors import CORS
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, BooleanField, FileField, SubmitField
-from wtforms.validators import DataRequired
 
 
-from forms import NoticiaForm
+from forms import (
+    NoticiaForm, PerfilForm, CambiarContrasenaForm, FileAllowed_PERFILES_EXIT, Email, EqualTo, DataRequired, 
+    Length, Optional, ValidationError, PasswordField, DebateForm, BibliotecaForm
+    )
 
 from models import (
-    db, Usuario, Estudiante, Nota, Mensaje, Calendario, Evento,
-    Matricula, CodigoEstudiante, Asignatura, EstudianteAsignatura, Noticia
+    db, Usuario, Estudiante, Nota, Mensaje, Calendario, Evento, Debate, Notificacion, Administrador, Comentario,
+    Matricula, CodigoEstudiante, Asignatura, EstudianteAsignatura, Noticia, Debate, Notificacion, Comentario,
+    Biblioteca
+
 )
 from config import Config
 from flask_migrate import Migrate
@@ -99,7 +105,7 @@ def requiere_login(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if 'usuario_id' not in session:
-            return redirect(url_for('login'))
+            return redirect(url_for('login_page'))
         return f(*args, **kwargs)
     return wrapper
 
@@ -118,8 +124,8 @@ def requiere_rol(*roles):
 # ==========================================================
 @app.route('/')
 def inicio():
-    noticias_recientes = Noticia.query.order_by(Noticia.fecha.desc()).limit(9).all()
-    return render_template('index.html', noticias=noticias_recientes)
+    noticias = Noticia.query.order_by(Noticia.fecha.desc()).limit(9).all()
+    return render_template('index.html', noticias=noticias)
 
 @app.route('/login')
 def login_page():
@@ -132,7 +138,7 @@ def registro_page():
 @app.route("/noticias")
 def noticias_page():
     noticias = Noticia.query.order_by(Noticia.fecha.desc()).all()
-    return render_template("noticias.html", noticias=noticias)
+    return render_template("lista_noticia.html", noticias=noticias)
 
 @app.route('/contacto')
 def contacto_page():
@@ -163,9 +169,25 @@ def mensajes_page():
     return render_template('mensajes.html')
 
 @app.route('/perfil')
-def ver_perfil():
-    return render_template('perfil.html')
+def perfil_page():
+    if 'usuario_id' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login_page'))
+    return redirect(url_for('ver_perfil', usuario_id=session['usuario_id']))
 
+# Inject current_user into templates
+@app.context_processor
+def inject_user():
+    if 'usuario_id' in session:
+        usuario = Usuario.query.get(session['usuario_id'])
+        return {'current_user': usuario}
+    return {'current_user': None}
+
+@app.route("/biblioteca")
+def biblioteca_page():
+    # Libros de TFG visibles para todos
+    tfg_publicos = Biblioteca.query.filter_by(tipo_libro="tfg", publico=True).order_by(Biblioteca.titulacion.asc(), Biblioteca.fecha_creacion.desc()).all()
+    return render_template("biblioteca.html", tfg_publicos=tfg_publicos, body_class="biblioteca-page")
 
 # ==========================================================
 # API: SESIÓN DE USUARIO
@@ -864,6 +886,180 @@ def eliminar_evento(evento_id):
 # RUTA PERFIL
 # ==========================
 
+
+
+
+# Guardar imagen de perfil
+def save_profile_image(foto):
+    ext = foto.filename.rsplit('.', 1)[-1].lower()
+    if ext not in FileAllowed_PERFILES_EXIT:
+        return None
+    nombre_archivo = f"{uuid.uuid4().hex}_{secure_filename(foto.filename)}"
+    carpeta = os.path.join(app.static_folder, 'uploads', 'perfiles')
+    os.makedirs(carpeta, exist_ok=True)
+    ruta = os.path.join(carpeta, nombre_archivo)
+    foto.save(ruta)
+    return nombre_archivo
+
+# Guardar imagen de portada
+def save_cover_image(foto):
+    ext = foto.filename.rsplit('.', 1)[-1].lower()
+    if ext not in FileAllowed_PERFILES_EXIT:
+        return None
+    nombre_archivo = f"{uuid.uuid4().hex}_{secure_filename(foto.filename)}"
+    carpeta = os.path.join(app.static_folder, 'uploads', 'portadas')
+    os.makedirs(carpeta, exist_ok=True)
+    ruta = os.path.join(carpeta, nombre_archivo)
+    foto.save(ruta)
+    return nombre_archivo
+
+
+# Ver perfil
+@app.route('/perfil/<int:usuario_id>')
+def ver_perfil(usuario_id):
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        flash("Usuario no encontrado", "danger")
+        return redirect(url_for('inicio'))
+
+    # Limitar a las 5 noticias más recientes
+    if usuario.noticias:
+        usuario.noticias_ultimas = sorted(usuario.noticias, key=lambda x: x.fecha, reverse=True)[:5]
+    else:
+        usuario.noticias_ultimas = []
+
+    return render_template('perfil.html', usuario=usuario)
+
+# EDITAR PERFIL
+@app.route('/perfil/editar', methods=['GET', 'POST'])
+def perfil_editar():
+    if 'usuario_id' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = Usuario.query.get(session['usuario_id'])
+
+    if request.method == 'POST':
+        usuario.nombre = request.form.get('nombre')
+        usuario.correo = request.form.get('correo')
+
+        # Si quieres agregar foto de perfil
+        foto = request.files.get('foto_perfil')
+        if foto:
+            filename_perfil = save_profile_image(foto) # filename es lavariabke que guardamos, pero con su apoto
+            if filename_perfil:
+                usuario.foto_perfil = filename_perfil
+
+        # Para agregar foto de portada
+        foto_portada = request.files.getlist('foto_portada')
+        lista_fotos = []
+        for una_foto in foto_portada[:3]: # Maximo de 3 fotos
+            filename_portada = save_cover_image(una_foto) # Para que el servidor reciba una sola foto
+            if filename_portada:
+                lista_fotos.append(filename_portada)
+        if lista_fotos:
+            usuario.foto_portada = lista_fotos
+
+        db.session.commit()
+        flash("Perfil actualizado", "success")
+        return redirect(url_for('ver_perfil', usuario_id=usuario.id))
+
+    return render_template('perfil_editar.html', usuario=usuario)
+
+# CAMBIAR CONTRASEÑA
+@app.route('/perfil/cambiar_contrasena', methods=['GET', 'POST'])
+def perfil_cambiar_contrasena():
+    if 'usuario_id' not in session:
+        flash("Debes iniciar sesión", "warning")
+        return redirect(url_for('login'))
+
+    usuario = Usuario.query.get(session['usuario_id'])
+
+    if request.method == 'POST':
+        actual = request.form.get('actual')
+        nueva = request.form.get('nueva')
+        confirmar = request.form.get('confirmar')
+
+        if not check_password_hash(usuario.contrasena, actual):
+            flash("Contraseña actual incorrecta", "danger")
+            return redirect(url_for('perfil_cambiar_contrasena'))
+
+        if nueva != confirmar:
+            flash("La nueva contraseña no coincide", "danger")
+            return redirect(url_for('perfil_cambiar_contrasena'))
+
+        usuario.contrasena = generate_password_hash(nueva)
+        db.session.commit()
+        flash("Contraseña cambiada con éxito", "success")
+        return redirect(url_for('ver_perfil', usuario_id=usuario.id))
+
+    return render_template('perfil_cambiar_contrasena.html')
+
+# DEBATES
+@app.route('/crear_debate', methods=['GET', 'POST'])
+@requiere_login
+def crear_debate():
+    form = DebateForm()
+    if form.validate_on_submit():
+        archivo_nombre = None
+        tipo_archivo = None
+
+        # Guardar archivo si existe
+        if form.archivo.data:
+            archivo_nombre = secure_filename(form.archivo.data.filename)
+            form.archivo.data.save(os.path.join(UPLOAD_FOLDER, archivo_nombre))
+            ext = archivo_nombre.rsplit('.',1)[1].lower()
+            tipo_archivo = 'video' if ext=='mp4' else 'imagen'
+
+        # Crear el debate
+        publicacion = Debate(
+            titulo=form.titulo.data,
+            contenido=form.contenido.data,
+            archivo=archivo_nombre,
+            tipo_archivo=tipo_archivo,
+            autor_id=session['usuario_id'],
+            fecha_creacion=func.now()  # usa la fecha actual
+        )
+
+        db.session.add(publicacion)
+        db.session.commit()
+
+        # Crear notificaciones para todos los usuarios excepto el creador
+        usuario = Usuario.query.get(session['usuario_id'])
+        todos_usuarios = Usuario.query.filter(Usuario.id != usuario.id).all()
+
+        for otro_usuario in todos_usuarios:
+            notificacion = Notificacion(
+                usuario_id=otro_usuario.id,
+                tipo='debate',
+                mensaje=f"{usuario.nombre} creó un nuevo debate: {publicacion.titulo}"
+            )
+            db.session.add(notificacion)
+
+        db.session.commit()
+
+        flash('Debate creado correctamente y notificación enviada a todos los miembros', 'success')
+        return redirect(url_for('perfil_debates'))
+
+    return render_template('crear_debate.html', form=form)
+
+
+
+# RUTAS DEL PERFIL
+@app.route('/configuracion')
+def configuracion():
+    return render_template('configuracion.html')
+
+@app.route('/estudios')
+def estudios():
+    return render_template('estudios.html')
+
+@app.route('/facultad')
+def facultad():
+    return render_template('facultad.html')
+
+
+
 # ==========================
 # NOTICIAS
 # ==========================
@@ -930,14 +1126,15 @@ def nueva_noticia():
             tipo_archivo=tipo_archivo,
             destacado=form.destacado.data,
             documento=nombre_documento,  # <-- aquí guardamos el Word/PDF
-            autor_id=autor_id   # Aquí guardamos el autor desde la sesión
+            autor_id=autor_id,   # Aquí guardamos el autor desde la sesión
+            pie_archivo=form.pie_archivo.data
         )
 
         db.session.add(noticia)
         db.session.commit()
 
         flash('Noticia publicada correctamente', 'success')
-        return redirect(url_for('noticias_page'))
+        return redirect(url_for('noticia_completa', noticia_id=noticia.id))
 
     return render_template('nueva_noticia.html', form=form)
 
@@ -992,6 +1189,153 @@ def noticias_destacadas():
     return render_template("noticias.html", noticias=noticias)
 
 
+# ==========================================================
+# BIBLIOTECA
+# ==========================================================
+
+# Metodo para guardar un PDF
+def save_pdf_file(f):
+    if not f or getattr(f, 'filename', '') == '':
+        return None
+    filename = secure_filename(f.filename)
+    ext = filename.rsplit('.', 1)[-1].lower()
+    if ext != 'pdf':
+        return None
+    unique_name = f"{uuid.uuid4().hex}_{filename}"
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    f.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
+    return unique_name
+
+# Metodo para guardar portadas de los documentos
+def save_portada_file(file):
+    filename = secure_filename(file.filename)
+    path = os.path.join(app.root_path, "static/uploads/portadas", filename)
+    file.save(path)
+    return filename
+
+
+# Rutas que quieren login
+@app.route('/biblioteca/fisicos')
+@requiere_login
+def biblioteca_fisicos():
+    return render_template('libros_fisicos.html')
+
+@app.route('/biblioteca/digitales')
+@requiere_login
+def biblioteca_digitales():
+    # Obtenemos el filtro de la URL (GET)
+    filtro_titulacion = request.args.get('titulacion')
+
+    # Libros normales
+    libros = Biblioteca.query.filter_by(tipo_libro='libro').all()
+
+    # TFG, aplicando filtro si existe
+    query_tfg = Biblioteca.query.filter_by(tipo_libro='tfg')
+    if filtro_titulacion:
+        query_tfg = query_tfg.filter_by(titulacion=filtro_titulacion)
+    tfg_publicos = query_tfg.all()
+
+    return render_template('libros_digitales.html', libros=libros, tfg_publicos=tfg_publicos)
+
+
+# Eliminar un libro
+@app.route('/biblioteca/eliminar/<int:item_id>', methods=['POST'])
+def biblioteca_eliminar(item_id):
+    item = Biblioteca.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    return redirect(url_for('biblioteca_page'))
+
+# Agregar libro digital
+@app.route('/biblioteca/editar', methods=['GET', 'POST'])
+@app.route('/biblioteca/editar/<int:item_id>', methods=['GET', 'POST'])
+@requiere_login
+def biblioteca_editar(item_id=None):
+    item = Biblioteca.query.get(item_id) if item_id else None
+    form = BibliotecaForm(obj=item)
+
+    if item:
+        form.publico.data = bool(item.publico)
+
+    if form.validate_on_submit():
+
+        
+        # GUARDAR PORTADA (foto miniatura)
+    
+        portada_file = form.portada.data
+        portada_filename = None
+
+        if portada_file and portada_file.filename != "":
+            nombre_original = secure_filename(portada_file.filename)
+            portada_filename = f"{uuid.uuid4().hex}_{nombre_original}"
+
+            carpeta_portadas = os.path.join(app.root_path, "static/uploads/portadas")
+            os.makedirs(carpeta_portadas, exist_ok=True)
+
+            portada_file.save(os.path.join(carpeta_portadas, portada_filename))
+
+        # PDF o LINK
+        
+        tipo = form.tipo.data
+        filename = None
+        enlace = None
+
+        if tipo == 'pdf':
+            archivo_pdf = form.archivo_pdf.data
+            if archivo_pdf:
+                filename = save_pdf_file(archivo_pdf)
+
+            if not filename and not (item and item.archivo):
+                flash("Debes subir un PDF válido.", "warning")
+                return redirect(request.url)
+
+        elif tipo == 'link':
+            enlace = form.enlace.data
+            if not enlace:
+                flash("Debes introducir un enlace válido.", "warning")
+                return redirect(request.url)
+
+    
+        # ACTUALIZAR O CREAR NUEVO
+      
+        if item:
+            # EDITAR
+            item.titulo = form.titulo.data
+            item.descripcion = form.descripcion.data
+            item.tipo = tipo
+            item.enlace = enlace
+            item.tipo_libro = form.tipo_libro.data
+            item.publico = bool(form.publico.data)
+            item.titulacion = form.titulacion.data if form.tipo_libro.data == "tfg" else None
+
+
+            if filename:
+                item.archivo = filename
+
+            if portada_filename:
+                item.portada = portada_filename
+
+        else:
+            # CREAR
+            nuevo = Biblioteca(
+                titulo=form.titulo.data,
+                descripcion=form.descripcion.data,
+                tipo=tipo,
+                archivo=filename,
+                enlace=enlace,
+                tipo_libro=form.tipo_libro.data,
+                publico=bool(form.publico.data),
+                usuario_id=session['usuario_id'],
+                portada=portada_filename,  # ✔️ SOLO STRING
+                titulacion = form.titulacion.data if form.tipo_libro.data == "tfg" else None
+            )
+            db.session.add(nuevo)
+
+        db.session.commit()
+        flash("Elemento guardado correctamente.", "success")
+        return redirect(url_for('biblioteca_page'))
+
+    return render_template('biblioteca_editar.html', form=form, item=item)
 
 
 

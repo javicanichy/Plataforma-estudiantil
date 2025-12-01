@@ -1,43 +1,121 @@
 {% extends "base.html" %}
-
-{% block title %}Perfil - UNGE Facultad de Ciencias de la Salud{% endblock %}
-
 {% block content %}
-<div class="perfil-page">
-  <div class="container">
-    <h1>Perfil</h1>
-    <p class="subtitulo">Soy un desarrollador web PHP creativo</p>
 
-    <div class="perfil-wrapper">
-      <!-- Sección izquierda: Acerca de mí -->
-      <div class="perfil-texto">
-        <h2>Acerca de mí</h2>
-        <p id="bio">(Cargando información...)</p>
-      </div>
+<div class="container my-4 position-relative">
 
-      <!-- Foto en el centro -->
-      <div class="perfil-foto">
-        <img id="foto-perfil" src="/static/img/default-user.png" alt="Foto de perfil" />
-      </div>
+  <!-- Botones flotantes de acción -->
+  <div class="botones-flotantes d-flex gap-2 mb-3 justify-content-end">
+    <!-- Botón Editar Perfil -->
+    {% if session.get('usuario_id') == usuario.id %}
+    <a href="{{ url_for('perfil_editar') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-pencil-square"></i> Editar Perfil
+    </a>
+    {% endif %}
 
-      <!-- Sección derecha: Detalles -->
-      <div class="perfil-detalles">
-        <h2>Detalles</h2>
-        <p><b>Nombre:</b> <span id="nombre">Cargando...</span></p>
-        <p><b>Edad:</b> <span id="edad">Cargando...</span></p>
-        <p><b>Ubicación:</b> <span id="ubicacion">Cargando...</span></p>
+    <!-- Botón Configuración -->
+    <a href="{{ url_for('configuracion') }}" class="btn btn-secondary btn-sm">
+      <i class="bi bi-gear"></i> Configuración
+    </a>
+  </div>
 
-        <div class="social-icons">
-          <i class="fab fa-facebook-f"></i>
-          <i class="fab fa-twitter"></i>
-          <i class="fab fa-instagram"></i>
+  <!-- FILA SUPERIOR: 3 COLUMNAS -->
+  <div class="row g-4 mb-4">
+    <!-- Columna 1: Perfil -->
+    <div class="col-lg-4">
+      <div class="card p-3 shadow-sm text-center perfil-card">
+        {% if usuario.foto_perfil %}
+          <img src="{{ url_for('static', filename='uploads/perfiles/' ~ usuario.foto_perfil) }}"
+               class="perfil-img mb-3">
+        {% else %}
+          <div class="perfil-img-placeholder d-flex align-items-center justify-content-center mb-3">
+            <span class="fs-2">{{ usuario.nombre[0] }}</span>
+          </div>
+        {% endif %}
+        <h4>{{ usuario.nombre }}</h4>
+        <p class="text-muted">{{ usuario.rol|capitalize }}</p>
+        <div class="text-start small">
+          <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
+          <p><strong>Apellidos:</strong> {{ usuario.apellidos if usuario.apellidos else "No asignado"}}</p>
+          <p><strong>Biografia:</strong> {{ usuario.biografia if usuario.biografia else "No asigando" }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Acciones según rol -->
-    <div id="perfil-acciones"></div>
+    <!-- Columna 2: Ajustes / Nombre y Apellidos -->
+    <div class="col-lg-4">
+      <div class="card p-3 shadow-sm ajustes-card text-center">
+        <h4>Detalles</h4>
+        <br>   
+        <div class="text-start small">             
+          <p><strong>Fecha de Nacimiento:</strong> {{ usuario.fecha_nacimiento if usuario.fecha_nacimiento else "No asignado" }}</p>
+          <p><strong>Correo:</strong> {{ usuario.correo if usuario.correo else "No asignado" }}</p>
+          <p><strong>telefono:</strong> {{ usuario.telefono if usuario.telefono else "No asignado" }}</p>
+          <p><strong>Debates:</strong> {{ usuario.debate if usuario.telefono else 0 }}</p>
+          <p><strong>Curso:</strong> {{ usuario.curso if usuario.curso else "No asignado"}}</p>
+          <p><strong>Pais:</strong> {{ usuario.pais if usuario.pais else "Se desconoce" }}</p>
+          <p><strong>Residencia:</strong> {{ usuario.residencia if usuario.residencia else "Se desconoce" }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna 3: Foto de Portada (maximo 3)-->
+    <div class="col-lg-4 d-flex justify-content-center">
+      <div class="portada-card">
+        {% if usuario.foto_portada %}
+          {% for una_foto in usuario.foto_portada %}
+            <img src="{{ url_for('static', filename='uploads/portadas/' ~ una_foto) }}"
+            class="portada-img portada-slide" style="{% if not loop.first %} display:none {% endif %}">
+          {% endfor %}
+
+        {% else %}
+          <div class="portada-placeholder d-flex align-items-center justify-content-center">
+            Foto de portada
+          </div>
+        {% endif %}
+      </div>
+    </div>
 
   </div>
+
+  <!-- FILA INFERIOR: Tarjetas 3x3 -->
+  <!-- TARJETAS DE OPCIONES (3x3) -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('biblioteca_page') }}" class="btn btn-light shadow-sm w-100 py-3">Biblioteca</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('notas_page') }}" class="btn btn-light shadow-sm w-100 py-3">Notas</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('mensajes_page') }}" class="btn btn-light shadow-sm w-100 py-3">Mensajes</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('expedientes_page') }}" class="btn btn-light shadow-sm w-100 py-3">Expedientes</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('calendario_page') }}" class="btn btn-light shadow-sm w-100 py-3">Calendario</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('crear_debate') }}" class="btn btn-light shadow-sm w-100 py-3">Debates</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('lista_noticias') }}" class="btn btn-light shadow-sm w-100 py-3">Noticias</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('estudios') }}" class="btn btn-light shadow-sm w-100 py-3">Estudios</a>
+  </div>
+
+  <div class="col-6 col-md-4 tarjeta">
+    <a href="{{ url_for('facultad') }}" class="btn btn-light shadow-sm w-100 py-3">Mi Facultad</a>
+  </div>
+
 </div>
+
 {% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+    
+<div class="container my-4 libros-fisicos">
+  <h2>Libros en físico</h2>
+
+  <p class="text-muted">
+    Solo usuarios registrados pueden acceder a los libros en físico.
+    <br>
+    Requisitos de acceso:
+  </p>
+  <ul>
+    <li>DNI válido</li>
+    <li>Usuario activo</li>
+    <li>Autorización según rol (estudiante, profesor o directivo)</li>
+  </ul>
+
+  <div class="alert alert-info">
+    Aquí se mostrarán los libros en físico disponibles en la biblioteca.
+  </div>
+
+  <!-- Opcional: lista de libros físicos si los gestionas -->
+  <div class="list-group mt-3">
+    {% for libro in libros_fisicos %}
+      <div class="list-group-item">
+        <strong>{{ libro.titulo }}</strong>
+        <p>{{ libro.descripcion }}</p>
+      </div>
+    {% else %}
+      <p class="text-muted">No hay libros físicos disponibles por el momento.</p>
+    {% endfor %}
+  </div>
+
+{% endblock %}
+
+</div>
+
+
+
