@@ -1,8 +1,9 @@
-from msilib.schema import File
 import os
-import datetime
-from datetime import date
+from msilib.schema import File
+from dotenv import load_dotenv
+from datetime import datetime, date
 from functools import wraps
+
 from flask import (
     Flask, jsonify, request, redirect, url_for, send_file,
     render_template, send_file, session, abort, flash
@@ -13,6 +14,7 @@ import io
 import bleach
 import uuid
 
+from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
@@ -49,28 +51,37 @@ from flask_migrate import Migrate
 # ==========================================================
 # CONFIGURACIÓN GENERAL
 # ==========================================================
+
+# Cargar variables de entorno
+load_dotenv()
+
+# Directorios
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-# BASE_DIR ya apunta a .../Frontend, por tanto usar subcarpetas 'templates' y 'static' directamente
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 
+# Configurar app de Flask
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=TEMPLATES_DIR)
+
+# Configuarar db
+# db = SQLAlchemy()
+
+# Configuracion desde config.py
 app.config.from_object(Config)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev_key')
+
+# Seguridad y sesiones
+app.secret_key = app.config['SECRET_KEY']
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-# Permitir subir archivos
-app.config['SECRET_KEY'] = 'tu_clave_secreta'
-app.config['UPLOAD_FOLDER'] = 'static/uploads'  # carpeta donde se guardan imágenes
-app.config['MAX_CONTENT_LENGTH'] = 2 * 1024 * 1024  # máximo 2MB
+
+
+# Aranciar la abse de datos
+db.init_app(app)
+CORS(app)
 
 # Mirgraciones
 migrate = Migrate(app, db)
 
-
-
-CORS(app)
-db.init_app(app)
 
 # ===== INYECTAR VARIABLES GLOBALES EN TODOS LOS TEMPLATES (ANTES DE CUALQUIER RUTA) =====
 @app.context_processor
@@ -86,17 +97,20 @@ def inyectar_contexto():
 # ==========================================================
 # MANEJO DE ARCHIVOS
 # ==========================================================
-UPLOAD_DIR = os.path.join(BASE_DIR, 'Frontend', 'uploads')
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Carpeta donde se guardarán los archivos subidos
+UPLOAD_FOLDER = app.config['UPLOAD_FOLDER']
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_IMAGE_EXT = {'jpg', 'jpeg', 'png', 'gif'}
+ALLOWED_VIDEO_EXT = {'mp4', 'mov', 'avi'}
 ALLOWED_EXT = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
 
-# Carpeta donde se guardarán los archivos subidos
-UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_IMAGE_EXT = {'jpg', 'jpeg', 'png', 'gif'}
-ALLOWED_VIDEO_EXT = {'mp4', 'mov', 'avi'}
+
 
 # ==========================================================
 # DECORADORES PROFESIONALES. Rol restrintion
@@ -1363,4 +1377,6 @@ with app.app_context():
     
 
 if __name__ == '__main__':
+    print("SECRET_KEY:", app.config['SECRET_KEY'])
+    print("Database URI:", app.config['SQLALCHEMY_DATABASE_URI'])
     app.run(host="127.0.0.1", port=5000, debug=True)

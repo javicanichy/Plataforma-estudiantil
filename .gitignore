@@ -1,0 +1,8 @@
+# Archivos de entorno
+.env
+
+# Archivos de logs
+*.log
+
+# Carpeta de uploads
+static/uploads/
