@@ -64,39 +64,40 @@ body.biblioteca-page {
     </div>
   </div>
 
-  <!--Filtro de libros por titulacion para la busqueda-->
-  <!-- Filtro por Titulación -->
-<div class="mb-3 d-flex align-items-center">
-  <label for="filtro_titulacion" class="me-2 fw-bold">Filtrar por titulación:</label>
-  <form method="GET" id="form-filtro-titulacion">
-    <div class="input-group">
-      <select name="titulacion" id="filtro_titulacion" class="form-select">
-        <option value="">-- Todas --</option>
-        <option value="medicina" {% if request.args.get('titulacion') == 'medicina' %}selected{% endif %}>Medicina</option>
-        <option value="enfermeria grado II" {% if request.args.get('titulacion') == 'enfermeria grado II' %}selected{% endif %}>Enfermería grado II</option>
-        <option value="fisioterapia" {% if request.args.get('titulacion') == 'fisioterapia' %}selected{% endif %}>Fisioterapia</option>
-        <option value="anestesiologia grado I" {% if request.args.get('titulacion') == 'anestesiologia grado I' %}selected{% endif %}>Anestesiología grado I</option>
-        <option value="ginecobstetricia" {% if request.args.get('titulacion') == 'ginecobstetricia' %}selected{% endif %}>Ginecobstetricia</option>
-        <option value="laboratorio" {% if request.args.get('titulacion') == 'laboratorio' %}selected{% endif %}>Laboratorio</option>
-        <option value="higiene y epidemiologia" {% if request.args.get('titulacion') == 'higiene y epidemiologia' %}selected{% endif %}>Higiene y Epidemiología</option>
-        <option value="imagenologia" {% if request.args.get('titulacion') == 'imagenologia' %}selected{% endif %}>Imagenología</option>
-        <option value="enfermeria grado I" {% if request.args.get('titulacion') == 'enfermeria grado I' %}selected{% endif %}>Enfermería grado I</option>
-      </select>
-      <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i></button>
-    </div>
-  </form>
-</div>
-
-<!-- Libros TFG visibles -->
-<div class="card p-3 fondo-tfg">
-  <h4>Libros de Trabajo Fin de Grado</h4>
-  ...
-</div>
 
 
   <!-- Libros TFG visibles -->
   <div class="card p-3 fondo-tfg">
-    <h4>Libros de Trabajo Fin de Grado</h4>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0">Trabajo Fin de Grado</h4>
+
+    <!-- Botón filtro pequeño -->
+    <div class="dropdown">
+      <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filtroDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-funnel-fill"></i> <!-- icono de filtrar -->
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="filtroDropdown">
+        <li><a class="dropdown-item" href="{{ url_for('biblioteca_page') }}">Todos</a></li>
+        {% for titulacion, label in [
+            ("medicina", "Medicina"),
+            ("enfermeria grado II", "Enfermería Grado II"),
+            ("fisioterapia", "Fisioterapia"),
+            ("anestesiologia grado I", "Anestesiología Grado I"),
+            ("ginecobstetricia", "Ginecobstetricia"),
+            ("laboratorio", "Laboratorio"),
+            ("higiene y epidemiologia", "Higiene y Epidemiología"),
+            ("imagenologia", "Imagenología"),
+            ("enfermeria grado I", "Enfermería Grado I")
+          ] %}
+          <li>
+            <a class="dropdown-item" href="{{ url_for('biblioteca_page', titulacion=titulacion) }}">
+              {{ label }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
     <div class="list-group mt-2">
 

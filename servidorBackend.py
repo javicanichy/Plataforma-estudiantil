@@ -186,8 +186,21 @@ def inject_user():
 @app.route("/biblioteca")
 def biblioteca_page():
     # Libros de TFG visibles para todos
-    tfg_publicos = Biblioteca.query.filter_by(tipo_libro="tfg", publico=True).order_by(Biblioteca.titulacion.asc(), Biblioteca.fecha_creacion.desc()).all()
-    return render_template("biblioteca.html", tfg_publicos=tfg_publicos, body_class="biblioteca-page")
+    filtro_titulacion = request.args.get("titulacion", None)
+
+    query_tfg = Biblioteca.query.filter_by(tipo_libro="tfg", publico=True)
+
+    if filtro_titulacion and filtro_titulacion != "":
+        query_tfg = query_tfg.filter_by(titulacion=filtro_titulacion)
+
+    tfg_publicos = query_tfg.order_by(Biblioteca.titulacion.asc(), Biblioteca.fecha_creacion.desc()).all()
+
+    return render_template(
+        "biblioteca.html",
+        tfg_publicos=tfg_publicos,
+        filtro_titulacion=filtro_titulacion,
+        body_class="biblioteca-page"
+    )
 
 # ==========================================================
 # API: SESIÓN DE USUARIO
@@ -1223,19 +1236,21 @@ def biblioteca_fisicos():
 @app.route('/biblioteca/digitales')
 @requiere_login
 def biblioteca_digitales():
-    # Obtenemos el filtro de la URL (GET)
-    filtro_titulacion = request.args.get('titulacion')
-
     # Libros normales
     libros = Biblioteca.query.filter_by(tipo_libro='libro').all()
 
-    # TFG, aplicando filtro si existe
+    # Obtenemos el filtro de titulación desde la URL
+    filtro_titulacion = request.args.get('titulacion', None)
+
+    # Query de TFG
     query_tfg = Biblioteca.query.filter_by(tipo_libro='tfg')
+
     if filtro_titulacion:
         query_tfg = query_tfg.filter_by(titulacion=filtro_titulacion)
+
     tfg_publicos = query_tfg.all()
 
-    return render_template('libros_digitales.html', libros=libros, tfg_publicos=tfg_publicos)
+    return render_template('libros_digitales.html', libros=libros, tfg_publicos=tfg_publicos, filtro_titulacion=filtro_titulacion)
 
 
 # Eliminar un libro
@@ -1244,7 +1259,7 @@ def biblioteca_eliminar(item_id):
     item = Biblioteca.query.get_or_404(item_id)
     db.session.delete(item)
     db.session.commit()
-    return redirect(url_for('biblioteca_page'))
+    return redirect(url_for('biblioteca_digitales.html'))
 
 # Agregar libro digital
 @app.route('/biblioteca/editar', methods=['GET', 'POST'])
