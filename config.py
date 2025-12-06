@@ -20,9 +20,3 @@ class Config:
 
     # Optimización de SQLAlchemy
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-
-print("CWD:", os.getcwd())
-print("Existe .env?", os.path.exists(".env"))
-load_dotenv()
-print("DATABASE_URL desde .env:", os.environ.get("DATABASE_URL"))
