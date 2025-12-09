@@ -138,7 +138,6 @@ class Directivo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
     cargo = db.Column(db.String(100), nullable=False)
-    fecha_ingreso = db.Column(db.DateTime, server_default=func.now())
 
     def __repr__(self):
         return f"<Directivo {self.id}>"
