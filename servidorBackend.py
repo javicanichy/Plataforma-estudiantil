@@ -25,7 +25,7 @@ from wtforms import StringField, TextAreaField, BooleanField, FileField, SubmitF
 
 from forms import (
     NoticiaForm, PerfilForm, CambiarContrasenaForm, FileAllowed_PERFILES_EXIT, Email, EqualTo, DataRequired, 
-    Length, Optional, ValidationError, PasswordField, DebateForm, BibliotecaForm
+    Length, Optional, ValidationError, PasswordField, DebateForm, BibliotecaForm, LibroFisicoForm
     )
 
 from models import (
@@ -109,6 +109,34 @@ ALLOWED_EXT = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXT
+
+
+
+# Carpeta base para todos los archivos subidos
+UPLOADS_DIR = os.path.join(STATIC_DIR, 'uploads')
+os.makedirs(UPLOADS_DIR, exist_ok=True)  # Crear uploads si no existe
+
+def guardar_archivo(archivo, categoria):
+    """
+    Guarda un archivo subido en la carpeta correcta según categoría.
+    Devuelve la ruta relativa para guardar en DB.
+    """
+    if not archivo:
+        return None
+
+    # Crear carpeta de categoría si no existe
+    carpeta_destino = os.path.join(UPLOADS_DIR, categoria)
+    os.makedirs(carpeta_destino, exist_ok=True)
+
+    # Nombre seguro
+    filename = secure_filename(archivo.filename)
+
+    # Ruta final en el sistema
+    ruta_guardado = os.path.join(carpeta_destino, filename)
+    archivo.save(ruta_guardado)
+
+    # Ruta relativa para templates / URLs
+    return f'uploads/{categoria}/{filename}'
 
 
 
@@ -1245,7 +1273,8 @@ def save_portada_file(file):
 @app.route('/biblioteca/fisicos')
 @requiere_login
 def biblioteca_fisicos():
-    return render_template('libros_fisicos.html')
+    libros = Biblioteca.query.filter_by(tipo_libro='fisico').all()
+    return render_template('libros_fisicos.html', libros_fisicos=libros)
 
 @app.route('/biblioteca/digitales')
 @requiere_login
@@ -1267,13 +1296,15 @@ def biblioteca_digitales():
     return render_template('libros_digitales.html', libros=libros, tfg_publicos=tfg_publicos, filtro_titulacion=filtro_titulacion)
 
 
-# Eliminar un libro
+# Eliminar un libro TFG
 @app.route('/biblioteca/eliminar/<int:item_id>', methods=['POST'])
 def biblioteca_eliminar(item_id):
     item = Biblioteca.query.get_or_404(item_id)
     db.session.delete(item)
     db.session.commit()
-    return redirect(url_for('biblioteca_digitales.html'))
+    return redirect(url_for('biblioteca_digitales'))
+
+# Eliminar un libro normal
 
 # Agregar libro digital
 @app.route('/biblioteca/editar', methods=['GET', 'POST'])
@@ -1367,6 +1398,103 @@ def biblioteca_editar(item_id=None):
     return render_template('biblioteca_editar.html', form=form, item=item)
 
 
+# Ruta libro en físico
+
+
+# Agregar libro físico
+@app.route('/biblioteca/fisicos/agregar', methods=['GET', 'POST'])
+@requiere_login
+def agregar_libro_fisico():
+    form = LibroFisicoForm()
+    
+    if form.validate_on_submit():
+        # Guardar portada si se sube
+        portada_file = form.portada.data
+        portada_filename = None
+        if portada_file and portada_file.filename != "":
+            nombre_original = secure_filename(portada_file.filename)
+            portada_filename = f"{uuid.uuid4().hex}_{nombre_original}"
+            
+            # Carpeta de portadas para libros físicos
+            carpeta_portadas = os.path.join(app.root_path, "static/uploads/libros")
+            os.makedirs(carpeta_portadas, exist_ok=True)
+            
+            # Guardar archivo en disco
+            portada_file.save(os.path.join(carpeta_portadas, portada_filename))
+        
+        # Crear nuevo libro físico
+        nuevo_libro = Biblioteca(
+            titulo=form.titulo.data,
+            descripcion=form.descripcion.data,
+            tipo='fisico',          # Obligatorio para la DB
+            tipo_libro='fisico',    # Marca que es libro físico
+            portada=portada_filename, # Nombre de archivo
+            usuario_id=session['usuario_id'],
+            publico=True             # Opcional, por defecto público
+        )
+
+        db.session.add(nuevo_libro)
+        db.session.commit()
+        flash("Libro físico agregado correctamente.", "success")
+        return redirect(url_for('biblioteca_fisicos'))
+
+    return render_template('agregar_libro_fisico.html', form=form)
+
+
+# Eliminar libro físico
+@app.route('/biblioteca/fisicos/eliminar/<int:item_id>', methods=['POST'])
+@requiere_login
+def eliminar_libro_fisico(item_id):
+    libro = Biblioteca.query.get_or_404(item_id)
+    # Opcional: eliminar archivo de portada del disco
+    if libro.portada:
+        ruta_portada = os.path.join(app.root_path, "static/uploads/libros", libro.portada)
+        if os.path.exists(ruta_portada):
+            os.remove(ruta_portada)
+    db.session.delete(libro)
+    db.session.commit()
+    flash("Libro físico eliminado.", "success")
+    return redirect(url_for('biblioteca_page'))
+
+# Editar libro fisico
+# Editar libro físico
+@app.route('/biblioteca/fisicos/editar/<int:item_id>', methods=['GET', 'POST'])
+@requiere_login
+def editar_libro_fisico(item_id):
+    libro = Biblioteca.query.get_or_404(item_id)
+    form = LibroFisicoForm(obj=libro)  # Carga los datos actuales en el formulario
+
+    if form.validate_on_submit():
+        # Actualizar título y descripción
+        libro.titulo = form.titulo.data
+        libro.descripcion = form.descripcion.data
+
+        # Guardar nueva portada si se sube
+        portada_file = form.portada.data
+        if portada_file and portada_file.filename != "":
+            # Eliminar portada anterior del disco (opcional)
+            if libro.portada:
+                ruta_portada_ant = os.path.join(app.root_path, "static/uploads/libros", libro.portada)
+                if os.path.exists(ruta_portada_ant):
+                    os.remove(ruta_portada_ant)
+
+            # Guardar nueva portada
+            nombre_original = secure_filename(portada_file.filename)
+            portada_filename = f"{uuid.uuid4().hex}_{nombre_original}"
+            carpeta_portadas = os.path.join(app.root_path, "static/uploads/libros")
+            os.makedirs(carpeta_portadas, exist_ok=True)
+            portada_file.save(os.path.join(carpeta_portadas, portada_filename))
+            libro.portada = portada_filename
+
+        db.session.commit()
+        flash("Libro físico actualizado correctamente.", "success")
+        return redirect(url_for('biblioteca_fisicos'))
+
+    return render_template('agregar_libro_fisico.html', form=form, editar=True)
+
+
+
+
 
 # ==========================================================
 # INICIAR SERVIDOR
@@ -1377,6 +1505,5 @@ with app.app_context():
     
 
 if __name__ == '__main__':
-    print("SECRET_KEY:", app.config['SECRET_KEY'])
-    print("Database URI:", app.config['SQLALCHEMY_DATABASE_URI'])
     app.run(host="127.0.0.1", port=5000, debug=True)
+

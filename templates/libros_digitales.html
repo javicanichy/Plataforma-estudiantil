@@ -23,36 +23,85 @@
         {% if libros %}
             {% for libro in libros %}
                 <div class="card mb-3 shadow-sm border-0 rounded-3">
-                    <div class="card-body">
+                    <div class="row g-0">
 
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="card-title mb-1">{{ libro.titulo }}</h5>
-                                {% if libro.descripcion %}
-                                    <p class="text-muted mb-2">{{ libro.descripcion }}</p>
-                                {% endif %}
+                        <!-- PORTADA -->
+                        <div class="col-md-3 d-flex align-items-center justify-content-center">
+                            {% if libro.portada %}
+                                <img src="{{ url_for('static', filename='uploads/portadas/' ~ libro.portada) }}"
+                                     class="img-fluid rounded-start"
+                                     style="height: 160px; object-fit: cover; width: 100%;">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center w-100 rounded-start"
+                                     style="height: 160px;">
+                                    <span class="text-muted">Sin portada</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- INFORMACIÓN DEL LIBRO -->
+                        <div class="col-md-9">
+                            <div class="card-body">
+
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="card-title mb-1">{{ libro.titulo }}</h5>
+
+                                        {% if libro.descripcion %}
+                                            <p class="text-muted mb-2">
+                                                {{ libro.descripcion[:150] }}{% if libro.descripcion|length > 150 %}...{% endif %}
+                                            </p>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- ABRIR -->
+                                    <a href="{% if libro.tipo == 'pdf' %}
+                                                {{ url_for('static', filename='uploads/libros/' ~ libro.archivo) }}
+                                             {% else %}
+                                                {{ libro.enlace }}
+                                             {% endif %}"
+                                       target="_blank"
+                                       class="btn btn-outline-primary btn-sm">
+                                        📥 Abrir
+                                    </a>
+                                </div>
+
+                                <!-- BOTONES DE ACCIÓN -->
+                                <div class="mt-3 text-end">
+
+                                    <!-- EDITAR -->
+                                    <a href="{{ url_for('biblioteca_editar', item_id=libro.id) }}"
+                                       class="btn btn-warning btn-sm">
+                                        ✏️ Editar
+                                    </a>
+
+                                    <!-- ELIMINAR -->
+                                    <form action="{{ url_for('biblioteca_eliminar', item_id=libro.id) }}" 
+                                        method="POST" 
+                                        onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');"
+                                        style="display:inline;">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            🗑️ Eliminar
+                                        </button>
+                                    </form>
+
+
+                                </div>
+
                             </div>
-
-                            <a href="{% if libro.tipo == 'pdf' %}
-                                        {{ url_for('static', filename='uploads/libros/' ~ libro.archivo) }}
-                                     {% else %}
-                                        {{ libro.enlace }}
-                                     {% endif %}"
-                               target="_blank"
-                               class="btn btn-outline-primary btn-sm">
-                                📥 Abrir
-                            </a>
                         </div>
 
                     </div>
                 </div>
             {% endfor %}
+
         {% else %}
-            <p class="text-muted text-center mt-3">No hay libros digitales disponibles.</p>
+            <p class="text-muted text-center mt-3">
+                No hay libros digitales disponibles.
+            </p>
         {% endif %}
 
     </div>
-
 
     <!-- BASES DE DATOS INTERNACIONALES -->
     <div class="mt-5">
@@ -63,6 +112,7 @@
                     ➤ PubMed
                 </a>
             </li>
+
             <li>
                 <a href="https://www.medline.com/" target="_blank" class="text-decoration-none">
                     ➤ Medline

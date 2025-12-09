@@ -3,7 +3,16 @@
 {% block content %}
     
 <div class="container my-4 libros-fisicos">
-  <h2>Libros en físico</h2>
+  
+  <!-- ENCABEZADO -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="mb-0">📚 Libros en físico</h2>
+
+      <a href="{{ url_for('agregar_libro_fisico') }}"
+         class="btn btn-primary shadow-sm">
+          ➕ Agregar nuevo libro
+      </a>
+  </div>
 
   <p class="text-muted">
     Solo usuarios registrados pueden acceder a los libros en físico.
@@ -20,21 +29,68 @@
     Aquí se mostrarán los libros en físico disponibles en la biblioteca.
   </div>
 
-  <!-- Opcional: lista de libros físicos si los gestionas -->
+  <!-- LISTA DE LIBROS FÍSICOS -->
   <div class="list-group mt-3">
+
     {% for libro in libros_fisicos %}
       <div class="list-group-item">
-        <strong>{{ libro.titulo }}</strong>
-        <p>{{ libro.descripcion }}</p>
+
+        <div class="d-flex justify-content-between">
+
+          <!-- FOTO + INFORMACIÓN -->
+          <div class="d-flex">
+
+            <!-- PORTADA -->
+            {% if libro.portada %}
+              <img src="{{ url_for('static', filename='uploads/libros/' ~ libro.portada) }}"
+                   alt="Portada"
+                   class="me-3"
+                   style="width: 110px; height: 150px; object-fit: cover; border-radius: 6px;">
+            {% else %}
+              <img src="{{ url_for('static', filename='img/no-image.png') }}"
+                   alt="Sin portada"
+                   class="me-3"
+                   style="width: 110px; height: 150px; object-fit: cover; border-radius: 6px;">
+            {% endif %}
+
+            <!-- TITULO + DESCRIPCIÓN -->
+            <div>
+              <strong class="fs-5">{{ libro.titulo }}</strong>
+              <p class="mb-1">{{ libro.descripcion }}</p>
+            </div>
+
+          </div>
+
+          <!-- BOTONES -->
+          <div class="text-end">
+
+            <!-- EDITAR -->
+            <a href="{{ url_for('editar_libro_fisico', item_id=libro.id) }}"
+               class="btn btn-sm btn-warning mb-2">
+               ✏️ Editar
+            </a>
+
+            <!-- ELIMINAR -->
+            <form action="{{ url_for('eliminar_libro_fisico', item_id=libro.id) }}"
+                  method="POST"
+                  onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');">
+                <button type="submit" class="btn btn-sm btn-danger">
+                    🗑️ Eliminar
+                </button>
+            </form>
+
+          </div>
+
+        </div>
+
       </div>
+
     {% else %}
       <p class="text-muted">No hay libros físicos disponibles por el momento.</p>
     {% endfor %}
-  </div>
 
-{% endblock %}
+  </div>
 
 </div>
 
-
-
+{% endblock %}

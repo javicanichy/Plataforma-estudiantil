@@ -8,11 +8,15 @@
     
 /* Fondo solo para biblioteca.html */
 body.biblioteca-page {
-    background-image: url("{{ url_for('static', filename='img/foto.jpg') }}");
+    background-image: url("{{ url_for('static', filename='img/foto4.jpg') }}");
     background-size: cover;       /* Ocupa toda la pantalla */
     background-position: center;  /* Centrado */
     background-repeat: no-repeat;
     background-attachment: fixed; /* Se mantiene al hacer scroll */
+    background-repeat: no-repeat; /* evita que se repita */
+    background-position: center center; /* centra la imagen */
+    background-size: contain; /* la imagen se ajusta sin recortarse ni estirarse */
+}
 }
 
 /* Opcional: hacer que el contenido tenga fondo semitransparente */
@@ -23,11 +27,14 @@ body.biblioteca-page {
 }
 /* Para sobre escribir los fondos */
 .fondo-tfg {
-    background-color: /*transparent !important;*/ rgba(255, 255, 255, 0.1) !important; /* blanco 60% opacidad */
+    background-color: /*transparent !important;*/ rgba(255, 255, 255, 0.4) !important; /* blanco 60% opacidad */
     border: none !important;
 }
 
 </style>
+
+<!--------------------------------------------------------------------------------------------------------------------->
+<!--------------------------------------------------------------------------------------------------------------------->
 
 
 <!--Para que todo este transparente    style= "background-color: transparent;"-->
@@ -35,7 +42,91 @@ body.biblioteca-page {
 
     <div class="container my-4">
 
-  <h2>Biblioteca</h2>
+  <h1 id="biblioteca">Biblioteca</h1>
+  <h4 id="biblioteca-descripcion">La biblioteca universitaria es un espacio clave para el acceso a conocimiento, investigación y aprendizaje.
+      Permite a estudiantes y profesores consultar y adquirir información de manera organizada y segura.
+      con el objetivo de ofrecer recursos físicos y digitales que apoyen la docencia y la investigación.
+      Proveer acceso a libros, tesis y artículos relevantes para las diferentes áreas académicas.
+      Facilitar la consulta de recursos físicos y digitales de manera. Cómo accedo a los libros de la biblioteca? siga leyendo... <br>
+    </h4>
+    <!-- FOTO GRANDE ILUSTRATIVA DE LA BIBLIOTECA -->
+  <div class="mb-4 text-center">
+    <img src="{{ url_for('static', filename='img/noticias3.jpg') }}" 
+    style="max-width:10000px; height:500px;"   
+    class="img-fluid rounded shadow" 
+       alt="Biblioteca">
+  </div>
+
+    <hr class="hr">
+    <hr class="hr">
+    <hr class="hr">
+    <h5 id="biblioteca-digital">
+      <strong>Acceder a Libros en Físico:</strong> <br>
+      Libros y documentos impresos que se encuentran disponibles en el espacio físico de la biblioteca. <br>
+      Características:
+      Acceso controlado: solo usuarios de la Facultd de Ciencias de la Salud pueden. <br>
+      Consulta en sala y posibilidad de préstamo, disponoble en el edificio 1 y en el edificio 2. <br>
+      Ejemplos de recursos: Libros de texto, manuales, enciclopedias, tesis impresas. <br>
+      Ventaja: Experiencia táctil y referencia inmediata sin necesidad de dispositivos.
+    </h5>
+    <h5 id="biblioteca-fisico">
+      <strong>Sección de Libros Digitales:</strong><br>
+      Recursos accesibles a través de internet mediante esa platforma. <br>
+      Debes ser un estudiante matriculado y poseer un usuario y conseña válidos. <br>
+      Tipos de recursos: PDFs de libros, artículos y tesis. <br>
+      Enlaces a repositorios y bases de datos internacionales. <br>
+      Búsqueda rápida por título, autor o área académica. <br>
+      Portadas y descripción visibles para una consulta eficiente. <br>
+      Ventaja, Acceso inmediato y simultáneo desde múltiples ubicaciones. <br>
+    </h5>
+    <hr class="hr">
+    <hr class="hr">
+    <hr class="hr">
+    <h5 id="biblioteca-gestion">
+      <strong>Gestión y Funcionalidades:</strong> <br>
+      Agregar, editar y eliminar libros físicos y digitales. <br>
+      Visualización clara de títulos, descripciones y portadas. <br>
+      Acceso diferenciado según tipo de usuario (estudiante y profesor. <br>
+      Integración de bases de datos externas (PubMed, Medline, Scielo, etc.). <br>
+      Mejora en la organización y consulta de recursos. <br>
+      Promoción de la innovación y aprendizaje digital. <br>
+      Los estudiantes finalista pueden agregar sus TFG a este repositorio de forma digital. <br>
+    </h5>
+    <hr class="hr">
+    <hr class="hr">
+    <hr class="hr">
+
+    <!-- IMÁGENES ILUSTRATIVAS DE LA BIBLIOTECA -->
+<div class="row mb-4">
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm">
+      <img src="{{ url_for('static', filename='img/foto3.jpg') }}"
+           class="card-img-top" alt="Biblioteca 1">
+      <div class="card-body">
+        <p class="card-text text-center small">Sala de lectura</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm">
+      <img src="{{ url_for('static', filename='img/foto2.jpg') }}"
+           class="card-img-top" alt="Biblioteca 2">
+      <div class="card-body">
+        <p class="card-text text-center small">Sección de libros en físico</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm">
+      <img src="{{ url_for('static', filename='img/foto4.jpg') }}"
+           class="card-img-top" alt="Biblioteca 3">
+      <div class="card-body">
+        <p class="card-text text-center small">Zona digital y ordenadores</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <!-- Cómo acceder -->
   <div class="card p-3 mb-4 fondo-tfg" >
@@ -99,7 +190,7 @@ body.biblioteca-page {
     </div>
   </div>
 
-    <div class="list-group mt-2">
+    <div class="list-group mt-2" >
 
       {% for item in tfg_publicos %}
       <div class="list-group-item py-3 fondo-tfg">
@@ -110,7 +201,7 @@ body.biblioteca-page {
           <div style="width:90px;height:120px;overflow:hidden;border-radius:6px;" class="me-3">
             {% if item.portada %}
               <img src="{{ url_for('static', filename='uploads/portadas/' ~ item.portada) }}"
-                   class="img-fluid"
+                   class="img-fluid portada-TFG"
                    style="object-fit: cover; width:100%; height:100%;">
             {% else %}
               <img src="{{ url_for('static', filename='img/default_cover.png') }}"

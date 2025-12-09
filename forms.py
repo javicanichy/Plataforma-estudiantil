@@ -144,3 +144,17 @@ class BibliotecaForm(FlaskForm):
     class Meta:
         csrf = True
         csrf_strict = False
+
+# ----------------------------------------------------------
+# Formulario para Biblioteca (libro fisico)
+# ----------------------------------------------------------
+class LibroFisicoForm(FlaskForm):
+    titulo = StringField('Título', validators=[DataRequired(), Length(max=250)])
+    descripcion = TextAreaField('Descripción', validators=[Optional(), Length(max=2000)])
+    portada = FileField("Foto del libro", validators=[FileAllowed(['jpg','jpeg','png'], "Solo imágenes")])
+    
+    submit = SubmitField("Agregar libro físico")
+
+    class Meta:
+        csrf = True
+        csrf_strict = False
