@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from datetime import datetime, date
 from functools import wraps
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from flask import (
     Flask, jsonify, request, redirect, url_for, send_file,
@@ -62,6 +63,8 @@ STATIC_DIR = os.path.join(BASE_DIR, 'static')
 
 # Configurar app de Flask
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=TEMPLATES_DIR)
+# APLICAR PROXY FIX: Corrige la gestión de sesiones bajo el proxy de Render (HTTPS)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 # Configuarar db
 # db = SQLAlchemy()
@@ -1141,6 +1144,7 @@ atributos_permitidos = {
 @requiere_login  # Proteger la ruta si no hay sesion
 def nueva_noticia():
     form = NoticiaForm()
+    autor_id = session.get('usuario_id')
 
     if form.validate_on_submit():
         # Obtener el ID del usuario desde la sesión
@@ -1198,7 +1202,7 @@ def nueva_noticia():
         flash('Noticia publicada correctamente', 'success')
         return redirect(url_for('noticia_completa', noticia_id=noticia.id))
 
-    return render_template('nueva_noticia.html', form=form)
+    return render_template('nueva_noticia.html', form=form, autor_id=autor_id)
 
 # Noticia completa
 @app.route('/noticias/<int:noticia_id>')

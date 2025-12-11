@@ -58,7 +58,7 @@
             {{ form.destacado() }} {{ form.destacado.label(class_="ugr-label") }}
         </p>
 
-        <input type="hidden" name="autor_id" id="autor_id">
+        <input type="hidden" name="autor_id" id="autor_id" value="{{autor_id}}">
 
         <button type="submit" class="ugr-boton">{{ form.submit.label.text }}</button>
     </form>
