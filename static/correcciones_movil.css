@@ -1,0 +1,86 @@
+/* ======================================= */
+/* CORRECCIONES FINALES GLOBALES Y DE BLOQUE (MOBILE) */
+/* ======================================= */
+
+@media (max-width: 768px) {
+    
+    /* --- 1. CONFIGURACIÓN DEL VIEWPORT --- */
+    body {
+        /* Fuerza a que el cuerpo no se estire más allá del ancho del dispositivo */
+        overflow-x: hidden !important; 
+        padding: 0 5px !important; /* Reduce el padding del borde del cuerpo */
+    }
+
+    /* --- 2. ESCALADO DE ELEMENTOS DE BLOQUE Y FOTOS --- */
+    
+    /* Regla crucial para todas las imágenes (incluyendo fotos de noticias) */
+    img {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important; /* Evita que las fotos se estiren o se salgan */
+        display: block !important;
+    }
+
+    /* Contenedores de texto y enlaces (p, div, secciones) */
+    section, div, aside, article {
+        width: 100% !important;
+        padding: 5px 0 !important;
+        margin: 5px 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Tablas, si las hay */
+    table {
+        width: 100% !important;
+        display: block !important;
+        overflow-x: auto; /* Permite desplazamiento horizontal en tablas grandes */
+    }
+
+    /* --- 3. NAVEGACIÓN Y FOOTER (REPETICIÓN Y FUERZA MÁXIMA) --- */
+    
+    /* Barra superior (Nav/Header) */
+    .ugr-navbar, nav {
+        flex-direction: column !important; 
+        align-items: center !important; 
+        width: 100% !important;
+    }
+
+    /* Lista de enlaces */
+    .ugr-navbar-lista {
+        flex-direction: column !important; 
+        align-items: center !important;
+        width: 100% !important;
+    }
+
+    /* El footer */
+    .ugr-footer-contenido {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 20px !important;
+        width: 100% !important;
+    }
+
+    /* --- 4. TUS CLASES DE CONTENEDOR ESPECÍFICAS --- */
+    
+    .noticia-layout, .contenedor-principal {
+        display: block !important; 
+        width: 100% !important;
+        padding: 10px !important;
+    }
+    
+    .ugr-contenedor, .noticia-instrucciones, .noticia-formulario, 
+    .ugr-input, .ugr-textarea {
+        width: 100% !important;
+        min-width: unset !important;
+        margin: 0 !important;
+        padding: 10px !important;
+        box-sizing: border-box !important; 
+    }
+    
+    /* Asegura que los enlaces de configuración (o botones) no se salgan */
+    .enlaces-configuracion, .botones-accion {
+        width: 100% !important;
+        display: block !important;
+        text-align: center !important; /* Centra los enlaces */
+    }
+}
