@@ -1,0 +1,7 @@
+Para hacer las migracios de local Nube:
+
+En la ruta del proyecto cmd, para crear la copia de archivos:
+"C:\Program Files\PostgreSQL\18\bin\pg_dump" -Fc --no-acl --no-owner -h localhost -U postgres Base_de_datos_para_FCS > db_test_data.dump
+
+Despues en la misma ruta, para pegar las credenciales d Render:
+"C:\Program Files\PostgreSQL\18\bin\pg_restore" -h dpg-d4nit3emcj7s73dfn6s0-a.frankfurt-postgres.render.com -p 5432 -U base_de_datos_para_fcs_user -d base_de_datos_para_fcs --clean --no-owner db_test_data.dump

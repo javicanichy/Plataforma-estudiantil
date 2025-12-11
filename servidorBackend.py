@@ -69,11 +69,18 @@ app = Flask(__name__, static_folder=STATIC_DIR, template_folder=TEMPLATES_DIR)
 # Configuracion desde config.py
 app.config.from_object(Config)
 
-# Seguridad y sesiones
+# SEGURIDAD Y SESIONES
+#-----------------------------------------
 app.secret_key = app.config['SECRET_KEY']
+
+# Indica a Flask que confíe en los proxies (necesario en Render/servidores en la nube)
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+#Forzar que la cookie de sesión solo se envíe sobre HTTPS, esto resuelve el problema de la sesión en el navegador de Render
+app.config['SESSION_COOKIE_SECURE'] = True
+
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-
+#-----------------------------------------
 
 # Aranciar la abse de datos
 db.init_app(app)
