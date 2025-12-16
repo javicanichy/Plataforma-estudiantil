@@ -12,11 +12,4 @@ flask-cors==6.0.1
 psycopg2-binary==2.9.9
 gunicorn==21.2.0
 python-dotenv==1.2.1
-flask-login==0.6.3
 Flask-Mail==0.10.0
-itsdangerous==2.1.2
-MarkupSafe==2.1.3
-email-validator==2.0.0
-Flask-Admin==1.6.0
-WTForms-Alchemy==0.18.3
-alembic==1.11.1

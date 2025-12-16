@@ -20,6 +20,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from flask_mail import Message, Mail
+from flask_bootstrap import Bootstrap5
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, BooleanField, FileField, SubmitField
