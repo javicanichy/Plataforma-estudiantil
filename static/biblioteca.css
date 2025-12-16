@@ -52,4 +52,7 @@
     border-radius: 6px;
 }
 
-/* Para la portada de TFG */
+/* PInformación del que publica TFG */
+.color-tfg{
+    color: black;
+}

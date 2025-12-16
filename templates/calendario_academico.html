@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Calendario - UNGE Facultad de Ciencias de la Salud{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4 text-center">Calendario Académico</h2>
+
+    <!-- Reloj en tiempo real (público) -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-4">
+            <div class="card bg-light shadow-sm text-center p-4">
+                <h5 class="card-title">Hora actual</h5>
+                <div id="reloj" class="display-4 fw-bold text-primary" style="font-family: 'Courier New', monospace;">
+                    --:--:--
+                </div>
+                <small class="text-muted" id="fecha-actual">Cargando...</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let eventosPorFecha = {};
+let mesActual = new Date().getMonth();
+let añoActual = new Date().getFullYear();
+
+// ========== RELOJ EN TIEMPO REAL ==========
+function actualizarReloj() {
+    const ahora = new Date();
+    const horas = String(ahora.getHours()).padStart(2, '0');
+    const minutos = String(ahora.getMinutes()).padStart(2, '0');
+    const segundos = String(ahora.getSeconds()).padStart(2, '0');
+    
+    document.getElementById('reloj').textContent = `${horas}:${minutos}:${segundos}`;
+    
+    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const fechaFormato = ahora.toLocaleDateString('es-ES', opciones);
+    document.getElementById('fecha-actual').textContent = fechaFormato;
+}
+
+setInterval(actualizarReloj, 1000);
+actualizarReloj();
+
+

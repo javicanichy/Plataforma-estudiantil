@@ -9,7 +9,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!--Iconos de Bootstrap-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    
+    <!-- CSS del calendario -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='calendario.css') }}">
     <!-- CSS del proyecto -->
     <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
     <!-- CSS del perfil -->
@@ -29,93 +30,81 @@
 
 <body class="d-flex flex-column min-vh-100   {{ body_class or '' }}">
     <!-- HEADER / NAVEGACIÓN -->
-    <header class="bg-primary text-white py-3">
-        <div class="container container-narrow d-flex justify-content-between align-items-center">
-            <!--Logo y titulo-->
-            <div class="d-flex align-items-center gap-2">
-                <img src="{{ url_for('static', filename='img/logo_unge.jpeg') }}" alt="logo_unge" width="50" height="50">
-                <div>
-                    <h5 class="mb-0">Universidad Nacional de Guinea Ecuatorial</h5>
-                    <h5>Facultad de Ciencias de la Salud</h5>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+                <!-- Logo y título -->
+                <a class="navbar-brand d-flex align-items-center" href="/">
+                    <img src="{{ url_for('static', filename='img/logo_unge.jpeg') }}" alt="logo_unge" width="40" height="40" class="me-2">
+                    <div>
+                        <span class="d-block fw-bold">Universidad Nacional de Guinea Ecuatorial</span>
+                        <small class="d-block">Facultad de Ciencias de la Salud</small>
+                    </div>
+                </a>
+
+                <!-- Botón hamburguesa para móviles -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Navegación colapsable -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i class="bi bi-house-door"></i> Inicio
+                            </a>
+                        </li>
+
+                        <!-- Si NO hay sesión -->
+                        {% if not logueado %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/registro">
+                                <i class="bi bi-person-plus"></i> Registrarse
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/lista_noticias">
+                                <i class="bi bi-newspaper"></i> Noticias
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contacto">
+                                <i class="bi bi-envelope"></i> Contacto
+                            </a>
+                        </li>
+                        {% else %}
+                        <!-- Si HAY sesión -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/perfil">
+                                <i class="bi bi-person-circle"></i> {{ usuario }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout" onclick="return confirm('¿Deseas cerrar sesión?');">
+                                <i class="bi bi-box-arrow-in-right"></i> Cerrar sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/lista_noticias">
+                                <i class="bi bi-newspaper"></i> Noticias
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contacto">
+                                <i class="bi bi-envelope"></i> Contacto
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
-            <!-- NAVEGACION , mostrando iconos-->
-            <nav>
-                <ul class="nav nav-inlines gap-5">
-                    <li class="nav-item">
-                        <a href="/" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                        <i class="bi bi-house-door fs-2"></i>
-                        <span>Inicio</span>
-                        </a>
-                    </li>
-
-                    <!-- Si NO hay sesión: mostrar Login y Registro -->
-                    {% if not logueado %}
-
-                    <li class="nav-item">
-                        <a href="/registro" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-person-plus fs-2"></i>
-                            <span>Registrarse</span>
-                        </a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a href="/login" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-box-arrow-in-right fs-2"></i>
-                            <span>Iniciar sesión</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="/lista_noticias" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-newspaper fs-2"></i>
-                            <span>Noticias</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="/contacto" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-envelope fs-2"></i>
-                            <span>Contacto</span>
-                        </a>
-                    </li>
-                    {% else %}
-                    <!-- Si HAY sesión: mostrar opciones del usuario -->
-                    <li class="nav-item">
-                        <a href="/perfil" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-person-circle fs-2"></i>
-                            <span>{{ current_user.nombre }}</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="/logout" class="text-decoration-none text-white d-flex flex-column align-items-center"
-                            onclick="return confirm('¿Deseas cerrar sesión?');">
-                            <i class="bi bi-box-arrow-in-right fs-2"></i>
-                            <span>cerrar sesión</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="/lista_noticias" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-newspaper fs-2"></i>
-                            <span>Noticias</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="/contacto" class="text-decoration-none text-white d-flex flex-column align-items-center">
-                            <i class="bi bi-envelope fs-2"></i>
-                            <span>Contacto</span>
-                        </a>
-                    </li>
-
-                    {% endif %}
-                    
-                    
-                </ul>
-            </nav>
-        </div>
+        </nav>
     </header>
 
     <!-- CONTENIDO PRINCIPAL (bloque dinámico) -->
@@ -124,8 +113,7 @@
     </main>
 
     <!-- FOOTER -->
-<!-- FOOTER -->
-<footer class="bg-primary text-black py-4 mt-5" id="footer-text">
+<footer class="bg-primary text-white py-4 mt-5" id="footer-text">
     <div class="container">
 
         <div class="row align-items-center">
@@ -142,7 +130,7 @@
 
                 <hr>
 
-                <a href="/buzon-ayuda" class="text-black small d-block text-decoration-none">
+                <a href="/buzon-ayuda" class="text-white small d-block text-decoration-none">
                         Buzón de ayuda
                 </a>
             </div>
@@ -152,19 +140,19 @@
                 <p class="mb-1 small">
                     <strong>Contacto:</strong><br>
                     <a href="mailto:cienciasdelasalud@unge.com" 
-                       class="text-black text-decoration-none">
+                       class="text-white text-decoration-none">
                         cienciasdelasalud@unge.com <br>
                     </a>
                     Tel: +240 222 122 267
                 </p>
 
-                 <a href="https://maps.app.goo.gl/sP8HRvEN7nHMMQ8m8" target="_blank" class="text-black text-decoration-none">
+                 <a href="https://maps.app.goo.gl/sP8HRvEN7nHMMQ8m8" target="_blank" class="text-white text-decoration-none">
                     Zona sanitaria – Bata, Guinea Ecuatorial
                 </a>
 
                 <hr>
 
-                <a href="/condiciones" class="text-black small d-block text-decoration-none">
+                <a href="/condiciones" class="text-white small d-block text-decoration-none">
                         Condiciones de uso
                 </a>
             </div>
@@ -174,16 +162,16 @@
                 <p class="small fw-bold mb-2">Síguenos:</p>
 
                 <!-- ICONOS -->
-                <a href="#" class="text-black me-3 fs-5">
+                <a href="#" class="text-white me-3 fs-5">
                     <i class="bi bi-facebook"></i>
                 </a>
-                <a href="#" class="text-black me-3 fs-5">
+                <a href="#" class="text-white me-3 fs-5">
                     <i class="bi bi-instagram"></i>
                 </a>
-                <a href="#" class="text-black me-3 fs-5">
+                <a href="#" class="text-white me-3 fs-5">
                     <i class="bi bi-youtube"></i>
                 </a>
-                <a href="#" class="text-black fs-5">
+                <a href="#" class="text-white fs-5">
                     <i class="bi bi-envelope-fill"></i>
                 </a>
 
@@ -193,7 +181,7 @@
 
                 <hr>
                 <!-- ENLACES NUEVOS -->
-                    <a href="/desarrolladores" class="text-black small d-block text-decoration-none">
+                    <a href="/desarrolladores" class="text-white small d-block text-decoration-none">
                         Desarrolladores
                     </a>
                 </div>
@@ -236,25 +224,31 @@
 <div id="sidebar-overlay" class="position-fixed w-100 h-100" style="z-index: 999; background: rgba(0,0,0,0.3); display: none; top: 0; left: 0; transition: background 0.3s ease;"></div>
 
 <!-- JS del proyecto -->
-<script type="module" src="/static/main.js"></script>
-    <!-- Bootstrap JS bundle -->
+{# Carga de JS ESENCIAL Y DE LIBRERÍAS #}
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- JS del proyecto -->
-<script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
-
-
-<!--Sidebar js-->
-<script type="module" src="{{ url_for('static', filename='sidebar.js') }}"></script>
-<!--Ligin js-->
-<script type="module" src="{{ url_for('static', filename='login.js') }}"></script>
-<!--perfil js-->
-<script type="module" src="{{ url_for('static', filename='perfil.js') }}"></script>
-<!--Nueva noticia js-->
-<script type="module" src="{{ url_for('static', filename='nueva_noticia.js') }}"></script>
-<!--JS de la biblioteca-->
-<script type="module" src="{{ url_for('static', filename='bibliotca.js') }}"></script>
-
-
+    
+    {# Este bloque se llenará desde calendario.html #}
     {% block scripts %}{% endblock %}
+
+    
+    {# ------------------------------------------------------------------ #}
+    {# Carga Condicional de JS del Proyecto (Usando type="module")         #}
+    {# ------------------------------------------------------------------ #}
+
+    {% if request.path != '/calendario' %}
+        {# Cargamos el JS problemático SÓLO si NO estamos en la página del calendario #}
+
+        <script type="module" src="{{ url_for('static', filename='main.js') }}"></script>
+        <script type="module" src="{{ url_for('static', filename='sidebar.js') }}"></script>
+        <script type="module" src="{{ url_for('static', filename='login.js') }}"></script>
+        
+        <script type="module" src="{{ url_for('static', filename='perfil.js') }}"></script>
+        
+        <script type="module" src="{{ url_for('static', filename='nueva_noticia.js') }}"></script>
+        
+        <script type="module" src="{{ url_for('static', filename='js/biblioteca.js') }}"></script> 
+    {% endif %}
+
 </body>
 </html>

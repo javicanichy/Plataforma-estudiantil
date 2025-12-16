@@ -158,3 +158,12 @@ class LibroFisicoForm(FlaskForm):
     class Meta:
         csrf = True
         csrf_strict = False
+
+
+# ----------------------------------------------------------
+# Formulario para prestar libro
+# ----------------------------------------------------------
+class SolicitudPrestamoForm(FlaskForm):
+    motivo = TextAreaField("Motivo del préstamo", validators=[DataRequired()])
+    confirmar = BooleanField("Confirmo que deseo solicitar el préstamo y me hago responsable del libro", validators=[DataRequired()])
+    submit = SubmitField("Enviar solicitud")

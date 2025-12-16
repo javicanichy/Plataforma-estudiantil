@@ -8,16 +8,16 @@
     
 /* Fondo solo para biblioteca.html */
 body.biblioteca-page {
-    background-image: url("{{ url_for('static', filename='img/foto4.jpg') }}");
+    background-image: url("{{ url_for('static', filename='img/biblioteca1.jpg') }}");
     background-size: cover;       /* Ocupa toda la pantalla */
     background-position: center;  /* Centrado */
     background-repeat: no-repeat;
     background-attachment: fixed; /* Se mantiene al hacer scroll */
     background-repeat: no-repeat; /* evita que se repita */
     background-position: center center; /* centra la imagen */
-    background-size: contain; /* la imagen se ajusta sin recortarse ni estirarse */
+    /*background-size: contain; /* la imagen se ajusta sin recortarse ni estirarse */
 }
-}
+
 
 /* Opcional: hacer que el contenido tenga fondo semitransparente */
 .container-biblioteca {
@@ -27,7 +27,7 @@ body.biblioteca-page {
 }
 /* Para sobre escribir los fondos */
 .fondo-tfg {
-    background-color: /*transparent !important;*/ rgba(255, 255, 255, 0.4) !important; /* blanco 60% opacidad */
+    background-color: /*transparent !important;*/ rgba(255, 255, 255, 0.6) !important; /* blanco 60% opacidad */
     border: none !important;
 }
 
@@ -36,6 +36,28 @@ body.biblioteca-page {
 <!--------------------------------------------------------------------------------------------------------------------->
 <!--------------------------------------------------------------------------------------------------------------------->
 
+<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
+<div class="container-fluid bg-light border-bottom">
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('inicio') }}" class="text-decoration-none">
+                      <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
+                      <i class="bi bi-building"></i> Biblioteca
+                    </a>
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
 
 <!--Para que todo este transparente    style= "background-color: transparent;"-->
 <div class="container container-biblioteca my-4 fondo-tfg"> 
@@ -43,29 +65,55 @@ body.biblioteca-page {
     <div class="container my-4">
 
   <h1 id="biblioteca">Biblioteca</h1>
-  <h4 id="biblioteca-descripcion">La biblioteca universitaria es un espacio clave para el acceso a conocimiento, investigación y aprendizaje.
-      Permite a estudiantes y profesores consultar y adquirir información de manera organizada y segura.
-      con el objetivo de ofrecer recursos físicos y digitales que apoyen la docencia y la investigación.
-      Proveer acceso a libros, tesis y artículos relevantes para las diferentes áreas académicas.
-      Facilitar la consulta de recursos físicos y digitales de manera. Cómo accedo a los libros de la biblioteca? siga leyendo... <br>
+  <h4 id="biblioteca-descripcion">La biblioteca universitaria es un espacio clave para el acceso a conocimiento, investigación y aprendizaje
+      permite a estudiantes y profesores consultar y adquirir información de manera organizada y segura
+      con el objetivo de ofrecer recursos físicos y digitales que apoyen la docencia y la investigación,
+      proveer acceso a libros, tesis y artículos relevantes para las diferentes áreas académicas.
+      Facilitar la consulta de recursos físicos y digitales de manera sencilla. Cómo accedo a los libros de la biblioteca? siga leyendo... <br>
     </h4>
     <!-- FOTO GRANDE ILUSTRATIVA DE LA BIBLIOTECA -->
-  <div class="mb-4 text-center">
-    <img src="{{ url_for('static', filename='img/noticias3.jpg') }}" 
-    style="max-width:10000px; height:500px;"   
-    class="img-fluid rounded shadow" 
-       alt="Biblioteca">
+         <!-- IMÁGENES ILUSTRATIVAS DE LA BIBLIOTECA -->
+<div class="row mb-4">
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm" style="background-color: green;">
+      <img src="{{ url_for('static', filename='img/biblioteca2.jpg') }}"
+           class="card-img-top" alt="Biblioteca 1">
+      <div class="card-body">
+        <p class="card-text text-center small">Sección lectura alta. Edi. II</p>
+      </div>
+    </div>
   </div>
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm" style="background-color: green;">
+      <img src="{{ url_for('static', filename='img/biblioteca6.jpg') }}"
+           class="card-img-top" alt="Biblioteca 2">
+      <div class="card-body">
+        <p class="card-text text-center small">Sección lectura baja. Edi II</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card shadow-sm" style="background-color: green;">
+      <img src="{{ url_for('static', filename='img/biblioteca8.jpg') }}"
+           class="card-img-top" alt="Biblioteca 3">
+      <div class="card-body">
+        <p class="card-text text-center small">Sala del bibliotecario. Edi II</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
     <hr class="hr">
     <hr class="hr">
     <hr class="hr">
     <h5 id="biblioteca-digital">
       <strong>Acceder a Libros en Físico:</strong> <br>
-      Libros y documentos impresos que se encuentran disponibles en el espacio físico de la biblioteca. <br>
+      Libros y documentos impresos que se encuentran disponibles en el espacio físico de la biblioteca (Edificio I y Edificio II). <br>
       Características:
-      Acceso controlado: solo usuarios de la Facultd de Ciencias de la Salud pueden. <br>
-      Consulta en sala y posibilidad de préstamo, disponoble en el edificio 1 y en el edificio 2. <br>
+      Acceso controlado, solo usuarios de la Facultd de Ciencias de la Salud pueden<br>
+      consulta libros en sala y posibilidad de préstamo, disponoble en el edi. 1 y en el edi. 2. <br>
       Ejemplos de recursos: Libros de texto, manuales, enciclopedias, tesis impresas. <br>
       Ventaja: Experiencia táctil y referencia inmediata sin necesidad de dispositivos.
     </h5>
@@ -73,10 +121,7 @@ body.biblioteca-page {
       <strong>Sección de Libros Digitales:</strong><br>
       Recursos accesibles a través de internet mediante esa platforma. <br>
       Debes ser un estudiante matriculado y poseer un usuario y conseña válidos. <br>
-      Tipos de recursos: PDFs de libros, artículos y tesis. <br>
-      Enlaces a repositorios y bases de datos internacionales. <br>
-      Búsqueda rápida por título, autor o área académica. <br>
-      Portadas y descripción visibles para una consulta eficiente. <br>
+      Tipos de recursos: PDFs de libros, artículos y tesis TFG. <br>
       Ventaja, Acceso inmediato y simultáneo desde múltiples ubicaciones. <br>
     </h5>
     <hr class="hr">
@@ -84,13 +129,10 @@ body.biblioteca-page {
     <hr class="hr">
     <h5 id="biblioteca-gestion">
       <strong>Gestión y Funcionalidades:</strong> <br>
-      Agregar, editar y eliminar libros físicos y digitales. <br>
-      Visualización clara de títulos, descripciones y portadas. <br>
-      Acceso diferenciado según tipo de usuario (estudiante y profesor. <br>
-      Integración de bases de datos externas (PubMed, Medline, Scielo, etc.). <br>
-      Mejora en la organización y consulta de recursos. <br>
-      Promoción de la innovación y aprendizaje digital. <br>
-      Los estudiantes finalista pueden agregar sus TFG a este repositorio de forma digital. <br>
+      1. Acceder a libros originales impresas. <br>
+      2. Integración de bases de datos externas (PubMed, Medline, Scielo, etc.). <br>
+      3. Posiblidad de subir libros digitales reconocidas. <br>
+      4. Los estudiantes finalista pueden agregar sus TFG a este repositorio de forma digital. <br>
     </h5>
     <hr class="hr">
     <hr class="hr">
@@ -99,8 +141,8 @@ body.biblioteca-page {
     <!-- IMÁGENES ILUSTRATIVAS DE LA BIBLIOTECA -->
 <div class="row mb-4">
   <div class="col-md-4 mb-3">
-    <div class="card shadow-sm">
-      <img src="{{ url_for('static', filename='img/foto3.jpg') }}"
+    <div class="card shadow-sm" style="background-color: green;">
+      <img src="{{ url_for('static', filename='img/biblioteca1.jpg') }}"
            class="card-img-top" alt="Biblioteca 1">
       <div class="card-body">
         <p class="card-text text-center small">Sala de lectura</p>
@@ -108,8 +150,8 @@ body.biblioteca-page {
     </div>
   </div>
   <div class="col-md-4 mb-3">
-    <div class="card shadow-sm">
-      <img src="{{ url_for('static', filename='img/foto2.jpg') }}"
+    <div class="card shadow-sm" style="background-color: green;">
+      <img src="{{ url_for('static', filename='img/biblioteca4.jpg') }}"
            class="card-img-top" alt="Biblioteca 2">
       <div class="card-body">
         <p class="card-text text-center small">Sección de libros en físico</p>
@@ -117,8 +159,8 @@ body.biblioteca-page {
     </div>
   </div>
   <div class="col-md-4 mb-3">
-    <div class="card shadow-sm">
-      <img src="{{ url_for('static', filename='img/foto4.jpg') }}"
+    <div class="card shadow-sm" style="background-color: green;">
+      <img src="{{ url_for('static', filename='img/biblioteca7.jpg') }}"
            class="card-img-top" alt="Biblioteca 3">
       <div class="card-body">
         <p class="card-text text-center small">Zona digital y ordenadores</p>
@@ -211,16 +253,16 @@ body.biblioteca-page {
           </div>
 
           <!-- INFORMACIÓN Y DETALLES DEL LIBRO TFG-->
-          <div class="flex-grow-1" style= "background-color: transparent;">
-            <h5 class="fw-bold">{{ item.titulo }}</h5>
+          <div class="flex-grow-1" >
+            <h5 class="fw-bold color-tfg">{{ item.titulo }}</h5>
 
             {% if item.tipo_libro == 'tfg' and item.titulacion %}
-              <p class="text-white-50 small"><strong>Titulación:</strong> {{ item.titulacion }}</p>
+              <p class="color-tfg"><strong>Titulación:</strong> {{ item.titulacion }}</p>
             {% endif %}
 
-            <p class="text-info small">
-              Publicado por:
-              <a href="{{ url_for('ver_perfil', usuario_id=item.usuario_id) }}" class="text-decoration-none text-info">
+            <p class=" color-tfg">
+              <strong>Publicado por:</strong>
+              <a href="{{ url_for('ver_perfil', usuario_id=item.usuario_id) }}" class="text-decoration-none color-tfg">
                 {{ item.uploader.nombre }} {{ item.uploader.apellidos }}
               </a>
             </p>

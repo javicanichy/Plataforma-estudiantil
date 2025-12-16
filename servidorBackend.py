@@ -7,7 +7,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from flask import (
     Flask, jsonify, request, redirect, url_for, send_file,
-    render_template, send_file, session, abort, flash
+    render_template, send_file, session, abort, flash, Blueprint
 )
 
 from docx import Document
@@ -19,6 +19,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
+from flask_mail import Message, Mail
 
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, BooleanField, FileField, SubmitField
@@ -26,11 +27,12 @@ from wtforms import StringField, TextAreaField, BooleanField, FileField, SubmitF
 
 from forms import (
     NoticiaForm, PerfilForm, CambiarContrasenaForm, FileAllowed_PERFILES_EXIT, Email, EqualTo, DataRequired, 
-    Length, Optional, ValidationError, PasswordField, DebateForm, BibliotecaForm, LibroFisicoForm
+    Length, Optional, ValidationError, PasswordField, DebateForm, BibliotecaForm, LibroFisicoForm,
+    SolicitudPrestamoForm
     )
 
 from models import (
-    db, Usuario, Estudiante, Nota, Mensaje, Calendario, Evento, Debate, Notificacion, Administrador, Comentario,
+    db, Usuario, Estudiante, Nota, Mensaje, Evento, Evento, Debate, Notificacion, Administrador, Comentario,
     Matricula, CodigoEstudiante, Asignatura, EstudianteAsignatura, Noticia, Debate, Notificacion, Comentario,
     Biblioteca
 
@@ -85,12 +87,28 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 #-----------------------------------------
 
+# MANEJAR CORREOS ELECTRONICOS
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'        # servidor SMTP, puedes cambiarlo según tu correo
+app.config['MAIL_PORT'] = 587                       # puerto TLS
+app.config['MAIL_USE_TLS'] = True                   # usar TLS
+app.config['MAIL_USE_SSL'] = False                  # no usar SSL porque usamos TLS
+app.config['MAIL_USERNAME'] = 'tucorreo@gmail.com'  # tu correo
+app.config['MAIL_PASSWORD'] = 'tu_contraseña_app'   # contraseña de aplicación o normal (Gmail necesita app password)
+app.config['MAIL_DEFAULT_SENDER'] = 'tucorreo@gmail.com'  # remitente por defecto
+
+# Inicializar Flask-Mail
+mail = Mail(app)
+
+
 # Aranciar la abse de datos
 db.init_app(app)
 CORS(app)
 
 # Mirgraciones
 migrate = Migrate(app, db)
+
+# Definición del Blueprint
+eventos_bp = Blueprint('eventos', __name__, url_prefix='/api/eventos')
 
 
 # ===== INYECTAR VARIABLES GLOBALES EN TODOS LOS TEMPLATES (ANTES DE CUALQUIER RUTA) =====
@@ -210,11 +228,7 @@ def asignaturas_page():
 
 @app.route('/calendario')
 def calendario_page():
-    return render_template('calendario.html')
-
-@app.route('/eventos')
-def eventos_page():
-    return render_template('eventos.html')
+    return render_template('calendario.html', body_class="calendario-page")
 
 @app.route('/mensajes')
 def mensajes_page():
@@ -867,92 +881,59 @@ def api_adjuntar_archivo_mensaje(msg_id):
 # ==========================================================
 # API CALENDARIO
 # ==========================================================
-@app.route('/api/eventos', methods=['GET'])
-def listar_eventos():
-    """Retorna todos los eventos del calendario"""
-    from models import Calendario
-    try:
-        eventos = Calendario.query.order_by(Calendario.fecha.asc()).all()
-        return jsonify([
-            {
-                'id': e.id,
-                'title': e.titulo,
-                'date': e.fecha.isoformat() if e.fecha else '',
-                'description': e.descripcion or ''
-            }
-            for e in eventos
-        ])
-    except Exception as err:
-        print(f'Error al listar eventos: {err}')
-        return jsonify({'ok': False, 'msg': 'Error al cargar eventos'}), 500
+@eventos_bp.route('/', methods=['GET'])
+@requiere_login
+def get_eventos():
+    eventos = Evento.query.all()
+    return jsonify([e.to_dict() for e in eventos])
 
-@app.route('/api/eventos', methods=['POST'])
-def agregar_evento():
-    """Agregar evento (solo profesores/directivos)"""
-    rol = session.get('rol')
-    if rol not in ['profesor', 'directivo']:
-        return jsonify({'ok': False, 'msg': 'No tienes permisos'}), 403
-
+@eventos_bp.route('/', methods=['POST'])
+@requiere_login
+@requiere_rol('directivo')
+def crear_evento():
     data = request.get_json()
-    from models import Calendario
-    import datetime
-    try:
-        fecha_str = data.get('fecha', '')
-        hora_str = data.get('hora', '')
-        descripcion = data.get('descripcion', '').strip()
-        creador_id = session.get('usuario_id')  # Asegúrate de que el ID del usuario esté en la sesión
+    titulo = data.get('title')
+    descripcion = data.get('descripcion')
+    start = data.get('start')
+    end = data.get('end')
+    all_day = data.get('allDay', False)
+    tipo = data.get('tipo', 'general')
 
-        # Validar formato
-        fecha = datetime.datetime.strptime(fecha_str, '%Y-%m-%d').date()
-        hora = datetime.datetime.strptime(hora_str, '%H:%M').time()
+    if not titulo or not start:
+        return jsonify({"error": "Faltan datos obligatorios"}), 400
 
-        evento = Calendario(
-            titulo=descripcion,
-            fecha=fecha,
-            hora=hora,
-            descripcion=descripcion,
-            creado_por=creador_id  # Asignar el ID del creador
-        )
-        db.session.add(evento)
-        db.session.commit()
+    start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
+    end_dt = datetime.fromisoformat(end.replace('Z', '+00:00')) if end else None
 
-        return jsonify({'ok': True, 'msg': 'Evento agregado correctamente', 'evento_id': evento.id}), 201
-    except ValueError as ve:
-        print(f'Error de validación: {ve}')
-        return jsonify({'ok': False, 'msg': 'Formato de fecha/hora inválido'}), 400
-    except Exception as e:
-        print(f'Error al agregar evento: {e}')
-        db.session.rollback()
-        return jsonify({'ok': False, 'msg': 'Error al agregar evento'}), 500
+    evento = Evento(
+        titulo=titulo,
+        descripcion=descripcion,
+        start=start_dt,
+        end=end_dt,
+        all_day=all_day,
+        tipo=tipo,
+        usuario_id=session.get('usuario_id')
+    )
+    db.session.add(evento)
+    db.session.commit()
+    return jsonify(evento.to_dict()), 201
 
-@app.route('/api/eventos/<int:evento_id>', methods=['DELETE'])
+@eventos_bp.route('/<int:evento_id>', methods=['DELETE'])
+@requiere_login
+@requiere_rol('directivo')
 def eliminar_evento(evento_id):
-    """Eliminar evento (solo profesores/directivos)"""
-    rol = session.get('rol')
-    if rol not in ['profesor', 'directivo']:
-        return jsonify({'ok': False, 'msg': 'No tienes permisos'}), 403
+    evento = Evento.query.get_or_404(evento_id)
+    db.session.delete(evento)
+    db.session.commit()
+    return jsonify({"mensaje": "Evento eliminado"}), 200
 
-    from models import Calendario
-    try:
-        evento = Calendario.query.get(evento_id)
-        if not evento:
-            return jsonify({'ok': False, 'msg': 'Evento no encontrado'}), 404
+# Registrar Blueprint después de definir todas las rutas
+app.register_blueprint(eventos_bp)
 
-        db.session.delete(evento)
-        db.session.commit()
-        return jsonify({'ok': True, 'msg': 'Evento eliminado'})
-    except Exception as e:
-        print(f'Error al eliminar evento: {e}')
-        db.session.rollback()
-        return jsonify({'ok': False, 'msg': 'Error al eliminar evento'}), 500
-    
 
 # ==========================
 # RUTA PERFIL
 # ==========================
-
-
-
 
 # Guardar imagen de perfil
 def save_profile_image(foto):
@@ -1259,44 +1240,69 @@ def noticias_destacadas():
 # BIBLIOTECA
 # ==========================================================
 
-# Metodo para guardar un PDF
+# Método para guardar un PDF
 def save_pdf_file(f):
     if not f or getattr(f, 'filename', '') == '':
         return None
+
+    # Nombre seguro
     filename = secure_filename(f.filename)
     ext = filename.rsplit('.', 1)[-1].lower()
+
+    # Verificar extensión
     if ext != 'pdf':
         return None
+
+    # Crear nombre único
     unique_name = f"{uuid.uuid4().hex}_{filename}"
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    f.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_name))
+
+    # Carpeta destino: static/libros/
+    carpeta_libros = os.path.join(app.root_path, "static/uploads/libros")
+    os.makedirs(carpeta_libros, exist_ok=True)
+
+    # Guardar archivo
+    f.save(os.path.join(carpeta_libros, unique_name))
+
     return unique_name
 
-# Metodo para guardar portadas de los documentos
+
+
+# Método para guardar portadas de documentos
 def save_portada_file(file):
-    filename = secure_filename(file.filename)
+    if not file or file.filename == "":
+        return None
+
+    filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
     path = os.path.join(app.root_path, "static/uploads/portadas", filename)
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     file.save(path)
+
     return filename
 
 
-# Rutas que quieren login
+# ------------------------------
+# RUTAS
+# ------------------------------
+
+# LIBROS FÍSICOS
 @app.route('/biblioteca/fisicos')
 @requiere_login
 def biblioteca_fisicos():
     libros = Biblioteca.query.filter_by(tipo_libro='fisico').all()
-    return render_template('libros_fisicos.html', libros_fisicos=libros)
+    return render_template('libros_fisicos.html', libros_fisicos=libros, body_class='libros-fisicos')
 
+
+# LIBROS DIGITALES
 @app.route('/biblioteca/digitales')
 @requiere_login
 def biblioteca_digitales():
-    # Libros normales
+
     libros = Biblioteca.query.filter_by(tipo_libro='libro').all()
 
-    # Obtenemos el filtro de titulación desde la URL
-    filtro_titulacion = request.args.get('titulacion', None)
+    # Filtro por titulación solo para TFG
+    filtro_titulacion = request.args.get("titulacion", None)
 
-    # Query de TFG
     query_tfg = Biblioteca.query.filter_by(tipo_libro='tfg')
 
     if filtro_titulacion:
@@ -1304,24 +1310,31 @@ def biblioteca_digitales():
 
     tfg_publicos = query_tfg.all()
 
-    return render_template('libros_digitales.html', libros=libros, tfg_publicos=tfg_publicos, filtro_titulacion=filtro_titulacion)
+    return render_template(
+        'libros_digitales.html',
+        libros=libros,
+        tfg_publicos=tfg_publicos,
+        filtro_titulacion=filtro_titulacion,
+        body_class="libros-digitales"
+    )
 
 
-# Eliminar un libro TFG
+# ELIMINAR libro o TFG
 @app.route('/biblioteca/eliminar/<int:item_id>', methods=['POST'])
+@requiere_login
 def biblioteca_eliminar(item_id):
     item = Biblioteca.query.get_or_404(item_id)
     db.session.delete(item)
     db.session.commit()
     return redirect(url_for('biblioteca_digitales'))
 
-# Eliminar un libro normal
 
-# Agregar libro digital
+# CREAR o EDITAR LIBRO/TFG
 @app.route('/biblioteca/editar', methods=['GET', 'POST'])
 @app.route('/biblioteca/editar/<int:item_id>', methods=['GET', 'POST'])
 @requiere_login
 def biblioteca_editar(item_id=None):
+
     item = Biblioteca.query.get(item_id) if item_id else None
     form = BibliotecaForm(obj=item)
 
@@ -1330,24 +1343,19 @@ def biblioteca_editar(item_id=None):
 
     if form.validate_on_submit():
 
-        
-        # GUARDAR PORTADA (foto miniatura)
-    
+        # ------------------------------
+        # GUARDAR PORTADA
+        # ------------------------------
         portada_file = form.portada.data
         portada_filename = None
 
         if portada_file and portada_file.filename != "":
-            nombre_original = secure_filename(portada_file.filename)
-            portada_filename = f"{uuid.uuid4().hex}_{nombre_original}"
+            portada_filename = save_portada_file(portada_file)
 
-            carpeta_portadas = os.path.join(app.root_path, "static/uploads/portadas")
-            os.makedirs(carpeta_portadas, exist_ok=True)
-
-            portada_file.save(os.path.join(carpeta_portadas, portada_filename))
-
-        # PDF o LINK
-        
-        tipo = form.tipo.data
+        # ------------------------------
+        # PDF O LINK
+        # ------------------------------
+        tipo = form.tipo.data   # pdf o link
         filename = None
         enlace = None
 
@@ -1366,28 +1374,30 @@ def biblioteca_editar(item_id=None):
                 flash("Debes introducir un enlace válido.", "warning")
                 return redirect(request.url)
 
-    
-        # ACTUALIZAR O CREAR NUEVO
-      
+        # ------------------------------
+        # ACTUALIZAR
+        # ------------------------------
         if item:
-            # EDITAR
+
             item.titulo = form.titulo.data
             item.descripcion = form.descripcion.data
             item.tipo = tipo
             item.enlace = enlace
             item.tipo_libro = form.tipo_libro.data
             item.publico = bool(form.publico.data)
-            item.titulacion = form.titulacion.data if form.tipo_libro.data == "tfg" else None
 
+            # Solo TFG lleva titulación
+            item.titulacion = form.titulacion.data if item.tipo_libro == "tfg" else None
 
             if filename:
                 item.archivo = filename
-
             if portada_filename:
                 item.portada = portada_filename
 
+        # ------------------------------
+        # CREAR NUEVO
+        # ------------------------------
         else:
-            # CREAR
             nuevo = Biblioteca(
                 titulo=form.titulo.data,
                 descripcion=form.descripcion.data,
@@ -1397,16 +1407,18 @@ def biblioteca_editar(item_id=None):
                 tipo_libro=form.tipo_libro.data,
                 publico=bool(form.publico.data),
                 usuario_id=session['usuario_id'],
-                portada=portada_filename,  # ✔️ SOLO STRING
-                titulacion = form.titulacion.data if form.tipo_libro.data == "tfg" else None
+                portada=portada_filename,
+                titulacion=form.titulacion.data if form.tipo_libro.data == "tfg" else None
             )
+
             db.session.add(nuevo)
 
         db.session.commit()
         flash("Elemento guardado correctamente.", "success")
-        return redirect(url_for('biblioteca_page'))
 
-    return render_template('biblioteca_editar.html', form=form, item=item)
+        return redirect(url_for('biblioteca_digitales'))
+
+    return render_template('biblioteca_editar.html', form=form, item=item, body_class="libros-digitales")
 
 
 # Ruta libro en físico
@@ -1449,7 +1461,7 @@ def agregar_libro_fisico():
         flash("Libro físico agregado correctamente.", "success")
         return redirect(url_for('biblioteca_fisicos'))
 
-    return render_template('agregar_libro_fisico.html', form=form)
+    return render_template('agregar_libro_fisico.html', form=form, body_class="libros-fisicos")
 
 
 # Eliminar libro físico
@@ -1505,7 +1517,43 @@ def editar_libro_fisico(item_id):
 
 
 
+# SOLICITAR PRESTAMO DEL LIBRP
+@app.route('/biblioteca/fisicos/prestamo/<int:id>', methods=['GET', 'POST'])
+@requiere_login
+def solicitar_prestamo(id):
+    libro = Biblioteca.query.get_or_404(id)
+    form = SolicitudPrestamoForm()
 
+    if form.validate_on_submit():
+        # Datos del usuario desde la sesión
+        nombre = session.get('nombre')
+        apellidos = session.get('apellidos')
+        dip = session.get('dip')
+        correo = session.get('correo')
+        fecha_envio = datetime.utcnow()
+        motivo = form.motivo.data
+
+        msg = Message(
+            subject=f"Solicitud de préstamo: {libro.titulo}",
+            sender=correo,
+            recipients=["bibliotecario@universidad.com"],  # correo del bibliotecario
+            body=f"""
+Solicitud de préstamo de libro:
+
+Libro: {libro.titulo}
+Solicitante: {nombre} {apellidos}
+DIP: {dip}
+Correo: {correo}
+Fecha: {fecha_envio.strftime('%d/%m/%Y %H:%M')}
+Motivo: {motivo}
+"""
+        )
+        mail.send(msg)
+
+        flash("Solicitud enviada correctamente.", "success")
+        return redirect(url_for('biblioteca_fisicos'))
+
+    return render_template('solicitud_prestamo.html', form=form, libro=libro, body_class="prestar-libro")
 
 # ==========================================================
 # INICIAR SERVIDOR

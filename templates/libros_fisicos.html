@@ -1,28 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<style>
+  body.libros-fisicos{
+    background-color: burlywood;
+  }
+</style>
+
+<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
+<div class="container-fluid bg-light border-bottom">
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('login_page') }}" class="text-decoration-none">
+                      <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
+                      <i class="bi bi-building"></i> Biblioteca
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bi bi-journal-bookmark"></i> Libros en físico
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
     
 <div class="container my-4 libros-fisicos">
+
   
   <!-- ENCABEZADO -->
   <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="mb-0">📚 Libros en físico</h2>
+      <h2 class="bi-journal-bookmark">Libros en físico</h2>
 
       <a href="{{ url_for('agregar_libro_fisico') }}"
-         class="btn btn-primary shadow-sm">
-          ➕ Agregar nuevo libro
+         class="btn btn-primary shadow-sm btn-sm">
+          Agregar nuevo libro
       </a>
   </div>
 
   <p class="text-muted">
-    Solo usuarios registrados pueden acceder a los libros en físico.
+    Para solicitar un prestamos de libro, debes cumplir con los Requisitos de acceso.
     <br>
     Requisitos de acceso:
   </p>
   <ul>
-    <li>DNI válido</li>
+    <li>DIP válido</li>
     <li>Usuario activo</li>
-    <li>Autorización según rol (estudiante, profesor o directivo)</li>
+    <li>Bata puesta</li>
   </ul>
 
   <div class="alert alert-info">
@@ -62,21 +95,28 @@
           </div>
 
           <!-- BOTONES -->
-          <div class="text-end">
+          <div class="d-flex align-items-center justify-content-end gap-2 flex-wrap">
+
+            <!-- SOLICITAR PRÉSTAMO -->
+            <a href="{{ url_for('solicitar_prestamo', id=libro.id) }}"
+              class="btn btn-sm btn-info d-inline-flex align-items-center">
+              📄 Solicitar préstamo
+            </a>
 
             <!-- EDITAR -->
-            <a href="{{ url_for('editar_libro_fisico', item_id=libro.id) }}"
-               class="btn btn-sm btn-warning mb-2">
-               ✏️ Editar
-            </a>
+              <a href="{{ url_for('editar_libro_fisico', item_id=libro.id) }}"
+                class="btn btn-sm btn-warning d-inline-flex align-items-center">
+                ✏️ Editar
+              </a>
 
             <!-- ELIMINAR -->
             <form action="{{ url_for('eliminar_libro_fisico', item_id=libro.id) }}"
-                  method="POST"
-                  onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');">
-                <button type="submit" class="btn btn-sm btn-danger">
-                    🗑️ Eliminar
-                </button>
+              method="POST"
+              onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');"
+              class="m-0">
+              <button type="submit" class="btn btn-sm btn-danger">
+                🗑️ Eliminar
+              </button>
             </form>
 
           </div>

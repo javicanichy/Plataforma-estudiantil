@@ -1,20 +1,62 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+    body.libros-digitales{
+        background-color: burlywood;
+    }
+</style>
+
+<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
+<div class="container-fluid bg-light border-bottom">
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('login_page') }}" class="text-decoration-none">
+                        <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
+                        <i class="bi bi-building"></i> Biblioteca
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item active" aria-current="page">
+                    <i class="bi bi-file-earmark-pdf"></i> Libros digitales
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
 <div class="container my-5 libros-digitales" style="max-width: 900px;">
+
+    <!-- MIGAS DE PAN -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb bg-transparent p-0 mb-0">
+        
+    </ol>
+</nav>
+
 
     <!-- ENCABEZADO -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">📚 Libros Digitales</h2>
+        <h2 class="bi-file-earmark-pdf"> Libros Digitales</h2>
 
         <a href="{{ url_for('biblioteca_editar') }}"
-           class="btn btn-primary shadow-sm">
-            ➕ Agregar nuevo libro
+           class="btn btn-primary shadow-sm btn-sm">
+            Agregar nuevo libro
         </a>
     </div>
 
     <p class="text-muted">
-        Solo usuarios registrados pueden acceder a libros y bases de datos digitales.
+        Bienvenidos a los libros digiatles y bases de datos. <br> <hr>
+        Si quieres publicar un libro para alimentar la biblioteca pongase <br>
+        con el departemento de Investigación Posgrado y Extensión Universitaria.
     </p>
 
     <!-- LISTA PROFESIONAL DE LIBROS -->
@@ -104,22 +146,99 @@
     </div>
 
     <!-- BASES DE DATOS INTERNACIONALES -->
-    <div class="mt-5">
-        <h5 class="mb-3">🌐 Bases de datos internacionales</h5>
-        <ul class="list-unstyled">
-            <li>
-                <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank" class="text-decoration-none">
-                    ➤ PubMed
-                </a>
-            </li>
+<div class="mt-5">
+    <h5 class="mb-3">
+        <i class="bi bi-journal-richtext me-2"></i>
+        Encuentre estudios, artículos y bibliografías para sus investigaciones
+    </h5>
 
-            <li>
-                <a href="https://www.medline.com/" target="_blank" class="text-decoration-none">
-                    ➤ Medline
-                </a>
-            </li>
-        </ul>
-    </div>
+    <ul class="list-unstyled">
+        <li class="mb-2">
+            <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-hospital text-primary"></i>
+                PubMed
+            </a>
+        </li>
+
+        <li class="mb-2">
+            <a href="https://www.medline.com/" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-journal-medical text-success"></i>
+                Medline
+            </a>
+        </li>
+
+        <li class="mb-2">
+            <a href="https://www.scopus.com/" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-database text-warning"></i>
+                Scopus (Elsevier)
+            </a>
+        </li>
+
+        <li class="mb-2">
+            <a href="https://www.cochranelibrary.com/" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check text-danger"></i>
+                Cochrane Library (Evidencia)
+            </a>
+        </li>
+
+        <li class="mb-2">
+            <a href="https://lilacs.bvsalud.org/es/" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-globe-americas text-info"></i>
+                LILACS (Latinoamérica)
+            </a>
+        </li>
+
+        <li>
+            <a href="https://scholar.google.com/" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-google text-secondary"></i>
+                Google Académico
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+
+       <!-- UTILIDADES -->
+    <div class="mt-5">
+        <h5 class="mb-3">
+        <i class="bi bi-tools me-2"></i>
+        Herramientas de manejo de documentos
+    </h5>
+
+    <ul class="list-unstyled">
+        <li class="mb-2">
+            <a href="https://www.ilovepdf.com/es/pdf_a_word" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-word text-primary"></i>
+                Convertir PDF a Word
+            </a>
+        </li>
+
+        <li class="mb-2">
+            <a href="https://www.ilovepdf.com/es/comprimir_pdf" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-zip text-success"></i>
+                Comprimir PDF
+            </a>
+        </li>
+
+        <li>
+            <a href="https://www.ilovepdf.com/es" target="_blank"
+               class="text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                Todos los formatos de conversión PDF
+            </a>
+        </li>
+    </ul>
+</div>
+
 
 </div>
 

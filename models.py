@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Nullable
 from sqlalchemy.sql import func
 from datetime import date, datetime
 
@@ -57,6 +58,7 @@ class Usuario(db.Model):
     pais = db.Column(db.String(100), nullable=True)
     residencia = db.Column(db.String(100), nullable=True)
     notificaciones_activas = db.Column(db.Boolean, default=True)  # recibir notificaciones por correo
+    dip = db.Column(db.String(10), nullable=True)
 
     # Relación con las notificaciones
     notificaciones = db.relationship("Notificacion", backref="usuario", lazy=True)
@@ -213,21 +215,35 @@ class Expediente(db.Model):
 
 
 # ============================================================
-#   TABLA 10: CALENDARIO
+#   TABLA 10: EVENTOS
 # ============================================================
-class Calendario(db.Model):
-    __tablename__ = 'calendario'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(255), nullable=False)
-    descripcion = db.Column(db.Text)
-    fecha = db.Column(db.Date, nullable=False)
-    hora = db.Column(db.Time)
-    creado_por = db.Column(db.String(255))
-    fecha_creacion = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-    
+class Evento(db.Model):
+    __tablename__ = 'eventos'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    titulo = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text, nullable=True)
+    start = db.Column(db.DateTime, nullable=False)
+    end = db.Column(db.DateTime, nullable=True)
+    all_day = db.Column(db.Boolean, default=False)
+    tipo = db.Column(db.String(20), default='general')  # importante, general, divertido
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='SET NULL'))
+    created_at = db.Column(db.DateTime, server_default=func.now())
+
+    usuario = db.relationship('Usuario', backref='eventos')
+
+    def to_dict(self):
+        """Devuelve evento en formato que FullCalendar entiende"""
+        return {
+            "id": self.id,
+            "title": self.titulo,
+            "start": self.start.isoformat(),
+            "end": self.end.isoformat() if self.end else None,
+            "allDay": self.all_day,
+            "className": f"evento-{self.tipo}" if self.tipo else "evento-general"
+        }
+
     def __repr__(self):
-        return f'<Calendario {self.titulo} - {self.fecha}>'
+        return f"<Evento {self.id} {self.titulo}>"
 
 
 # ============================================================
@@ -245,30 +261,20 @@ class EstudianteAsignatura(db.Model):
 
 
 # ============================================================
-#   TABLA 12: EVENTOS
+#   TABLA 12: ANUNCIOS
 # ============================================================
-class Evento(db.Model):
-    __tablename__ = 'eventos'
+class Anuncio(db.Model):
+    __tablename__ = 'anuncios'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    fecha = db.Column(db.String(20), nullable=False)   # yyyy-mm-dd
-    hora = db.Column(db.String(10), nullable=False)    # hh:mm
-    descripcion = db.Column(db.String(255), nullable=False)
-    creador_id = db.Column(db.Integer, nullable=False)  # id del usuario que creó el evento
-    fecha_creacion = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'fecha': self.fecha,
-            'hora': self.hora,
-            'descripcion': self.descripcion,
-            'creador_id': self.creador_id
-        }
+    titulo = db.Column(db.String(200), nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    fecha_publicacion = db.Column(db.DateTime, server_default=func.now())
+    autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # relaciona el anuncio con un usuario
+    autor = db.relationship('Usuario', backref='anuncios')  # permite acceder al autor desde el anuncio
 
     def __repr__(self):
-        return f"<Evento {self.fecha} {self.hora} {self.descripcion}>"
-    
-
+        return f"<Anuncio {self.id} {self.titulo}>"
+ 
 # ============================================================
 #   TABLA 13: NOTICIAS
 # ============================================================
