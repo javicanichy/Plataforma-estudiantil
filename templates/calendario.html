@@ -22,7 +22,6 @@
                 </li>
 
                 <li class="breadcrumb-item">
-                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
                       <i class="bi bi-calendar"></i> Calendario
                     </a>
                 </li>
@@ -31,14 +30,20 @@
     </div>
 </div>
 
+<br>
 
 
 
 
 <!-- Relojo en tiempo real-->
- <div id="calendar-header" class="text-center mb-3">
-  <h4 id="calendar-title"></h4>
-</div>
+<h5 style="background-color: white; font-family: 'Times New Roman', Times, serif;">
+    <h2>Calendario general</h2>
+    En ese calendario encontraras información relacionada a las fechas de comienzo de las clases, matrícula, vacaciones y eventos.</h5>
+
+    <!-- Relojo en tiempo real-->
+    <div id="calendar-header" class="text-center mb-3">
+        <h4 id="calendar-title"></h4>
+    </div>
 
 <!-- Calendario -->
 <div class="calendar-wrapper">
@@ -46,8 +51,8 @@
 </div>
 
 <style>
-    body.calendario-page {
-        background-color: black;
+    body.calendario-page{
+        background-color: darkgray;
     }
 </style>
 {% endblock %}

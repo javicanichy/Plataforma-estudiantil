@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4" style="background-color: #f4f6f9; min-height: 100vh;">
+    
+    <div class="row mb-4">
+        <div class="col-md-12 d-flex justify-content-between align-items-center bg-white p-4 shadow rounded-3 border-start border-5 border-danger">
+            <div>
+                <h3 class="mb-0 fw-bold" style="color: #800000;">
+                    <i class="fas fa-user-tie me-2"></i>Despacho del {{ d.cargo if d else 'Directivo' }}
+                </h3>
+                <p class="text-muted mb-0">{{ d.facultad if d else 'Facultad' }} - Gestión Superior</p>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="text-end me-3">
+                    <h5 class="mb-0 fw-bold">{{ current_user.nombre }} {{ current_user.apellidos }}</h5>
+                    <span class="badge rounded-pill bg-danger">Máxima Autoridad</span>
+                </div>
+                {% if current_user.foto_perfil %}
+                    <img src="{{ url_for('static', filename='uploads/fotos/' + current_user.foto_perfil) }}" 
+                         class="rounded-3 shadow-sm border border-2 border-danger" width="65" height="65" style="object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 65px; height: 65px;">
+                        <i class="fas fa-user fa-2x"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-3">Identificación Institucional</h6>
+                    <div class="mb-3">
+                        <label class="small text-muted d-block">DIP / Pasaporte:</label>
+                        <span class="fw-bold">{{ current_user.dip or 'No registrado' }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted d-block">Correo Oficial:</label>
+                        <span class="fw-bold text-truncate d-block" style="max-width: 100%;">{{ current_user.correo_institucional }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-muted d-block">Teléfono:</label>
+                        <span class="fw-bold">{{ current_user.telefono or 'N/A' }}</span>
+                    </div>
+                    <hr>
+                    <button class="btn btn-sm btn-outline-danger w-100">
+                        <i class="fas fa-signature me-2"></i>{{ 'Ver Firma' if d and d.firma_digital else 'Subir Firma' }}
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card bg-danger text-white border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h6 class="fw-bold mb-0">Contador de Debates</h6>
+                    <div class="display-6 fw-bold">{{ current_user.debate }}</div>
+                    <small class="opacity-75">Participación activa</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="row g-3">
+                
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm bg-primary text-white overflow-hidden">
+                        <div class="card-body p-4 position-relative">
+                            <i class="fas fa-bullhorn fa-4x position-absolute end-0 bottom-0 opacity-25"></i>
+                            <h5 class="fw-bold">Comunicados Oficiales</h5>
+                            <p class="small">Publicar anuncios para la carrera de {{ current_user.carrera or 'la Facultad' }}.</p>
+                            <a href="#" class="btn btn-light fw-bold text-primary btn-sm px-4">Crear Anuncio</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm bg-dark text-white overflow-hidden">
+                        <div class="card-body p-4 position-relative">
+                            <i class="fas fa-user-slash fa-4x position-absolute end-0 bottom-0 opacity-25"></i>
+                            <h5 class="fw-bold text-warning">Control Disciplinario</h5>
+                            <p class="small">Gestión de estados de cuenta para estudiantes de {{ current_user.curso or 'todos los cursos' }}.</p>
+                            <a href="#" class="btn btn-warning fw-bold btn-sm px-4">Suspender Cuentas</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-effect">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3 text-danger"><i class="fas fa-chalkboard-teacher fa-2x"></i></div>
+                            <h6 class="fw-bold mb-1">Supervisión Docente</h6>
+                            <p class="text-muted small mb-2">Directorio de profesores</p>
+                            <button class="btn btn-sm btn-outline-danger w-100 mt-2">Acceder</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-effect">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3 text-danger"><i class="fas fa-file-invoice fa-2x"></i></div>
+                            <h6 class="fw-bold mb-1">Reportes y Actas</h6>
+                            <p class="text-muted small mb-2">Archivos de la facultad</p>
+                            <button class="btn btn-sm btn-outline-danger w-100 mt-2">Revisar Todo</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm hover-effect">
+                        <div class="card-body text-center p-4">
+                            <div class="mb-3 text-danger"><i class="fas fa-envelope-square fa-2x"></i></div>
+                            <h6 class="fw-bold mb-1">Buzón Oficial</h6>
+                            <p class="text-muted small mb-2">Mensajería del cargo</p>
+                            <button class="btn btn-sm btn-outline-danger w-100 mt-2">Ver Mensajes</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mt-3">
+                    <div class="card border-0 shadow-sm border-top border-4 border-danger">
+                        <div class="card-header bg-white py-3">
+                            <h6 class="mb-0 fw-bold text-danger"><i class="fas fa-file-excel me-2"></i>Validación de Calificaciones Finales</h6>
+                        </div>
+                        <div class="card-body d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 text-muted small">Repositorio de actas enviadas por los profesores para firma del <strong>{{ d.cargo if d else 'Directivo' }}</strong>.</p>
+                            </div>
+                            <button class="btn btn-danger btn-sm px-4 shadow-sm">Abrir Repositorio</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-effect { transition: all 0.3s ease; border: 1px solid transparent !important; }
+    .hover-effect:hover { 
+        transform: translateY(-5px); 
+        background-color: #fff; 
+        border-color: #f8d7da !important;
+        box-shadow: 0 10px 20px rgba(128,0,0,0.05) !important; 
+    }
+    .text-danger, .btn-outline-danger { color: #800000 !important; border-color: #800000 !important; }
+    .btn-outline-danger:hover { background-color: #800000 !important; color: #fff !important; }
+    .bg-danger { background-color: #800000 !important; }
+    .btn-danger { background-color: #800000 !important; border: none; }
+</style>
+{% endblock %}

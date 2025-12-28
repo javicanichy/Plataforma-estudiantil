@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container-fluid bg-light border-bottom no-print">
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="{{ url_for('inicio') }}" class="text-decoration-none"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li class="breadcrumb-item active"><i class="bi bi-person-badge"></i> Matrícula</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f4f4f4; font-family: 'Segoe UI', Arial, sans-serif; }
+    
+    /* ESTILO FICHA TÉCNICA (Lifeder Style) */
+    .ficha-container { 
+        max-width: 950px; 
+        margin: 30px auto; 
+        background: white; 
+        border: 2px solid #1a1a1a; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .ficha-header {
+        background: #f8f9fa;
+        border-bottom: 2px solid #1a1a1a;
+        padding: 25px;
+        text-align: center;
+    }
+
+    .ficha-section-title {
+        background: #1a1a1a;
+        color: white;
+        padding: 10px 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+
+    /* Grid del Formulario */
+    .ficha-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+    }
+
+    .ficha-cell {
+        border: 0.5px solid #dee2e6;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ficha-label {
+        background: #f1f3f5;
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #495057;
+        padding: 5px 12px;
+        border-bottom: 0.5px solid #dee2e6;
+        text-transform: uppercase;
+    }
+
+    .ficha-input-container {
+        padding: 8px 12px;
+    }
+
+    .ficha-input-container input, 
+    .ficha-input-container select {
+        border: none !important;
+        padding: 0 !important;
+        width: 100%;
+        font-weight: 600;
+        font-size: 0.95rem;
+        outline: none;
+        background: transparent;
+        color: #004a99;
+    }
+
+    /* Clases de utilidad para el Grid */
+    .col-12 { grid-column: span 12; }
+    .col-6 { grid-column: span 6; }
+    .col-4 { grid-column: span 4; }
+
+    /* Área de Documentos */
+    .doc-upload-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1px; /* Crea el efecto de bordes */
+        background: #dee2e6;
+        border-bottom: 2px solid #1a1a1a;
+    }
+    .doc-item-card {
+        background: white;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+    .doc-item-card .form-control {
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    @media print {
+        .no-print { display: none; }
+        .ficha-container { margin: 0; border: none; box-shadow: none; }
+    }
+</style>
+
+<div class="container form-container my-5">
+    <p>Por favor complete todos los pasos para poder solicitar la matrícula en nuestra institución. Asegúrese de tener todos los documentos necesarios en formato digital antes de comenzar el proceso. <br>
+        Estos mismos documentos <strong>deberá presentarlos en físico para que se puedan depositar en la secretaría</strong>. <br>
+        Puede consultar los requisitos completos en la <a href="{{ url_for('requisitos') }}" style="text-decoration: none;">página de requisitos de matrícula</a>.
+    </p>
+</div>
+
+<div class="container ficha-container p-0">
+    <div class="ficha-header">
+        <h2 class="fw-bold mb-1">FICHA DE INSCRIPCIÓN ACADÉMICA</h2>
+        <p class="text-secondary mb-0">Complete la información requerida para formalizar su solicitud de matrícula</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="ficha-section-title"><i class="bi bi-person-fill"></i> 1. Identificación y Ubicación del Estudiante</div>
+        <div class="ficha-grid">
+            <div class="ficha-cell col-12" style="border-bottom: 2px solid #1a1a1a;">
+                <div class="ficha-label text-primary">Situación Académica Actual</div>
+                <div class="ficha-input-container">
+                    {{ form.tipo_estudiante(class="form-select", id="tipo_estudiante") }}
+                </div>
+            </div>
+
+            <div class="ficha-cell col-6">
+                <div class="ficha-label">{{ form.nombre.label.text }}</div>
+                <div class="ficha-input-container">{{ form.nombre(placeholder="Nombre") }}</div>
+            </div>
+            <div class="ficha-cell col-6">
+                <div class="ficha-label">{{ form.apellidos.label.text }}</div>
+                <div class="ficha-input-container">{{ form.apellidos(placeholder="Apellidos") }}</div>
+            </div>
+
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">Sexo / Género</div>
+                <div class="ficha-input-container">
+                    <select name="sexo" class="form-select fw-bold text-primary">
+                        <option value="" selected disabled>No definido</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">{{ form.fecha_nacimiento.label.text }}</div>
+                <div class="ficha-input-container">{{ form.fecha_nacimiento(type="date") }}</div>
+            </div>
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">{{ form.natural_de.label.text }}</div>
+                <div class="ficha-input-container">{{ form.natural_de(placeholder="Lugar de nacimiento") }}</div>
+            </div>
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">{{ form.residencia.label.text }}</div>
+                <div class="ficha-input-container">{{ form.residencia(placeholder="Residencia actual") }}</div>
+            </div>
+
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">Titulación / Carrera</div>
+                <div class="ficha-input-container">
+                    <select name="carrera" class="form-select fw-bold text-primary">
+                        <option value="" selected disabled>Seleccione una especialidad...</option>
+                        <option value="Medicina General">Medicina General</option>
+                        <option value="Grado II Enfermería">Grado II Enfermería</option>
+                        <option value="Grado I Enfermería">Grado I Enfermería</option>
+                        <option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option>
+                        <option value="Laboratorio Clínico y Biomédico">Laboratorio Clínico y Biomédico</option>
+                        <option value="Higiene y Epidemiología">Higiene y Epidemiología</option>
+                        <option value="Imagenología">Imagenología</option>
+                        <option value="Fisioterapia">Fisioterapia</option>
+                        <option value="Anestesiología">Anestesiología</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">{{ form.dni_numero.label.text }}</div>
+                <div class="ficha-input-container">{{ form.dni_numero(placeholder="DIP / Pasaporte") }}</div>
+            </div>
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">{{ form.telefono.label.text }}</div>
+                <div class="ficha-input-container">{{ form.telefono(placeholder="+240 ...") }}</div>
+            </div>
+
+            <div class="ficha-cell col-4">
+                <div class="ficha-label">{{ form.nacionalidad.label.text }}</div>
+                <div class="ficha-input-container">{{ form.nacionalidad(placeholder="Nacionalidad") }}</div>
+            </div>
+
+            <div class="ficha-cell col-12">
+                <div class="ficha-label">{{ form.email.label.text }}</div>
+                <div class="ficha-input-container">{{ form.email(placeholder="correo@ejemplo.com") }}</div>
+            </div>
+        </div>
+
+        <div class="ficha-section-title"><i class="bi bi-cloud-upload-fill"></i> 2. Carga de Expediente Digital (Formatos PDF/JPG)</div>
+        
+        <div id="msg_continuante" class="alert alert-info m-3 d-none border-0 shadow-sm">
+            <i class="bi bi-info-circle-fill me-2"></i> Como <strong>Estudiante Continuante</strong>, solo requerimos su actualización de expediente interno (Hoja de Facultad).
+        </div>
+
+        <div class="doc-upload-grid">
+            <div class="doc-item-card">
+                <label class="ficha-label">{{ form.doc_dni.label.text }}</label>
+                {{ form.doc_dni(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card">
+                <label class="ficha-label">{{ form.doc_instancia.label.text }}</label>
+                {{ form.doc_instancia(class="form-control", accept=".pdf") }}
+            </div>
+
+            <div class="doc-item-card d-none" id="box_selectividad">
+                <label class="ficha-label">{{ form.doc_cert_selectividad.label.text }}</label>
+                {{ form.doc_cert_selectividad(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_bachillerato">
+                <label class="ficha-label">{{ form.doc_hoja_bachillerato.label.text }}</label>
+                {{ form.doc_hoja_bachillerato(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_foto">
+                <label class="ficha-label">{{ form.doc_foto_carnet.label.text }}</label>
+                {{ form.doc_foto_carnet(class="form-control", accept=".jpg,.png") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_ficha_matricula">
+                <label class="ficha-label">{{ form.doc_ficha_matricula.label.text }}</label>
+                {{ form.doc_ficha_matricula(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_ficha_permanencia">
+                <label class="ficha-label">{{ form.doc_ficha_permanencia.label.text }}</label>
+                {{ form.doc_ficha_permanencia(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_conducta_comu">
+                <label class="ficha-label">{{ form.doc_conducta_comunidad.label.text }}</label>
+                {{ form.doc_conducta_comunidad(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_conducta_centro">
+                <label class="ficha-label">{{ form.doc_conducta_centro.label.text }}</label>
+                {{ form.doc_conducta_centro(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_facultad">
+                <label class="ficha-label text-primary">{{ form.doc_hoja_facultad.label.text }}</label>
+                {{ form.doc_hoja_facultad(class="form-control border-primary", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_acta_defensa">
+                <label class="ficha-label">{{ form.doc_acta_defensa.label.text }}</label>
+                {{ form.doc_acta_defensa(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_convalidaciones">
+                <label class="ficha-label">{{ form.doc_convalidaciones.label.text }}</label>
+                {{ form.doc_convalidaciones(class="form-control", accept=".pdf") }}
+            </div>
+            <div class="doc-item-card d-none" id="box_homologacion">
+                <label class="ficha-label">{{ form.doc_homologacion.label.text }}</label>
+                {{ form.doc_homologacion(class="form-control", accept=".pdf") }}
+            </div>
+        </div>
+
+        <div class="p-4 text-center bg-light">
+            <p class="small text-muted mb-4">Certifico que la información proporcionada es verídica y acepto los términos de matrícula.</p>
+            <button type="submit" class="btn btn-dark btn-lg px-5 py-3 fw-bold text-uppercase" style="border-radius: 0; letter-spacing: 2px;">
+                Finalizar y Enviar Solicitud <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selector = document.getElementById('tipo_estudiante');
+        
+        // Mapeo completo de todos tus documentos
+        const boxes = {
+            selectividad: document.getElementById('box_selectividad'),
+            bachillerato: document.getElementById('box_bachillerato'),
+            foto: document.getElementById('box_foto'),
+            ficha_mat: document.getElementById('box_ficha_matricula'),
+            ficha_per: document.getElementById('box_ficha_permanencia'),
+            comunidad: document.getElementById('box_conducta_comu'),
+            centro: document.getElementById('box_conducta_centro'),
+            facultad: document.getElementById('box_facultad'),
+            acta: document.getElementById('box_acta_defensa'),
+            convalida: document.getElementById('box_convalidaciones'),
+            homologa: document.getElementById('box_homologacion'),
+            msg_cont: document.getElementById('msg_continuante')
+        };
+
+        function limpiar() {
+            Object.values(boxes).forEach(el => { if(el) el.classList.add('d-none'); });
+        }
+
+        selector.addEventListener('change', function() {
+            limpiar();
+            const val = this.value;
+
+            if (val === 'nuevo') {
+                ['selectividad', 'bachillerato', 'foto', 'ficha_mat', 'ficha_per', 'comunidad', 'centro']
+                .forEach(k => { if(boxes[k]) boxes[k].classList.remove('d-none'); });
+            } 
+            else if (val === 'graduado') {
+                // Mostrar todo excepto el mensaje de continuante
+                Object.keys(boxes).forEach(k => { 
+                    if(k !== 'msg_cont' && boxes[k]) boxes[k].classList.remove('d-none'); 
+                });
+            } 
+            else if (val === 'continuante') {
+                if(boxes.msg_cont) boxes.msg_cont.classList.remove('d-none');
+                if(boxes.facultad) boxes.facultad.classList.remove('d-none');
+            }
+        });
+
+        // Ejecutar al cargar por si hay un valor preseleccionado
+        selector.dispatchEvent(new Event('change'));
+    });
+</script>
+
+{% endblock %}

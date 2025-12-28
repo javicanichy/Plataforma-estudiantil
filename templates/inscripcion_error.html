@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5 text-center">
+    <div class="card shadow-lg p-5 border-0 border-top border-danger border-5" style="border-radius: 20px;">
+        <div class="display-1 text-danger mb-4">
+            <i class="bi bi-x-octagon-fill"></i>
+        </div>
+        <h1 class="fw-bold text-danger">Algo salió mal</h1>
+        <p class="lead text-secondary">No pudimos procesar tu solicitud debido a los siguientes errores:</p>
+        
+        <div class="alert alert-light border-danger text-danger text-start d-inline-block p-4 mt-3" style="min-width: 50%;">
+            <ul class="mb-0">
+                {% for err in mensaje.split('|') %}
+                    <li>{{ err.strip() }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="mt-4 pt-3">
+            <p>Por favor, vuelve atrás e intenta corregir estos campos.</p>
+            <a href="javascript:history.back()" class="btn btn-outline-danger btn-lg px-5" style="border-radius: 50px;">
+                <i class="bi bi-arrow-left"></i> Volver al Formulario
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

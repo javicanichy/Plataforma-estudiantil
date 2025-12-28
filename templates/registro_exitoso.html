@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 text-center">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="bg-success py-4">
+                    <i class="bi bi-check-circle-fill text-white" style="font-size: 4rem;"></i>
+                    <h2 class="text-white mt-2">¡Registro Completado!</h2>
+                </div>
+
+                <div class="card-body p-5">
+                    <h4 class="fw-bold mb-3">¡Enhorabuena, {{ usuario.nombre }} {{ usuario.apellidos }}!</h4>
+                    <p class="text-muted">Tu cuenta universitaria ha sido creada y validada correctamente. A partir de ahora, eres parte oficial de la comunidad digital de la UNGE.</p>
+
+                    <div class="alert alert-light border text-start p-4 my-4 shadow-sm">
+                        <h6 class="text-uppercase text-primary fw-bold small mb-3">Información de Acceso</h6>
+                        
+                        <div class="mb-3">
+                            <label class="text-muted small d-block">Correo Institucional:</label>
+                            <span class="fw-bold text-dark fs-5">{{ usuario.correo_institucional }}</span>
+                            <div class="form-text text-success"><i class="bi bi-shield-lock"></i> Usa este correo para todos tus trámites académicos.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="text-muted small d-block">Titulación:</label>
+                                <span class="fw-bold">{{ usuario.carrera }}</span>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="text-muted small d-block">Curso Actual:</label>
+                                <span class="fw-bold">1º Curso (Ingreso {{ usuario.anio_ingreso }})</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="text-muted small d-block">Talento Registrado:</label>
+                            <span class="badge bg-warning text-dark">{{ usuario.talento if usuario.talento else 'General' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div class="small text-start">
+                            Recuerda que tu contraseña es la que elegiste durante el registro. No la compartas con nadie.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('inicio') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2"></i> Ir a mi Panel de Control
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            <i class="bi bi-printer"></i> Imprimir comprobante
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light py-3">
+                    <p class="small text-muted mb-0">© 2025 Facultad de Ciencias de la Salud - UNGE</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+    var duration = 3 * 1000;
+    var end = Date.now() + duration;
+
+    (function frame() {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#0d6efd', '#198754']
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#0d6efd', '#198754']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+</script>
+{% endblock %}

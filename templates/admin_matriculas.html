@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - UNGE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .table-vcenter td { vertical-align: middle; }
+        .btn-action { width: 100px; }
+        .card-filter { border-left: 5px solid #0d6efd; }
+        .modal-info-label { font-weight: bold; color: #495057; font-size: 0.9rem; }
+        .doc-item { padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 8px; transition: background 0.3s; }
+        .doc-item:hover { background: #f8f9fa; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid bg-light border-bottom">
+        <div class="container py-2">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('inicio') }}" class="text-decoration-none">
+                          <i class="bi bi-house-door"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
+                          <i class="bi bi-building"></i> Biblioteca
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-primary fw-bold"><i class="bi bi-person-badge me-2"></i>Gestión de Matrículas</h2>
+            <div>
+                <button onclick="exportarExcel()" class="btn btn-success me-2">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
+                </button>
+                <span class="badge bg-dark px-3 py-2">Total: {{ solicitudes|length }}</span>
+            </div>
+        </div>
+
+        <div class="card mb-4 shadow-sm card-filter">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Buscar Alumno</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Nombre o apellidos...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Filtrar por Carrera</label>
+                        <select id="filterCarrera" class="form-select">
+                            <option value="">Todas las Carreras</option>
+                            <option value="Medicina General">Medicina General</option>
+                            <option value="Grado II Enfermería">Grado II Enfermería</option>
+                            <option value="Grado I Enfermería">Grado I Enfermería</option>
+                            <option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option>
+                            <option value="Laboratorio Clínico y Biomédico">Laboratorio Clínico y Biomédico</option>
+                            <option value="Higiene y Epidemiología">Higiene y Epidemiología</option>
+                            <option value="Imagenología">Imagenología</option>
+                            <option value="Fisioterapia">Fisioterapia</option>
+                            <option value="Anestesiología">Anestesiología</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Tipo de Estudiante</label>
+                        <select id="filterTipo" class="form-select">
+                            <option value="">Todos los tipos</option>
+                            <option value="Nuevo">Estudiante Nuevo</option>
+                            <option value="Continuante">Continuante</option>
+                            <option value="Grado">Grado conseguido</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Filtrar por Sexo</label>
+                        <select id="filterSexo" class="form-select">
+                            <option value="">Cualquier sexo</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover bg-white shadow-sm rounded-3 overflow-hidden table-vcenter" id="matriculaTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Alumno</th>
+                        <th>Sexo</th>
+                        <th>Tipo de matrícula</th>
+                        <th>Carrera</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in solicitudes %}
+                    <tr class="student-row">
+                        <td>{{ s.id }}</td>
+                        <td class="student-name">
+                            <a href="#" class="text-decoration-none fw-bold text-primary" data-bs-toggle="modal" data-bs-target="#modalEstudiante{{ s.id }}">
+                                {{ s.nombre }} {{ s.apellidos }}
+                            </a>
+                        </td>
+                        <td class="student-sexo">{{ s.sexo }}</td>
+                        <td class="student-type">
+                            <span class="badge bg-light text-dark border">{{ s.tipo_estudiante }}</span>
+                        </td>
+                        <td class="student-carrera">{{ s.carrera }}</td>
+                        <td>
+                            <span class="badge {% if s.estado == 'Admitido' %}bg-success{% elif s.estado == 'Revision' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ s.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ url_for('admitir_alumno', id=s.id) }}" class="btn btn-sm btn-outline-success btn-action">Admitir</a>
+                                <a href="{{ url_for('solicitar_revision', id=s.id) }}" class="btn btn-sm btn-outline-warning btn-action">Revisión</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="modalEstudiante{{ s.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title"><i class="bi bi-person-lines-fill me-2"></i>Expediente: {{ s.nombre }} {{ s.apellidos }}</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary border-bottom pb-2">Información Personal</h6>
+                                            <p class="mb-1"><span class="modal-info-label">Sexo:</span> {{ s.sexo }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">DNI:</span> {{ s.dni_numero }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Email:</span> {{ s.email }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Teléfono:</span> {{ s.telefono }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Fecha Registro:</span> {{ s.fecha_creacion.strftime('%d/%m/%Y %H:%M') if s.fecha_creacion }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-primary border-bottom pb-2">Información Académica</h6>
+                                            <p class="mb-1"><span class="modal-info-label">Carrera:</span> {{ s.carrera }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Residencia:</span> {{ s.residencia }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Tipo Estudiante:</span> {{ s.tipo_estudiante }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Nacionalidad:</span> {{ s.nacionalidad }}</p>
+                                            <p class="mb-1"><span class="modal-info-label">Estado Actual:</span> <span class="badge bg-info">{{ s.estado }}</span></p>
+                                        </div>
+                                    </div>
+
+                                    <h6 class="text-primary border-bottom pb-2">Documentación Adjunta</h6>
+                                    <div class="row text-center">
+                                        {% set docs = [
+                                            ('doc_dni', 'DNI / Pasaporte', 'bi-card-heading'),
+                                            ('doc_foto_carnet', 'Foto Carnet', 'bi-person-square'),
+                                            ('doc_cert_selectividad', 'Certif. Selectividad', 'bi-file-earmark-check'),
+                                            ('doc_instancia', 'Instancia de Solicitud', 'bi-file-earmark-text'),
+                                            ('doc_hoja_bachillerato', 'Hoja Bachillerato', 'bi-journal-text'),
+                                            ('doc_conducta_comunidad', 'Conducta Comunidad', 'bi-shield-check'),
+                                            ('doc_conducta_centro', 'Conducta Centro', 'bi-house-check'),
+                                            ('doc_ficha_matricula', 'Ficha Matrícula', 'bi-clipboard-data'),
+                                            ('doc_ficha_permanencia', 'Ficha Permanencia', 'bi-clock-history'),
+                                            ('doc_hoja_facultad', 'Hoja Facultad', 'bi-building'),
+                                            ('doc_acta_defensa', 'Acta de Defensa', 'bi-award'),
+                                            ('doc_convalidaciones', 'Convalidaciones', 'bi-arrow-repeat'),
+                                            ('doc_homologacion', 'Homologación', 'bi-globe')
+                                        ] %}
+
+                                        {% for campo, label, icono in docs %}
+                                            {% if s[campo] %}
+                                            <div class="col-md-4 mb-3">
+                                                <div class="doc-item shadow-sm">
+                                                    <i class="bi {{ icono }} fs-3 text-secondary mb-2"></i>
+                                                    <p class="small fw-bold mb-2">{{ label }}</p>
+                                                    <a href="{{ url_for('static', filename=s[campo]) }}" target="_blank" class="btn btn-sm btn-primary w-100">
+                                                        <i class="bi bi-eye"></i> Ver Archivo
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="modal-footer bg-light">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar Vista</button>
+                                    <a href="{{ url_for('admitir_alumno', id=s.id) }}" class="btn btn-success">Validar y Admitir</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        function filterTable() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const carreraValue = document.getElementById('filterCarrera').value.toLowerCase();
+            const tipoValue = document.getElementById('filterTipo').value.toLowerCase();
+            const sexoValue = document.getElementById('filterSexo').value.toLowerCase();
+            const rows = document.querySelectorAll('.student-row');
+
+            rows.forEach(row => {
+                const name = row.querySelector('.student-name').textContent.toLowerCase();
+                const carrera = row.querySelector('.student-carrera').textContent.toLowerCase();
+                const tipo = row.querySelector('.student-type').textContent.toLowerCase();
+                const sexo = row.querySelector('.student-sexo').textContent.toLowerCase();
+
+                const matchesSearch = name.includes(searchText);
+                const matchesCarrera = carreraValue === "" || carrera.includes(carreraValue);
+                const matchesTipo = tipoValue === "" || tipo.includes(tipoValue);
+                const matchesSexo = sexoValue === "" || sexo.trim() === sexoValue;
+
+                row.style.display = (matchesSearch && matchesCarrera && matchesTipo && matchesSexo) ? "" : "none";
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('keyup', filterTable);
+        document.getElementById('filterCarrera').addEventListener('change', filterTable);
+        document.getElementById('filterTipo').addEventListener('change', filterTable);
+        document.getElementById('filterSexo').addEventListener('change', filterTable);
+
+        function exportarExcel() {
+            const table = document.getElementById("matriculaTable");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Matrículas"});
+            XLSX.writeFile(wb, "Reporte_Matriculas_UNGE.xlsx");
+        }
+    </script>
+</body>
+</html>

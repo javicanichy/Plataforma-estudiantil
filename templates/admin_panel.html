@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control | Administrador UNGE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --unge-red: #800000;
+            --unge-dark: #2c3e50;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            background: var(--unge-dark);
+            color: white;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.7);
+            margin: 0.2rem 1rem;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .nav-link i { width: 25px; }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--unge-red);
+            color: white;
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Cards & Stats */
+        .stat-card {
+            border: none;
+            border-radius: 12px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .icon-box {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .table-card {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .badge-role {
+            padding: 0.5em 0.8em;
+            border-radius: 6px;
+            text-transform: capitalize;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
+            .main-content { margin-left: 0; }
+            .sidebar.active { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h4 class="fw-bold m-0"><i class="fas fa-university me-2"></i>FCS</h4>
+            <small class="opacity-50 text-uppercase ls-1">Administración</small>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('panel_admin') }}" class="nav-link active">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="{{url_for('panel_admin_solicitudes')}}" class="nav-link">
+                <i class="fas fa-user-graduate"></i> Estudiantes
+            </a>
+            <a href="{{url_for('admin_profesor_revision')}}" class="nav-link">
+                <i class="fas fa-chalkboard-teacher"></i> Profesores
+            </a>
+            <a href="{{url_for('ver_matriculas')}}" class="nav-link">
+                <i class="fas fa-id-card"></i> Matricula
+            </a>
+            <a href="{{url_for('buzon_general')}}" class="nav-link">
+                <i class="fas fa-inbox"></i> Buzón
+            </a>
+            <a href="#" class="nav-link">
+                <i class="fas fa-cog"></i> Configuración
+            </a>
+        </div>
+
+        <div class="position-absolute bottom-0 w-100 p-3">
+            <a href="{{ url_for('logout') }}" onclick="return confirm('¿Seguro que desea salir?');" class="btn btn-outline-light w-100 border-0 text-start">
+                <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold text-dark m-0">Administración de la plataforma</h2>
+                <p class="text-muted">Estado global de la plataforma educativa</p>
+            </div>
+            <div class="d-flex align-items-center bg-white p-2 rounded-pill shadow-sm px-3">
+                <div class="text-end me-3">
+                    <p class="m-0 small fw-bold text-dark">{{ current_user.nombre }}</p>
+                    <p class="m-0 tiny text-muted" style="font-size: 0.7rem;">Super Administrador</p>
+                </div>
+                <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}&background=800000&color=fff" class="rounded-circle" width="40">
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card shadow-sm p-3 bg-white border-start border-primary border-5">
+                    <div class="d-flex align-items-center">
+                      <div class="icon-box bg-primary bg-opacity-10 text-primary me-3">
+                            <i class="fas fa-user-graduate fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small mb-1">Estudiantes</h6>
+                            <h3 class="fw-bold m-0">{{ total_estudiantes }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card shadow-sm p-3 bg-white border-start border-success border-5">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-success bg-opacity-10 text-success me-3">
+                            <i class="fas fa-chalkboard-teacher fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small mb-1">Profesores</h6>
+                            <h3 class="fw-bold m-0">{{ total_profesores }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card shadow-sm p-3 bg-white border-start border-warning border-5">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-warning bg-opacity-10 text-warning me-3">
+                            <i class="fas fa-user-tie fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small mb-1">Directivos</h6>
+                            <h3 class="fw-bold m-0">{{ total_directivos }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6">
+                <div class="card stat-card shadow-sm p-3 bg-white border-start border-danger border-5">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box bg-danger bg-opacity-10 text-danger me-3">
+                            <i class="fas fa-user-shield fa-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted small mb-1">Administradores</h6>
+                            <h3 class="fw-bold m-0">{{ total_administradores }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card table-card shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold m-0 text-dark">Últimos Registros</h5>
+                        <a href="#" class="btn btn-sm btn-light border">Ver todos</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Usuario</th>
+                                        <th>Rol</th>
+                                        <th>Identificación</th>
+                                        <th class="text-end pe-4">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in ultimos_usuarios %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm me-3 bg-light rounded-circle p-2 text-center" style="width:35px">
+                                                    <i class="fas fa-user text-muted"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="m-0 fw-bold small text-dark">{{ user.nombre }} {{ user.apellidos }}</p>
+                                                    <p class="m-0 tiny text-muted" style="font-size: 0.75rem;">{{ user.correo_institucional }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if user.rol == 'admin' %}
+                                                <span class="badge bg-danger bg-opacity-10 text-danger badge-role">Admin</span>
+                                            {% elif user.rol == 'profesor' %}
+                                                <span class="badge bg-success bg-opacity-10 text-success badge-role">Profesor</span>
+                                            {% elif user.rol == 'directivo' %}
+                                                <span class="badge bg-warning bg-opacity-10 text-warning badge-role">Directivo</span>
+                                            {% else %}
+                                                <span class="badge bg-primary bg-opacity-10 text-primary badge-role">Estudiante</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><code class="text-dark">{{ user.dip }}</code></td>
+                                        <td class="text-end pe-4">
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-light border"><i class="fas fa-edit text-primary"></i></button>
+                                                <button class="btn btn-sm btn-light border"><i class="fas fa-trash text-danger"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card table-card shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="fw-bold m-0">Acciones de Sistema</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-dark py-2 text-start px-3">
+                                <i class="fas fa-file-export me-2"></i> Exportar Base de Datos
+                            </button>
+                            <button class="btn btn-outline-primary py-2 text-start px-3">
+                                <i class="fas fa-user-plus me-2"></i> Crear Nuevo Profesor
+                            </button>
+                            <button class="btn btn-outline-danger py-2 text-start px-3">
+                                <i class="fas fa-broadcast-tower me-2"></i> Notificar a todos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card table-card shadow-sm bg-dark text-white">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-warning"></i>Estado del Servidor</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                            <small class="opacity-75">Uso de Almacenamiento</small>
+                            <small>24%</small>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: 24%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

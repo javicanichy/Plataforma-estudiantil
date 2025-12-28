@@ -13,3 +13,6 @@ psycopg2-binary==2.9.9
 gunicorn==21.2.0
 python-dotenv==1.2.1
 Flask-Mail==0.10.0
+email-validator==2.3.0
+pandas==2.3.3
+flask_login==0.6.3

@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
+<div class="container-fluid bg-light border-bottom">
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('inicio') }}" class="text-decoration-none">
+                      <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('solicitar_matricula') }}" class="text-decoration-none">
+                      <i class="bi bi-person-badge"></i> Matrícula
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                      <i class="bi bi-card-checklist"></i> Requisitos matrícula
+                    </a>
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+
+
+
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-primary">Requisitos de Inscripción 2025</h1>
+        <p class="text-muted">Selecciona tu opción según la carrera para ver los documentos específicos necesarios.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="accordion shadow-sm" id="accordionRequisitos">
+                
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#medicina">
+                            <i class="bi bi-heart-pulse-fill text-danger me-2"></i> Grado en Medicina: 6 años
+                        </button>
+                    </h2>
+                    <div id="medicina" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 8.</li>
+                            </ul>
+
+
+
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square me-2"></i>Ir al Formulario
+                                </a>
+                                <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank">
+                                    <i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#enfermeria">
+                            <i class="bi bi-bandaid-fill text-info me-2"></i> Grado II Enfermería: 4 años
+                        </button>
+                    </h2>
+                    <div id="enfermeria" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 7.</li>
+                            </ul>
+                            </ul>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square me-2"></i>Ir al Formulario
+                                </a>
+                                <a href="https://wa.me/240555000000" class="btn btn-outline-success" target="_blank">
+                                    <i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil
+                                </a>
+
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#enfermeria">
+                            <i class="bi bi-bandaid-fill text-info me-2"></i> Grado I Enfermería: 3 años
+                        </button>
+                    </h2>
+                    <div id="enfermeria" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 5.</li>
+                            </ul>
+                            </ul>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square me-2"></i>Ir al Formulario
+                                </a>
+                                <a href="https://wa.me/240555000000" class="btn btn-outline-success" target="_blank">
+                                    <i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil
+                                </a>
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#ginecologia">
+                            <i class="bi bi-gender-female text-danger me-2"></i> Grado I Ginecología y Obstetricia: 3 años
+                        </button>
+                    </h2>
+                    <div id="ginecologia" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                                <ul class="list-group list-group-flush mb-4">
+                                    <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 5.</li>
+                            </ul>
+                                </ul>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                            <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary"><i class="bi bi-pencil-square me-2"></i>Ir al Formulario</a>
+                            <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)</a>
+                            <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                            </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#fisioterapia">
+                            <i class="bi bi-body-text text-primary me-2"></i>Grado Fisioterapia y Rehabilitación: 4 años
+                        </button>
+                    </h2>
+                    <div id="fisioterapia" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 7.</li>
+                            </ul>
+                            </ul>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary"><i class="bi bi-pencil-square me-2"></i>Ir al Formulario</a>
+                                <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)</a>
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#laboratorio">
+                            <i class="bi bi-droplet-fill text-danger me-2"></i>Grado I Laboratorio Clínico y Biomédico: 3 años
+                        </button>
+                    </h2>
+                    <div id="laboratorio" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 5.</li>
+                            </ul>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary"><i class="bi bi-pencil-square me-2"></i>Ir al Formulario</a>
+                                <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)</a>
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#imagenologia">
+                            <i class="bi bi-camera-video me-2"></i>Grado I Imagenología: 3 años
+                        </button>
+                    </h2>
+                    <div id="imagenologia" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 5.</li>
+                            </ul>
+                            </ul>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary"><i class="bi bi-pencil-square me-2"></i>Ir al Formulario</a>
+                                <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)</a>
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#anestesiologia">
+                            <i class="bi bi-capsule text-warning me-2"></i>Grado I Anestesiología y Rehabilitación: 3 años
+                        </button>
+                    </h2>
+                    <div id="anestesiologia" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 6.</li>
+                            </ul>
+                            </ul>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary"><i class="bi bi-pencil-square me-2"></i>Ir al Formulario</a>
+                                <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)</a>
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-primary mb-3 shadow-sm">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#higiene">
+                            <i class="bi bi-shield-check text-success me-2"></i>Grado I Higiene y Epidemiología: 3 años
+                        </button>
+                    </h2>
+                    <div id="higiene" class="accordion-collapse collapse" data-bs-parent="#accordionRequisitos">
+                        <div class="accordion-body">
+                            <h5>Documentos Obligatorios:</h5>
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Copia de DIP o Pasaporte.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Instancia de solicitud dirigida al decano.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de Selectividad (Original y Copia).</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Ficha de matricula y de permanencia.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>4 Fotos tamaño carnet.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta de la comunidad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Certificado de buena conducta del centro.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Un sobre A4 para guardar sus dodcuemntos en físicos.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Hoja académica actualizada con nota de selectividad.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Importe  de 8.500 XFA.</li>
+                                <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Puntuación media de selectivida 5.</li>
+                                <li clas></li>
+                            </ul>
+                            </ul>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                <a href="{{ url_for('solicitar_matricula') }}" class="btn btn-primary"><i class="bi bi-pencil-square me-2"></i>Ir al Formulario</a>
+                                <a href="https://wa.me/+240222122267" class="btn btn-outline-success" target="_blank"><i class="bi bi-whatsapp me-2"></i>Dudas (Representante estudiantil)</a>
+                                <a href="{{ url_for('static', filename='uploads/requisitos/plan_medicina.pdf') }}" class="btn btn-secondary" target="_blank">
+                                    <i class="bi bi-file-earmark-medical me-2"></i>Requisitos por Asignatura
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

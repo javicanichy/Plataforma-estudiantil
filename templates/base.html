@@ -31,76 +31,87 @@
 <body class="d-flex flex-column min-vh-100   {{ body_class or '' }}">
     <!-- HEADER / NAVEGACIÓN -->
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-0">
+            <div class="container-fluid d-flex justify-content-between align-items-center flex-nowrap">
                 <!-- Logo y título -->
-                <a class="navbar-brand d-flex align-items-center" href="/">
-                    <img src="{{ url_for('static', filename='img/logo_unge.jpeg') }}" alt="logo_unge" width="40" height="40" class="me-2">
-                    <div>
-                        <span class="d-block fw-bold">Universidad Nacional de Guinea Ecuatorial</span>
-                        <small class="d-block">Facultad de Ciencias de la Salud</small>
+                <a class="navbar-brand d-flex align-items-center flex-grow-1" href="/" style="min-width: 0;">
+                    <img src="{{ url_for('static', filename='img/logo_unge.jpeg') }}" width="35" height="35" class="me-2 flex-shrink-0" alt="Logo UNGE">
+                    <div class="d-flex flex-column" style="min-width: 0; overflow: hidden;">
+                        <span class="fw-bold text-nowrap brand-title">Universidad Nacional de Guinea Ecuatorial</span>
+                        <small class="text-nowrap brand-subtitle">Facultad de Ciencias de la Salud</small>
                     </div>
                 </a>
 
                 <!-- Botón hamburguesa para móviles -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <!-- Navegación colapsable -->
-                <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="collapse navbar-collapse" style="color: white;" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="/">
-                                <i class="bi bi-house-door"></i> Inicio
+                            <a class="nav-link fs-5 text-white" href="/">
+                                <i class="bi bi-house-door fs-5 text-white" style="color: white;"></i> Inicio
                             </a>
                         </li>
 
-                        <!-- Si NO hay sesión -->
-                        {% if not logueado %}
+                        {# CAMBIO CLAVE: Usamos current_user.is_authenticated de Flask-Login #}
+                        {% if not current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="/registro">
-                                <i class="bi bi-person-plus"></i> Registrarse
+                            <a class="nav-link fs-5 text-white" href="{{ url_for('registro_page') }}">
+                                <i class="bi bi-person-plus fs-5 text-white"></i> Registrarse
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">
-                                <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/lista_noticias">
-                                <i class="bi bi-newspaper"></i> Noticias
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/contacto">
-                                <i class="bi bi-envelope"></i> Contacto
+                            <a class="nav-link fs-5 text-white" href="{{ url_for('api_login') }}">
+                                <i class="bi bi-box-arrow-in-right fs-5 text-white"></i> Iniciar sesión
                             </a>
                         </li>
                         {% else %}
-                        <!-- Si HAY sesión -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/perfil">
-                                <i class="bi bi-person-circle"></i> {{ usuario }}
-                            </a>
+                            {% if current_user.rol == 'profesor' %}
+                                <a class="nav-link fs-5 text-white" href="{{ url_for('profesor_panel') }}">
+                                    <i class="bi bi-person-workspace fs-5 text-white"></i> 
+                                        <span>{{ current_user.nombre }}</span>
+                                </a>
+                            {% elif current_user.rol == 'directivo' %}
+                                 
+                                {% if current_user.directivo %}
+                                    <a class="nav-link fs-5 text-white" href="{{ url_for('ver_perfil_directivo', directivo_id=current_user.directivo.id) }}">
+                                        <i class="bi bi-shield-lock fs-5 text-white"></i> 
+                                            <span>{{ current_user.nombre }}</span>
+                                    </a>
+                                {% else %}
+                                   <a class="nav-link fs-5 text-white" href="#">
+                                        <i class="bi bi-person-exclamation fs-5 text-warning"></i> 
+                                            <span>{{ current_user.nombre }}</span>
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a class="nav-link fs-5 text-white" href="/perfil">
+                                    <i class="bi bi-person-circle fs-5 text-white"></i> 
+                                        <span>{{ current_user.nombre }}</span>
+                                </a>
+                            {% endif %}
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/logout" onclick="return confirm('¿Deseas cerrar sesión?');">
-                                <i class="bi bi-box-arrow-in-right"></i> Cerrar sesión
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/lista_noticias">
-                                <i class="bi bi-newspaper"></i> Noticias
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/contacto">
-                                <i class="bi bi-envelope"></i> Contacto
+                            <a class="nav-link fs-5 text-white" href="{{ url_for('logout') }}" onclick="return confirm('¿Deseas cerrar sesión?');">
+                                <i class="bi bi-box-arrow-right fs-5 text-white"></i> Cerrar sesión
                             </a>
                         </li>
                         {% endif %}
+
+                        <li class="nav-item">
+                            <a class="nav-link fs-5 text-white" href="/lista_noticias">
+                                <i class="bi bi-newspaper fs-5 text-white"></i> Noticias
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fs-5 text-white" href="/contacto">
+                                <i class="bi bi-envelope fs-5 text-white"></i> Contacto
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -197,26 +208,21 @@
 
                                     <!--SIDEBAR-->
 <!-- Botón del sidebar -->
-<button id="btn-sidebar" class="btn btn-primary position-fixed" style="z-index: 1001; transition: opacity 0.3s ease; top: 100px; left: 10px;">
-    ☰
+<button id="btn-sidebar" class="btn btn-outline-primary position-fixed" style="z-index: 1001; transition: opacity 0.3s ease; top: 83px; left: 8px;">FCS
 </button>
 
 <!-- Sidebar transparente -->
 <div id="sidebar" class="position-fixed start-0 top-0 h-100 p-3" style="width: 300px; z-index: 1000; transform: translateX(-100%); transition: transform 0.3s ease; overflow-y: auto; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-right: 1px solid rgba(255, 255, 255, 0.2);">
     <button id="btn-close-sidebar" class="btn btn-close position-absolute top-0 end-0 m-2" style="background: rgba(0,0,0,0.1);"></button>
 
-    <h4 class="fw-bold mb-3 mt-4" style="color: #333;">Oficinas UNGE</h4>
+    <h4 class="fw-bold mb-3 mt-4" style="color: #333;">Nuestros despachos</h4>
     <hr>
 
-    <ul class="list-group list-group-flush" style="background: transparent;">
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/decanato" class="text-decoration-none text-dark">Decanato</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/vicedecano" class="text-decoration-none text-dark">Vicedecano</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/enfermeria" class="text-decoration-none text-dark">Departamento de Enfermería</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/medicina" class="text-decoration-none text-dark">Departamento de Medicina</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/nuevas-tecnologias" class="text-decoration-none text-dark">Departamento de Nuevas Tecnologías</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/secretaria" class="text-decoration-none text-dark">Secretaría</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/investigacion-posgrado" class="text-decoration-none text-dark">Departamento de Investigación y Posgrado</a></li>
-        <li class="list-group-item border-0" style="background: transparent;"><a href="/oficinas/practicas-externas" class="text-decoration-none text-dark">Departamento de Prácticas Externas y Salud Pública</a></li>
+    <ul class="list-group list-group-flush" style="background: transparent; font-size: 18px;">
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/decano/panel" class="text-decoration-none text-dark">Decanato. Edificio I</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/decano/panel" class="text-decoration-none text-dark">Vicedecano. Edificio II</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/secretaria/panel" class="text-decoration-none text-dark">Secretaría. Edificio II</a></li>
+        <li class="list-group-item border-0" style="background: transparent;"><a href="/admin/login" target="_blank" class="text-decoration-none text-dark">Sección TIC</a></li>
     </ul>
 </div>
 

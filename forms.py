@@ -2,14 +2,15 @@ from random import choice, choices
 from flask_wtf import FlaskForm
 
 from wtforms import (
-    StringField, TextAreaField, BooleanField, FileField, SubmitField, PasswordField, SelectField
+    StringField, TextAreaField, BooleanField, FileField, SubmitField, PasswordField, SelectField,
+    DateField
     )
 
 from wtforms.validators import (
     DataRequired, Email, EqualTo, DataRequired, Length, Optional, Length, ValidationError, EqualTo
     )
 
-from flask_wtf.file import FileField, FileAllowed
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 
 
@@ -167,3 +168,100 @@ class SolicitudPrestamoForm(FlaskForm):
     motivo = TextAreaField("Motivo del préstamo", validators=[DataRequired()])
     confirmar = BooleanField("Confirmo que deseo solicitar el préstamo y me hago responsable del libro", validators=[DataRequired()])
     submit = SubmitField("Enviar solicitud")
+
+
+# ----------------------------------------------------------
+# Formulario para buazon de ayuda
+# ----------------------------------------------------------
+class BuzonAyudaForm(FlaskForm):
+    tipo_consulta = SelectField('Tipo de Consulta', choices=[
+        ('general', 'Consulta General / Informática'),
+        ('matricula', 'Admisiones / Matrícula')
+    ], id="tipo_consulta")
+    
+    nombre = StringField('Nombre Completo')
+    dip = StringField('DIP / DNI')
+    correo = StringField('Correo', validators=[DataRequired(), Email()])
+    mensaje = TextAreaField('Mensaje', validators=[DataRequired()])
+    archivo = FileField('Adjuntar PDF', validators=[
+        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.')
+    ])
+    submit = SubmitField('Enviar Mensaje')
+
+
+# ----------------------------------------------------------
+# Formulario para opiones de selectividad
+# ----------------------------------------------------------
+class OpinionForm(FlaskForm):
+    nombre = StringField('Nombre y Apellidos', validators=[DataRequired(), Length(min=3, max=100)])
+    mensaje = TextAreaField('Tu opinión', validators=[DataRequired(), Length(min=5, max=500)])
+    submit = SubmitField('Publicar comentario')
+
+
+# ----------------------------------------------------------
+# Formulario de selectividad
+# ----------------------------------------------------------
+class SelectividadForm(FlaskForm):
+    titulo = StringField('Título del Resultado', validators=[
+        DataRequired(message="El título es obligatorio")
+    ])
+    comentario_admin = TextAreaField('Comentario de la Administración', validators=[
+        DataRequired(message="Añada un breve comentario explicativo")
+    ])
+    pdf_file = FileField('Documento PDF (Resultados)', validators=[
+        FileRequired(),
+        FileAllowed(['pdf'], '¡Solo se permiten archivos PDF!')
+    ])
+    foto_examen = FileField('Foto del Ambiente (Opcional)', validators=[
+        FileAllowed(['jpg', 'png', 'jpeg'], 'Solo imágenes (jpg, png)')
+    ])
+    pie_foto = StringField('Pie de foto / Descripción de la imagen')
+    submit = SubmitField('Publicar Resultados')
+
+
+# ----------------------------------------------------------
+# Formulario de solicitud de matricula
+# ----------------------------------------------------------
+class MatriculaForm(FlaskForm):
+    # Datos Personales
+    tipo_estudiante = SelectField('Situación Académica', choices=[
+        ('nuevo', 'Nuevo Ingreso'),
+        ('graduado', 'Estudiante con Grado'),
+        ('continuante', 'Estudiante Continuante')
+    ])
+    nombre = StringField('Nombre', validators=[DataRequired()])
+    apellidos = StringField('Apellidos', validators=[DataRequired()])
+    fecha_nacimiento = DateField('Fecha de Nacimiento', validators=[DataRequired()])
+    residencia = StringField('Lugar de Residencia', validators=[DataRequired()])
+    natural_de = StringField('Natural de', validators=[DataRequired()])
+    dni_numero = StringField('DNI / Pasaporte', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    carrera = SelectField('Carrera', choices=[('Medicina General', 'Medicina General'),
+            ('Grado II Enfermería', 'Grado II Enfermería'), 
+            ('Grado I Enfermería', 'Grado I Enfermería'),
+            ('Ginecología y Obstetricia', 'Ginecología y Obstetricia'),
+            ('Laboratorio Clínico y Biomédico', 'Laboratorio Clínico y Biomédico'), 
+            ('Higiene y Epidemiología', 'Higiene y Epidemiología'),
+            ('Imagenología', 'Imagenología'),
+            ('Fisioterapia', 'Fisioterapia'),
+            ('Anestesiología', 'Anestesiología')])
+    telefono = StringField('Teléfono', validators=[DataRequired()])
+    sexo = SelectField('Sexo', choices=[('Masculino', 'Masculino'), ('Femenino', 'Femenino')])
+    nacionalidad = StringField('Nacionalidad', validators=[DataRequired()])
+
+    # Archivos (Sincronizados con el Modelo)
+    doc_dni = FileField('Copia DNI')
+    doc_cert_selectividad = FileField('Certificado Selectividad')
+    doc_instancia = FileField('Instancia')
+    doc_hoja_bachillerato = FileField('Hoja Bachillerato')
+    doc_foto_carnet = FileField('Foto Carnet')
+    doc_conducta_comunidad = FileField('Conducta Comunidad')
+    doc_conducta_centro = FileField('Conducta Centro')
+    doc_ficha_matricula = FileField('Ficha Matrícula')
+    doc_ficha_permanencia = FileField('Ficha Permanencia')
+    doc_hoja_facultad = FileField('Hoja Facultad')
+    doc_acta_defensa = FileField('Acta Defensa')
+    doc_convalidaciones = FileField('Convalidaciones')
+    doc_homologacion = FileField('Homologación')
+
+    submit = SubmitField('Enviar Solicitud')

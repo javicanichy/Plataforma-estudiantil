@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-4" style="background-color: #f4f7f6; min-height: 100vh;">
+    
+    <div class="row mb-5">
+        <div class="col d-flex justify-content-end align-items-center px-4">
+            <div class="text-end me-3">
+                <h6 class="mb-0 fw-bold">{{ current_user.nombre }} {{ current_user.apellidos }}</h6>
+                <small class="badge bg-success-subtle text-success">ID Docente: #{{ current_user.id }}</small>
+            </div>
+            <div class="position-relative">
+                <img src="{{ url_for('static', filename='uploads/fotos/' + profe.archivo_foto) }}" 
+                     class="rounded-circle border border-3 border-white shadow" 
+                     width="65" height="65" style="object-fit: cover;">
+                <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-address-card me-2"></i>Expediente del Instructor</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Correo Institucional</label>
+                            <p class="fw-bold border-bottom pb-2">{{ current_user.correo_institucional }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Número de DIP</label>
+                            <p class="fw-bold border-bottom pb-2">{{ current_user.dip }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small">Departamento</label>
+                            <p class="fw-bold text-dark">{{ profe.departamento }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small">Especialidad</label>
+                            <p class="fw-bold text-dark">{{ profe.especialidad }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="text-muted small">Título Académico</label>
+                            <p class="fw-bold text-dark">{{ profe.titulo_academico }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 btn-modulo" data-bs-toggle="modal" data-bs-target="#modalTitulacion">
+                        <div class="card-body text-center p-5">
+                            <div class="rounded-circle bg-success-subtle text-success mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                <i class="fas fa-graduation-cap fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Enviar Calificación</h5>
+                            <p class="text-muted small">Registrar notas por titulación seleccionada.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 btn-modulo">
+                        <div class="card-body text-center p-5">
+                            <div class="rounded-circle bg-info-subtle text-info mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                <i class="fas fa-comments fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Mensajería</h5>
+                            <p class="text-muted small">Comunicación oficial con alumnos y colegas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 btn-modulo">
+                        <div class="card-body text-center p-5">
+                            <div class="rounded-circle bg-primary-subtle text-primary mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                <i class="fas fa-user-graduate fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Todos los Estudiantes</h5>
+                            <p class="text-muted small">Listado general de alumnos registrados en la facultad.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 btn-modulo">
+                        <div class="card-body text-center p-5">
+                            <div class="rounded-circle bg-warning-subtle text-warning mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                <i class="fas fa-chalkboard-teacher fs-2"></i>
+                            </div>
+                            <h5 class="fw-bold">Todos los Profesores</h5>
+                            <p class="text-muted small">Directorio de contacto del cuerpo docente institucional.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-modulo { cursor: pointer; transition: 0.3s; border: 1px solid transparent !important; }
+    .btn-modulo:hover { 
+        transform: translateY(-5px); 
+        background-color: #ffffff; 
+        border-color: #dee2e6 !important;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08)!important; 
+    }
+    /* Colores suaves para los iconos */
+    .bg-primary-subtle { background-color: #e7f0ff !important; }
+    .bg-warning-subtle { background-color: #fff3cd !important; }
+</style>
+{% endblock %}

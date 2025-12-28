@@ -1,75 +1,153 @@
 {% extends "base.html" %}
-{% block title %}Iniciar sesión - UNGE Facultad de Ciencias de la Salud{% endblock %}
 
 {% block content %}
-<!--
-  login.html — Formulario de autenticación
-  IDs y names coherentes con main.js y backend:
-  - correo (type email)
-  - clave (type password) — IMPORTANTE: NO password_hash
--->
-<section class="container container-narrow my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h2 class="card-title text-center mb-4">Iniciar sesión</h2>
+<style>
+    /* Estilos específicos para centrar el login y darle un toque moderno */
+    .login-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        max-width: 420px;
+        width: 100%;
+        background: #fff;
+    }
+    .login-header {
+        padding: 30px 30px 10px 30px;
+        text-align: center;
+    }
+    .login-body {
+        padding: 30px;
+    }
+    .form-label {
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+    .form-control {
+        border: 1px solid #dee2e6;
+        padding: 10px 12px;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+    .btn-login {
+        padding: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+    .divider {
+        height: 1px;
+        background: #eee;
+        margin: 25px 0;
+    }
+</style>
 
-          <!-- Formulario id obligatorio: form-login -->
-          <form id="form-login" novalidate>
-            <!-- Campo correo -->
+<div class="login-wrapper">
+    <div class="card login-card">
+        <div class="login-header">
             <div class="mb-3">
-              <label for="correo" class="form-label">Correo electrónico</label>
-              <input 
-                type="email" 
-                class="form-control" 
-                id="correo" 
-                name="correo" 
-                placeholder="tu@correo.com"
-                autocomplete="email"
-                required
-              >
-              <div class="invalid-feedback">Introduce un correo válido.</div>
+                <i class="bi bi-shield-check text-primary" style="font-size: 2.5rem;"></i>
             </div>
-
-            <!-- Campo contraseña: id/name DEBE ser 'clave' (NO password_hash) -->
-            <div class="mb-3">
-              <label for="clave" class="form-label">Contraseña</label>
-              <input 
-                type="password" 
-                class="form-control" 
-                id="clave" 
-                name="clave" 
-                placeholder="Tu contraseña"
-                autocomplete="current-password"
-                required
-              >
-              <div class="invalid-feedback">Introduce tu contraseña.</div>
-            </div>
-
-            <!-- Mensaje de estado (error/éxito) -->
-            <div id="login-mensaje" class="mb-3 text-center text-danger" role="status" aria-live="polite"></div>
-
-            <!-- Botón enviar -->
-            <div class="d-grid">
-              <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
-            </div>
-
-            <!-- Opciones adicionales -->
-            <div class="text-center mt-3">
-              <small><a href="/contacto">¿Olvidaste la contraseña?</a></small>
-            </div>
-          </form>
-          <!-- fin formulario -->
+            <h4 class="fw-bold">Acceso usuarios corporativos</h4>
+            <p class="text-muted small">Usa tu identidad institucional</p>
         </div>
-      </div>
+        
+        <div class="login-body">
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary text-uppercase">Correo Institucional</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" id="correo" class="form-control" 
+                               placeholder="ej: nombre.apellido@unge.gq" required>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary text-uppercase">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                        <input type="password" id="password" class="form-control" 
+                               placeholder="••••••••" required>
+                    </div>
+                </div>
 
-      <!-- Enlace a registro -->
-      <p class="text-center mt-3">
-        ¿No tienes cuenta? <a href="/registro" class="fw-bold">Regístrate aquí</a>
-      </p>
+                <div id="mensajeError" class="alert alert-danger d-none py-2 mb-3 small">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <span></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 btn-login" id="btnLogin">
+                    Entrar al Sistema
+                </button>
+            </form>
+
+            <div class="divider"></div>
+            
+            <div class="text-center">
+                <p class="small text-muted mb-2">¿Problemas con tu acceso?</p>
+                <a href="{{ url_for('registro_estudiante') }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-unlock me-1"></i> Activar o recuperar cuenta
+                </a>
+            </div>
+        </div>
+        <div class="card-footer bg-light border-0 py-3 text-center">
+            <small class="text-muted">Facultad de Ciencias de la Salud</small>
+        </div>
     </div>
-  </div>
-</section>
-{% endblock %}
+</div>
 
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('btnLogin');
+    const errorDiv = document.getElementById('mensajeError');
+    const correo = document.getElementById('correo').value;
+    const password = document.getElementById('password').value;
+
+    // Estado visual de carga
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Autenticando...';
+    errorDiv.classList.add('d-none');
+
+    // Llamada a tu API de autenticación
+    fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: correo, password: password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.ok) {
+            // Éxito: Redirección al panel principal
+            window.location.href = "{{ url_for('inicio') }}";
+        } else {
+            // Error: Restaurar botón y mostrar mensaje
+            btn.disabled = false;
+            btn.innerHTML = 'Entrar al Sistema';
+            errorDiv.querySelector('span').innerText = data.mensaje;
+            errorDiv.classList.remove('d-none');
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = 'Entrar al Sistema';
+        errorDiv.querySelector('span').innerText = "Error de conexión con el servidor";
+        errorDiv.classList.remove('d-none');
+    });
+});
+</script>
+{% endblock %}

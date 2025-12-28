@@ -1,119 +1,131 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+  /* Mantenemos tus estilos de tarjetas intactos */
+  .tarjeta a {
+    transition: all 0.3s ease;
+    border: 1px solid #eee;
+    font-weight: 500;
+  }
+  .tarjeta a:hover {
+    transform: translateY(-5px);
+    background-color: #0d6efd !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(13,110,253,0.3) !important;
+  }
+  .talento-badge {
+    background: #fff3cd;
+    color: #856404;
+    padding: 5px 15px;
+    border-radius: 20px;
+    display: inline-block;
+    font-size: 0.9rem;
+    border: 1px solid #ffeeba;
+  }
+</style>
+
 <div class="container my-4 position-relative">
 
-  <!-- Botones flotantes de acción -->
   <div class="botones-flotantes d-flex gap-2 mb-3 justify-content-end">
-    <!-- Botón Editar Perfil -->
-    {% if session.get('usuario_id') == usuario.id %}
-    <a href="{{ url_for('perfil_editar') }}" class="btn btn-primary btn-sm">
+    {% if current_user.id == usuario.id %}
+    <a href="{{ url_for('perfil_editar') }}" class="btn btn-primary btn-sm rounded-pill px-3">
       <i class="bi bi-pencil-square"></i> Editar Perfil
     </a>
-    {% endif %}
-
-    <!-- Botón Configuración -->
-    <a href="{{ url_for('configuracion') }}" class="btn btn-secondary btn-sm">
+    <a href="{{ url_for('configuracion') }}" class="btn btn-secondary btn-sm rounded-pill px-3">
       <i class="bi bi-gear"></i> Configuración
     </a>
+    {% endif %}
   </div>
 
-  <!-- FILA SUPERIOR: 3 COLUMNAS -->
   <div class="row g-4 mb-4">
-    <!-- Columna 1: Perfil -->
     <div class="col-lg-4">
-      <div class="card p-3 shadow-sm text-center perfil-card">
+      <div class="card h-100 border-0 shadow-sm text-center p-3">
         {% if usuario.foto_perfil %}
-          <img src="{{ url_for('static', filename='uploads/perfiles/' ~ usuario.foto_perfil) }}"
-               class="perfil-img mb-3">
+          {# Se corrigió foto_perfiles por foto_perfil #}
+          <img src="{{ url_for('static', filename='uploads/perfiles/' ~ usuario.foto_perfil) }}" class="perfil-img mb-3">
         {% else %}
           <div class="perfil-img-placeholder d-flex align-items-center justify-content-center mb-3">
-            <span class="fs-2">{{ usuario.nombre[0] }}</span>
+            <span class="fs-1">{{ usuario.nombre[0]|upper }}</span>
           </div>
         {% endif %}
-        <h4>{{ usuario.nombre }}</h4>
-        <p class="text-muted">{{ usuario.rol|capitalize }}</p>
-        <div class="text-start small">
-          <p><strong>Nombre:</strong> {{ usuario.nombre }}</p>
-          <p><strong>Apellidos:</strong> {{ usuario.apellidos if usuario.apellidos else "No asignado"}}</p>
-          <p><strong>Biografia:</strong> {{ usuario.biografia if usuario.biografia else "No asigando" }}</p>
+        
+        <h4 class="mb-1">{{ usuario.nombre }} {{ usuario.apellidos if usuario.apellidos }}</h4>
+        <p class="text-primary small mb-3 fw-bold">{{ usuario.rol|upper }}</p>
+        
+        {% if usuario.talento %}
+        <div class="talento-badge mb-3">
+          {% if usuario.talento == 'futbol' %}<i class="bi bi-trophy"></i> Deportista
+          {% elif usuario.talento == 'musica' %}<i class="bi bi-music-note-beamed"></i> Artista Musical
+          {% elif usuario.talento == 'arte' %}<i class="bi bi-palette"></i> Creativo
+          {% elif usuario.talento == 'informatica' %}<i class="bi bi-code-slash"></i> Tecnológico
+          {% else %}<i class="bi bi-star"></i> {{ usuario.talento|capitalize }}
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="text-start mt-3 p-2 bg-light rounded">
+          <p class="mb-1 small"><strong><i class="bi bi-book me-2"></i>Carrera:</strong> <span class="text-muted">{{usuario.carrera}}</span></p>
+          <p class="mb-0 small text-truncate"><strong><i class="bi bi-quote me-2"></i>Bio:</strong> {{ usuario.biografia if usuario.biografia else "Estudiante de la UNGE" }}</p>
         </div>
       </div>
     </div>
 
-    <!-- Columna 2: Ajustes / Nombre y Apellidos -->
     <div class="col-lg-4">
-      <div class="card p-3 shadow-sm ajustes-card text-center">
-        <h4>Detalles</h4>
-        <br>   
-        <div class="text-start small">             
-          <p><strong>Fecha de Nacimiento:</strong> {{ usuario.fecha_nacimiento if usuario.fecha_nacimiento else "No asignado" }}</p>
-          <p><strong>Correo:</strong> {{ usuario.correo if usuario.correo else "No asignado" }}</p>
-          <p><strong>telefono:</strong> {{ usuario.telefono if usuario.telefono else "No asignado" }}</p>
-          <p><strong>Debates:</strong> {{ usuario.debate if usuario.telefono else 0 }}</p>
-          <p><strong>Curso:</strong> {{ usuario.curso if usuario.curso else "No asignado"}}</p>
-          <p><strong>Pais:</strong> {{ usuario.pais if usuario.pais else "Se desconoce" }}</p>
-          <p><strong>Residencia:</strong> {{ usuario.residencia if usuario.residencia else "Se desconoce" }}</p>
+      <div class="card h-100 border-0 shadow-sm p-4">
+        <h5 class="border-bottom pb-2 mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Detalles Institucionales</h5>
+        <div class="small">             
+          <p class="d-flex justify-content-between"><strong>Institución:</strong> <span>UNGE</span></p>
+          <p class="d-flex justify-content-between"><strong>Correo Institucional:</strong> <span class="text-primary">{{ usuario.correo_institucional }}</span></p>
+          <p class="d-flex justify-content-between"><strong>DIP:</strong> <span>{{ usuario.dip }}</span></p>
+          <p class="d-flex justify-content-between"><strong>Teléfono:</strong> <span>{{ usuario.telefono if usuario.telefono else "No registrado" }}</span></p>
+          <hr>
+          <p class="d-flex justify-content-between"><strong>País:</strong> <span>{{ usuario.pais }}</span></p>
+          <p class="d-flex justify-content-between"><strong>Residencia:</strong> <span>{{ usuario.residencia }}</span></p>
+          <p class="d-flex justify-content-between"><strong>Nacimiento:</strong> <span>{{ usuario.fecha_nacimiento }}</span></p>
         </div>
       </div>
     </div>
 
-    <!-- Columna 3: Foto de Portada (maximo 3)-->
     <div class="col-lg-4 d-flex justify-content-center">
-      <div class="portada-card">
+      <div class="portada-card w-100 h-100 shadow-sm" style="overflow: hidden; border-radius: 10px; position: relative;">
         {% if usuario.foto_portada %}
           {% for una_foto in usuario.foto_portada %}
             <img src="{{ url_for('static', filename='uploads/portadas/' ~ una_foto) }}"
-            class="portada-img portada-slide" style="{% if not loop.first %} display:none {% endif %}">
+            class="portada-img portada-slide" 
+            style="width: 100%; height: 100%; object-fit: cover; {% if not loop.first %} display:none; {% endif %}">
           {% endfor %}
-
         {% else %}
-          <div class="portada-placeholder d-flex align-items-center justify-content-center">
-            Foto de portada
+          <div class="portada-placeholder h-100 d-flex align-items-center justify-content-center bg-light text-muted">
+             <i class="bi bi-image me-2"></i> Foto de portada
           </div>
         {% endif %}
       </div>
     </div>
-
   </div>
 
-  <!-- FILA INFERIOR: Tarjetas 3x3 -->
-  <!-- TARJETAS DE OPCIONES (3x3) -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('biblioteca_page') }}" class="btn btn-light shadow-sm w-100 py-3">Biblioteca</a>
-  </div>
+  <h5 class="mb-3">Servicios Universitarios</h5>
+  <div class="row g-3 mb-4">
+    {% set items = [
+      ('biblioteca_page', 'Biblioteca', 'bi-building-fill'),
+      ('ver_notas', 'Mis Notas', 'bi-journal-check'),
+      ('mensajes_page', 'Mensajería', 'bi-chat-dots-fill'),
+      ('ver_expediente', 'Expediente', 'bi-file-earmark-person'),
+      ('calendario_page', 'Calendario', 'bi-calendar3'),
+      ('crear_debate', 'Debates', 'bi-people-fill'),
+      ('lista_noticias', 'Noticias', 'bi-newspaper'),
+      ('estudios', 'Mis Estudios', 'bi-mortarboard'),
+      ('facultad', 'Mi Facultad', 'bi-bank')
+    ] %}
 
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('notas_page') }}" class="btn btn-light shadow-sm w-100 py-3">Notas</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('mensajes_page') }}" class="btn btn-light shadow-sm w-100 py-3">Mensajes</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('expedientes_page') }}" class="btn btn-light shadow-sm w-100 py-3">Expedientes</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('calendario_page') }}" class="btn btn-light shadow-sm w-100 py-3">Calendario</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('crear_debate') }}" class="btn btn-light shadow-sm w-100 py-3">Debates</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('lista_noticias') }}" class="btn btn-light shadow-sm w-100 py-3">Noticias</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('estudios') }}" class="btn btn-light shadow-sm w-100 py-3">Estudios</a>
-  </div>
-
-  <div class="col-6 col-md-4 tarjeta">
-    <a href="{{ url_for('facultad') }}" class="btn btn-light shadow-sm w-100 py-3">Mi Facultad</a>
+    {% for ruta, nombre, icono in items %}
+    <div class="col-6 col-md-4 tarjeta">
+      <a href="{{ url_for(ruta, id=usuario.id) }}" class="btn btn-light shadow-sm w-100 py-4 d-flex flex-column align-items-center">
+        <i class="bi {{ icono }} fs-3 mb-2"></i>
+        <span>{{ nombre }}</span>
+      </a>
+    </div>
+    {% endfor %}
   </div>
 
 </div>

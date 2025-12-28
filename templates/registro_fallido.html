@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card shadow border-0">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <h2 class="fw-bold">No pudimos completar tu registro</h2>
+                    <hr>
+                    <p class="lead text-muted">{{ mensaje }}</p>
+                    
+                    <div class="alert alert-light text-start border small">
+                        <strong>Causas comunes:</strong>
+                        <ul class="mb-0">
+                            <li>El código de matrícula tiene un error de escritura.</li>
+                            <li>Tu solicitud de matrícula aún no ha sido aprobada por el administrador.</li>
+                            <li>Ya creaste una cuenta anteriormente con este DIP.</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{{ url_for('registro_estudiante') }}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Volver a intentar
+                        </a>
+                        <a href="mailto:soporte@unge.gq" class="btn btn-outline-secondary">
+                            Contactar con Soporte Técnico
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

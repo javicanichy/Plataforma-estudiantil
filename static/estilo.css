@@ -1,202 +1,307 @@
-/* Sinebar */
-#btn-sideba{
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: #b30000;
-
+/* ===========================================
+   RESET Y GENERALES
+   =========================================== */
+html, body {
+    margin: 0;
+    padding: 0;
 }
 
+/* Fuente global para toda la página */
+:root {
+    --uge-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
 
-/* Contenedor de cada dropdown */
+html, body, h1, h2, h3, h4, h5, h6, p, a, span, label, input, button, select, textarea, li {
+    font-family: var(--uge-font) !important;
+}
+
+/* ===========================================
+   SIDEBAR
+   =========================================== */
+#btn-sideba {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: blue;
+}
+
+/* ===========================================
+   DROPDOWNS HOVER
+   =========================================== */
 .hover-dropdown {
-  position: relative;
+    position: relative;
 }
 
-/* Enlace principal */
 .hover-dropdown > a {
-  color: #b00d0d;
-  text-decoration: none;
-  font-weight: bold;
-  padding: 10px 5px;
-  display: block;
-  cursor: pointer;
+    color: inherit !important;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 5px;
+    display: block;
+    cursor: pointer;
 }
 
-/* Submenú oculto por defecto */
 .hover-dropdown .dropdown-menu {
-  display: flex;
-  flex-direction: row; /* horizontal */
-  gap: 50px; /* separación grande entre cada contenedor del enlace */
-  opacity: 0;
-  visibility: hidden;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  
-  padding: 20px 40px; /* padding alrededor de los bloques */
-  margin: 0;
-  /* Background transparente */
-
-
- /* Background transparente y moderno tipo glass */
-  /* Fondo totalmente transparente (se ve la imagen de fondo) */
-  background: rgba(0, 0, 0, 0); 
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); 
-
-  border-radius: 6px;
-  transform: translateY(-15px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 1000;
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding: 20px 40px;
+    margin: 0;
+    background: rgba(34, 122, 67, 0);
+    border-radius: 6px;
+    transform: translateY(-15px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1000;
 }
 
-/* Cada enlace dentro de su contenedor */
 .hover-dropdown .dropdown-item {
-  flex: 1; /* ocupa el ancho del bloque */
-  text-align: center;
-  padding: 20px 40px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
-  text-decoration: none;
-  color: #333;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+    flex: 1;
+    text-align: center;
+    padding: 20px 40px;
+    background-color: 0, 0, 0, 0;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .hover-dropdown .dropdown-item:hover {
-  background-color: #e0e0e0;
-  transform: translateY(-2px); /* pequeño efecto al pasar el ratón */
+    background-color: white;
+    transform: translateY(-2px);
 }
 
-/* Mostrar submenú al pasar el ratón */
 .hover-dropdown:hover .dropdown-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-/* ===== Responsive: móvil y tablet ===== */
-@media (max-width: 768px) {
-  .d-flex {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .hover-dropdown .dropdown-menu {
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
-    width: 100%;
-    transform: translateY(0);
     opacity: 1;
     visibility: visible;
-    box-shadow: none;
-  }
-
-  .hover-dropdown .dropdown-item {
-    width: 100%;
-    padding: 15px 20px;
-  }
-
-  /* Ocultar submenú hasta tocar */
-  .hover-dropdown .dropdown-menu {
-    display: none;
-  }
-
-  /* Mostrar al tocar */
-  .hover-dropdown.active .dropdown-menu {
-    display: flex;
-  }
+    transform: translateY(0);
 }
 
-
-/* PRESENTACION INICIO*/
+/* ===========================================
+   PRESENTACI�N INICIO
+   =========================================== */
 #presentacion {
     margin-top: 0px;
     margin-bottom: 0px;
     justify-content: center;
-    /* color de texto */
     color: green;
 }
 
-
-/* Hacer que los enlaces hereden el color del navbar */
-.hover-dropdown > a {
-    color: inherit !important; /* El enlace principal */
-}
-
-.hover-dropdown .dropdown-menu .dropdown-item {
-    color: inherit !important; /* Los ítems del dropdown */
-}
-
-/* Opcional: mantener efecto hover */
-.hover-dropdown .dropdown-menu .dropdown-item:hover {
-    color: inherit !important;
-    background-color: rgba(0,0,0,0.05); /* un fondo suave al pasar el mouse */
-}
-
-
-/* Texto principal “Presentación” */
 #presentacion > .hover-dropdown > a {
-    color: #0d6efd; /* azul del navbar */
+    color: #0d6efd;
 }
 
-/* Ítems del dropdown */
 #presentacion .dropdown-menu .dropdown-item {
-    color: #0d6efd !important; /* fuerza azul */
+    color: #0d6efd !important;
 }
 
-/* Hover de los ítems */
 #presentacion .dropdown-menu .dropdown-item:hover {
     color: #0d6efd !important;
-    background-color: rgba(13, 110, 253, 0.1); /* fondo suave al pasar el ratón */
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* ===========================================
+   CARRUSEL Y BARRA SUPERIOR
+   =========================================== */
+.seccion-principal-ugr {
+    margin-top: -1px;
+    max-width: 1140px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.barra-carrusel {
+    font-size: 0.88rem;
+    background-color: #fdfdfd !important;
+    border-color: #0a2540 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    border-bottom: 1px solid #121213;
+    margin-top: 0 !important;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.barra-carrusel-inner {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100%;
+}
+
+.barra-carrusel.border-start,
+.barra-carrusel.border-end {
+    border-left: 0;
+    border-right: 0;
+}
+
+/* ===========================================
+   VARIABLES Y ESTILOS TIPO UGR - BARRA/NAV
+   =========================================== */
+:root {
+    --uge-primary: #0a2540; /* azul oscuro similar */
+    --uge-accent: #1e74cb;  /* azul acento */
+    --uge-muted: #6b7785;
+    --uge-bg: #ffffff;
+    --uge-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Barra superior centralizada y reducida 1cm */
+.barra {
+    max-width: calc(100% - 1cm);
+    margin: 0 auto;
+    background: var(--uge-bg);
+}
+
+/* Links de la barra (menú principal) */
+.barra-links {
+    margin-left: 0; /* controlado por el flujo y gap */
+}
+
+.barra a {
+    color: var(--uge-primary);
+    text-decoration: none !important;
+    font-family: var(--uge-font);
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.barra a:hover,
+.barra a:focus {
+    color: var(--uge-accent);
+    text-decoration: none !important;
+}
+
+/* Iconos sociales en la barra */
+.barra .bi {
+    font-size: 1.1rem;
+    color: var(--uge-primary);
+}
+.barra .d-flex a {
+    color: var(--uge-primary);
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+}
+.barra .d-flex a:hover {
+    color: var(--uge-accent);
+}
+
+/* Ajustes responsivos similares al sitio de referencia */
+@media (max-width: 767.98px) {
+    .barra {
+        max-width: 100%;
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
+    .barra-links {
+        margin-left: 0;
+    }
+}
+
+#carruselInicio {
+    max-height: 500px;
+    overflow: hidden;
+    border-color: #1e74cb !important;
+    margin-top: 0;
+}
+
+#carruselInicio .carousel-inner {
+    height: 350px; /* altura deseada */
+}
+
+#carruselInicio .carousel-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 
-/* Footer */
-.titulo-carousel {
-  font-size: 6.5rem;
-  font-weight: 600;
-  white-space: nowrap;         /* evita que el texto haga salto de línea */
+#carruselInicio img,
+.carousel-item img {
+    width: 100%;
+    height: 350px !important;
+    object-fit: cover;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.carousel-caption {
-  top: 30% !important;     /* Subirlo */
-  bottom: auto !important; /* Quitar restricción */
-  transform: translateX(-50%);
-  left: 35%;
+.carousel-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 25%;
+    height: 100%;
+    background: rgba(0, 86, 179, 0.9);
+    color: black;
+    display: flex;
+    align-items: center;
+    padding-left: 5%;
+}
+
+.overlay-content {
+    max-width: 90%;
+}
+
+.overlay-content h3 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.btn-triangle {
+    display: inline-block;
+    padding: 10px 25px;
+    background-color: white;
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 50px;
+    margin-top: 15px;
+    transition: transform 0.3s;
+}
+
+.btn-triangle:hover {
+    transform: scale(1.1);
+    color: #003d80;
+    background-color: #f8f9fa;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.carousel-item.active .overlay-content {
+    animation: fadeInUp 0.8s forwards;
+}
+
+.carousel-item {
+    transition: transform 2s ease-in-out;
 }
 
 
-/* Estilo del footer */
-/* Quitar subrayado y mantener color */
-.footer-email {
-  text-decoration: none;
-  color: white; 
-}
-
-.footer-email:hover {
-  text-decoration: underline;
-}
-
-/* Ajustes opcionales si quieres espacio entre columnas */
-.footer-left,
-.footer-center,
-.footer-right {
-  margin: 5px 0;
-}
-
-/*tamano de letra */
-#footer-text, 
-#footer-text * {
-    font-size: 1.0rem !important;   /* Ajusta el tamaño que quieras */
-    line-height: 1.4;
+.ugr-no-caret{
+    color: #0d6efd important!;
 }
 
 
-/* CONTENEDOR GENERAL  DE NOTICIAS*/
-/* --- CONTENEDOR GENERAL --- */
+
+/* ===========================================
+   NOTICIAS
+   =========================================== */
 #noticias .noticia-card {
     position: relative;
     overflow: hidden;
@@ -205,7 +310,6 @@
     cursor: pointer;
 }
 
-/* Imagen de fondo */
 #noticias .noticia-card img {
     width: 100%;
     height: 100%;
@@ -213,82 +317,59 @@
     transition: 0.3s ease-in-out;
 }
 
-
-/* Overlay encima de la imagen */
 #noticias .noticia-overlay {
     position: absolute;
     bottom: 0;
-    padding: 20px;
+    padding: 15px;
     width: 100%;
     color: black;
-    /* Quitar el degradado si no lo quieres */
-    background: transparent;
+    background: rgba(13, 189, 42, 0.6);
+    border-radius: 8px;
 }
 
-
-/* Fecha */
 #noticias .noticia-overlay .fecha {
     font-size: 0.85rem;
     margin-bottom: 5px;
 }
 
-/* Título */
 #noticias .noticia-overlay .titulo {
     font-size: 1.05rem;
     font-weight: bold;
     margin: 0;
 }
 
-
-/* Link invisible que cubre toda la tarjeta */
 #noticias .stretched-link {
     position: absolute;
     inset: 0;
     z-index: 10;
 }
 
-
-/* Color de fondo */
-#noticias .noticia-overlay {
-    background: rgba(13, 189, 42, 0.6); /* azul */
-    padding: 15px;
-    border-radius: 8px;
-}
-
-
-
-/* SECCION NOTICIAS */
-/* Noticias 1 */
-/* CONTENEDOR GENERAL */
+/* Estilos UGR para noticias */
 .noticia-layout {
-  display: flex;
-  gap: 40px;
-  align-items: flex-start;
-  margin: 40px auto;
-  max-width: 1200px;
-  padding: 0 20px;
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    margin: 40px auto;
+    max-width: 1200px;
+    padding: 0 20px;
 }
 
-/* COLUMNA IZQUIERDA */
 .noticia-texto {
-  flex: 2;
+    flex: 2;
 }
 
-/* COLUMNA DERECHA */
-/* Imagen  y pie*/
 .noticia-imagen {
-    position: relative; /* necesario para top/left */
-    top: 135px;          /* mueve hacia abajo */
-    left: 100px;         /* mueve hacia la derecha */
-    
+    position: relative;
+    top: 135px;
+    left: 100px;
     display: flex;
     flex-direction: column;
-    align-items: center; /* para que el pie quede debajo centrado */
+    align-items: center;
 }
 
 .noticia-imagen img {
     width: 100%;
-    max-width: 350px; /* tamaño controlado */
+    max-width: 350px;
     border-radius: 8px;
     box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
 }
@@ -300,14 +381,13 @@
     text-align: center;
 }
 
-/* COMPARTIR */
 .ugr-compartir {
     margin-top: 15px;
     display: flex;
     align-items: center;
     gap: 12px;
     font-size: 15px;
-    margin-left: 470px; /* Mover a la derecha */
+    margin-left: 470px;
 }
 
 .ugr-compartir span {
@@ -328,85 +408,57 @@
     transform: scale(1.2);
 }
 
-
-
-
-/* MIGAS DE PAN */
 .ugr-breadcrumb {
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-  color: green;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    color: green;
 }
 
 .ugr-breadcrumb a {
-  text-decoration: none;
-  color: green;
+    text-decoration: none;
+    color: green;
 }
 
-/* TÍTULO */
 .ugr-titulo-noticia {
-  font-size: 2.3rem;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: green;
-  text-align: center;
-}
-
-/* FECHA */
-.ugr-fecha-noticia {
-  color: green;
-  margin-bottom: 5px;
-  font-size: 0.95rem;
-}
-
-/* CATEGORÍA */
-.ugr-categoria {
-  text-transform: lowercase;
-  font-weight: 600;
-  color: #b30000;
-  margin-bottom: 25px;
-}
-
-/* PÁRRAFOS */
-.ugr-cuerpo-noticia p {
-  font-size: 1.05rem;
-  line-height: 1.75;
-  margin-bottom: 18px;
-  color: #333;
-  text-align: justify;
-}
-
-/* RESPONSIVE PARA MÓVIL */
-@media (max-width: 900px) {
-  .noticia-layout {
-    flex-direction: column;
-  }
-
-  /* Imagen */
-  .noticia-imagen {
-    order: -1;
+    font-size: 2.3rem;
+    font-weight: 700;
     margin-bottom: 10px;
-  }
+    color: green;
+    text-align: center;
 }
 
+.ugr-fecha-noticia {
+    color: green;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
 
+.ugr-categoria {
+    text-transform: lowercase;
+    font-weight: 600;
+    color: #b30000;
+    margin-bottom: 25px;
+}
 
-/* Enlace al programa completo */
-/* Enlace estilo UGR */
+.ugr-cuerpo-noticia p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    margin-bottom: 18px;
+    color: #333;
+    text-align: justify;
+}
+
 .ugr-enlace-programa a {
-  font-weight: 600;
-  color: green;
-  text-decoration: none;
-  font-size: 18px;
+    font-weight: 600;
+    color: green;
+    text-decoration: none;
+    font-size: 18px;
 }
 
 .ugr-enlace-programa a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
-
-/* Formulario de nueva noticia */
-/* Formulario de noticias */
 .ugr-label {
     font-weight: 600;
     color: green;
@@ -440,3 +492,216 @@
 .ugr-boton:hover {
     background-color: darkgreen;
 }
+
+/* ===========================================
+   FOOTER
+   =========================================== */
+.footer-email {
+    text-decoration: none;
+    color: white;
+}
+
+.footer-email:hover {
+    text-decoration: underline;
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+    margin: 5px 0;
+}
+
+#footer-text,
+#footer-text * {
+    font-size: 1.0rem !important;
+    line-height: 1.4;
+}
+
+/* ===========================================
+   RESPONSIVE
+   =========================================== */
+@media (max-width: 768px) {
+    .d-flex {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .hover-dropdown .dropdown-menu {
+        flex-direction: column;
+        gap: 10px;
+        position: relative;
+        width: 100%;
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+        box-shadow: none;
+        display: none;
+    }
+
+    .hover-dropdown.active .dropdown-menu {
+        display: flex;
+    }
+
+    .hover-dropdown .dropdown-item {
+        width: 100%;
+        padding: 15px 20px;
+    }
+
+    .carousel-overlay {
+        width: 100%;
+        clip-path: none;
+        background: rgba(0, 0, 0, 0.5);
+        text-align: center;
+        padding-left: 0;
+        justify-content: center;
+    }
+
+    #carruselInicio, #carruselInicio img {
+        height: 350px;
+    }
+
+    .overlay-content h3 {
+        font-size: 1.5rem;
+    }
+
+    .noticia-layout {
+        flex-direction: column;
+    }
+
+    .noticia-imagen {
+        order: -1;
+        margin-bottom: 10px;
+    }
+
+    #carruselInicio .carousel-inner img {
+        height: 250px;
+    }
+}
+
+@media (max-width: 576px) {
+    .barra-carrusel {
+        padding: 0.25rem 0;
+    }
+
+    .barra-carrusel .row {
+        flex-wrap: nowrap !important;
+        align-items: center;
+    }
+
+    .barra-carrusel .col-md-8,
+    .barra-carrusel .col-md-4 {
+        flex: 0 0 auto;
+        width: auto;
+        padding: 0;
+    }
+
+    .barra-carrusel a {
+        font-size: 0.8rem;
+        white-space: nowrap;
+        text-decoration: none !important;
+    }
+
+    .barra-carrusel a:hover {
+        text-decoration: none !important;
+    }
+
+.barra a {
+    text-decoration: none !important;
+}
+
+.barra a:hover {
+    text-decoration: none !important;
+}
+
+    .barra-carrusel i {
+        font-size: 0.95rem;
+    }
+
+    .barra-carrusel .gap-4 {
+        gap: 0.6rem !important;
+    }
+
+    .barra-carrusel .gap-3 {
+        gap: 0.5rem !important;
+    }
+
+    .barra-carrusel .dropdown-menu {
+        font-size: 0.8rem;
+    }
+
+    .barra-carrusel .navbar-brand img {
+        width: 24px !important;
+        height: 24px !important;
+    }
+
+    .barra-carrusel .navbar-brand span {
+        font-size: 0.7rem !important;
+    }
+
+    .barra-carrusel .navbar-brand small {
+        font-size: 0.6rem !important;
+    }
+
+    .barra-carrusel .navbar-nav .nav-link span {
+        display: none !important;
+    }
+
+    .barra-carrusel .navbar-nav .nav-link {
+        font-size: 0.8rem !important;
+        padding: 0.3rem 0.6rem !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .hover-dropdown:hover .dropdown-menu {
+        display: block;
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .navbar-collapse {
+        background: #ffffff;
+        border-radius: 0 0 10px 10px;
+        padding: 15px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .border-top {
+        border-color: #eee !important;
+    }
+
+    .dropdown-menu {
+        border: none;
+        background: #f9f9f9;
+        margin-bottom: 10px;
+    }
+}
+
+/* ===========================================
+   EFECTOS Y ANIMACIONES
+   =========================================== */
+.social-btn {
+    transition: transform 0.2s ease;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+}
+
+.barra-carrusel .dropdown-toggle::after,
+.ugr-no-caret::after {
+    display: none !important;
+}
+
+.barra-carrusel .dropdown-toggle {
+    padding-right: 0;
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="container my-5">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb bg-transparent p-0">
+        <li class="breadcrumb-item"><a href="{{ url_for('selectividad') }}" class="text-decoration-none">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('selectividad') }}" class="text-decoration-none">Selectividad</a></li>
+        <li class="breadcrumb-item active text-truncate" style="max-width: 250px;">{{ resultado.titulo }}</li>
+      </ol>
+    </nav>
+
+    <div class="row mt-4 g-5">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-3 display-6 text-dark">{{ resultado.titulo }}</h1>
+            
+            <div class="d-flex align-items-center mb-4 text-muted">
+                <i class="bi bi-clock me-2"></i>
+                <span>Publicado el {{ resultado.fecha_publicacion.strftime('%d de %B, %Y') }}</span>
+            </div>
+            
+            {% if resultado.ruta_foto %}
+                <figure class="mb-4 text-center"> <img src="{{ url_for('static', filename=resultado.ruta_foto) }}" 
+                    class="img-fluid rounded shadow-sm d-block" 
+                    style="max-height: 600px; width: 80%; object-fit: cover;" 
+                    alt="{{ resultado.titulo }}">
+             
+                    {% if resultado.ruta_pie_foto %}
+                        <figcaption class="mt-2 text-muted small fst-italic">
+                        📸 {{ resultado.ruta_pie_foto }}
+                        </figcaption>
+                    {% endif %}
+                </figure>
+            {% endif %}
+            
+            <div class="contenido-noticia mb-5">
+                <p class="lead text-secondary" style="white-space: pre-line; line-height: 1.8;">
+                    {{ resultado.comentario_admin }}
+                </p>
+                
+                <div class="p-4 bg-light rounded-3 d-flex align-items-center justify-content-between border shadow-sm mt-5">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white p-2 rounded me-3 border">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-1"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Documentación Oficial</h6>
+                            <small class="text-muted">Archivo PDF con los resultados de selectividad</small>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('static', filename=resultado.ruta_pdf) }}" class="btn btn-primary btn-lg shadow-sm" download>
+                        <i class="bi bi-download me-2"></i>Descargar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 2rem;">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-chat-left-text me-2"></i>Opiniones</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="comentarios-scroll mb-4" style="max-height: 400px; overflow-y: auto;">
+                            {% for op in resultado.opiniones %}
+                                <div class="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-primary small">{{ op.nombre_usuario }}</span>
+                                        {% if session.get('rol') == 'administrador' %}
+                                            <a href="{{ url_for('eliminar_opinion', id=op.id) }}" class="text-danger p-0" title="Eliminar comentario">
+                                                <i class="bi bi-x-circle-fill"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    <p class="mb-0 small text-dark">{{ op.comentario }}</p>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-chat-dots display-6"></i>
+                                    <p class="mt-2 small">Aún no hay opiniones. <br>¡Sé el primero en comentar!</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="p-3 bg-white border rounded-3">
+                            <h6 class="small fw-bold mb-3">Deja tu opinión</h6>
+                            <form method="POST">
+                                {{ form.hidden_tag() }}
+                                <div class="mb-2">
+                                    {{ form.nombre(class="form-control form-control-sm border-0 bg-light", placeholder="Tu nombre") }}
+                                </div>
+                                <div class="mb-2">
+                                    {{ form.mensaje(class="form-control form-control-sm border-0 bg-light", placeholder="¿Qué opinas?", rows="3") }}
+                                </div>
+                                <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold shadow-sm">
+                                    Publicar <i class="bi bi-send-fill ms-1"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -6,3 +6,6 @@
 
 # Carpeta de uploads
 static/uploads/
+
+# Login directo
+cuentas_directas.py

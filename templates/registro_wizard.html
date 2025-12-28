@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Estilo para iconos dentro del select (en navegadores que lo soportan) */
+    .form-select-talent {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 id="wizard-title" class="mb-0">Paso 1: Identificación</h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="progress mb-4" style="height: 6px;">
+                        <div id="progreso-bar" class="progress-bar bg-success" role="progressbar" style="width: 33%;"></div>
+                    </div>
+
+                    <form id="regForm" method="POST">
+                        
+                        <div class="tab">
+                            <h5 class="text-primary mb-3"><i class="bi bi-shield-lock"></i> Validación de Identidad</h5>
+                            <p class="text-muted small">Introduce tu DIP para que el sistema recupere tus datos de matrícula automáticamente.</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tu DIP / Pasaporte</label>
+                                <input type="text" name="dip" class="form-control form-control-lg border-primary" placeholder="Ej: 123456" required>
+                                <div id="dip-feedback"></div> 
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Código de Activación</label>
+                                <input type="text" name="codigo_estudiante" class="form-control" placeholder="Ej: UNGE-2025-XXXX" required>
+                                <div class="form-text">El código enviado a tu correo tras aprobar tu matrícula.</div>
+                            </div>
+                        </div>
+
+                        <div class="tab" style="display:none;">
+                            <h5 class="text-primary mb-3"><i class="bi bi-key"></i> Seguridad de la Cuenta</h5>
+                            <div class="alert alert-info border-0 shadow-sm small">
+                                <i class="bi bi-info-circle"></i> Esta contraseña te permitirá acceder al campus virtual y a tus notas.
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Crea tu Contraseña</label>
+                                <input type="password" name="password" class="form-control form-control-lg" placeholder="Mínimo 8 caracteres" required>
+                            </div>
+                        </div>
+
+                        <div class="tab" style="display:none;">
+                            <h5 class="text-primary mb-3"><i class="bi bi-person-badge"></i> Sobre ti</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold"><i class="bi bi-star-fill text-warning"></i> ¿Tienes algún talento o afición?</label>
+                                <select name="talento" class="form-select form-select-lg form-select-talent">
+                                    <option value="" selected disabled>Selecciona una opción...</option>
+                                    <option value="futbol">⚽ Fútbol / Deportes</option>
+                                    <option value="musica">🎸 Música / Canto</option>
+                                    <option value="arte">🎨 Dibujo / Pintura / Teatro</option>
+                                    <option value="informatica">💻 Programación / Tecnología</option>
+                                    <option value="lectura">📚 Escritura / Poesía</option>
+                                    <option value="idiomas">🗣️ Políglota / Idiomas</option>
+                                    <option value="otros">✨ Otros talentos</option>
+                                    <option value="ninguno">Ninguno en particular</option>
+                                </select>
+                                <div class="form-text">Nos ayuda a conocer mejor nuestra comunidad estudiantil.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Biografía (Opcional)</label>
+                                <textarea name="biografia" class="form-control" rows="4" placeholder="Cuéntanos tus metas, habilidades o aficiones..."></textarea>
+                            </div>
+                            <div class="alert alert-success border-0 small shadow-sm">
+                                <i class="bi bi-magic"></i> <strong>¡Todo listo!</strong> El sistema cargará tu nombre, carrera y sexo automáticamente de la base de datos oficial.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" id="prevBtn" class="btn btn-outline-secondary px-4" onclick="nextPrev(-1)">Anterior</button>
+                            <button type="button" id="nextBtn" class="btn btn-primary px-4" onclick="nextPrev(1)">Siguiente</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <span class="text-muted small">Facultad de Ciencias de la Salud - UNGE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+var currentTab = 0; 
+var tabs = document.getElementsByClassName("tab");
+showTab(currentTab); 
+
+function showTab(n) {
+    tabs[n].style.display = "block";
+    
+    document.getElementById("prevBtn").style.visibility = (n == 0) ? "hidden" : "visible";
+    
+    if (n == (tabs.length - 1)) {
+        document.getElementById("nextBtn").innerHTML = "Activar mi Cuenta";
+        document.getElementById("nextBtn").className = "btn btn-success px-4";
+    } else {
+        document.getElementById("nextBtn").innerHTML = "Siguiente";
+        document.getElementById("nextBtn").className = "btn btn-primary px-4";
+    }
+    
+    updateTitle(n);
+    updateProgressBar(n);
+}
+
+function nextPrev(n) {
+    if (n == 1 && !validateForm()) return false;
+
+    if (currentTab == (tabs.length - 1) && n == 1) {
+        document.getElementById("nextBtn").disabled = true;
+        document.getElementById("nextBtn").innerHTML = '<span class="spinner-border spinner-border-sm"></span> Procesando...';
+        document.getElementById("regForm").submit();
+        return false;
+    }
+
+    tabs[currentTab].style.display = "none";
+    currentTab = currentTab + n;
+    showTab(currentTab);
+}
+
+function validateForm() {
+    var valid = true;
+    var inputs = tabs[currentTab].querySelectorAll("input[required]");
+    inputs.forEach(input => {
+        if (input.value.trim() == "") {
+            input.classList.add("is-invalid");
+            valid = false;
+        } else {
+            input.classList.remove("is-invalid");
+        }
+    });
+    return valid;
+}
+
+function updateTitle(n) {
+    var titles = ["Paso 1: Identificación", "Paso 2: Seguridad", "Paso 3: Perfil"];
+    document.getElementById("wizard-title").innerText = titles[n];
+}
+
+function updateProgressBar(n) {
+    var pct = ((n + 1) / tabs.length) * 100;
+    document.getElementById("progreso-bar").style.width = pct + "%";
+}
+
+document.querySelector('input[name="dip"]').addEventListener('blur', function() {
+    const dip = this.value;
+    const feedback = document.getElementById('dip-feedback');
+    
+    if (dip.length > 3) {
+        fetch(`/verificar-dip/${dip}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.encontrado) {
+                    feedback.innerHTML = `
+                        <div class="alert alert-success mt-2 py-2 shadow-sm animate__animated animate__fadeIn">
+                            <i class="bi bi-check-circle-fill"></i> ¡Hola, <strong>${data.nombre}</strong>! Confirmamos tu matrícula.
+                        </div>`;
+                } else {
+                    feedback.innerHTML = `
+                        <div class="alert alert-warning mt-2 py-2 small shadow-sm">
+                            <i class="bi bi-exclamation-triangle"></i> No encontramos una matrícula con este DIP.
+                        </div>`;
+                }
+            });
+    }
+});
+</script>
+{% endblock %}

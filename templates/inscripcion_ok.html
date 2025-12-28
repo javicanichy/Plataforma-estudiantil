@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5 text-center">
+    <div class="card shadow-lg p-5 border-0" style="border-radius: 20px;">
+        <div class="display-1 text-success mb-4">
+            <i class="bi bi-check-circle-fill"></i>
+        </div>
+        <h1 class="fw-bold">¡Solicitud Recibida Correctamente!</h1>
+        <p class="lead text-secondary">Hola <strong>{{ datos.nombre }} {{ datos.apellidos }}</strong>,</p>
+        <div class="alert alert-info d-inline-block px-5">
+            Has solicitado tu matrícula para la carrera de: <br>
+            <span class="fs-4 fw-bold text-dark">{{ datos.carrera }}</span>
+        </div>
+        <hr class="my-4" style="max-width: 400px; margin: auto;">
+        <p>Hemos enviado un acuse de recibo a tu correo electrónico con los pasos a seguir. <br> 
+        Recuerda que deberás presentar los documentos originales en la secretaría.</p>
+        <a href="{{ url_for('inicio') }}" class="btn btn-primary btn-lg mt-3 px-5 shadow" style="border-radius: 50px;">
+            Volver al Inicio
+        </a>
+    </div>
+</div>
+{% endblock %}

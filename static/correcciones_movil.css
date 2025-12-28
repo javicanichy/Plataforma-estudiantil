@@ -2,6 +2,11 @@
 /* CORRECCIONES FINALES GLOBALES Y DE BLOQUE (MOBILE) */
 /* ======================================= */
 
+/* Ajuste global para el contenedor de presentación con el sidebar */
+#presentacion {
+    padding-left: 4rem; /* Espacio para el botón del sidebar */
+}
+
 @media (max-width: 768px) {
     
     /* --- 1. CONFIGURACIÓN DEL VIEWPORT --- */
@@ -44,14 +49,46 @@
         width: 30px !important;
         height: 30px !important;
     }
+    .navbar-brand div {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
     .navbar-brand span {
         font-size: 0.9rem !important;
+        white-space: normal !important;
     }
     .navbar-brand small {
         font-size: 0.7rem !important;
+        white-space: normal !important;
     }
     .navbar-nav .nav-link {
-        padding: 0.5rem 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+    .navbar-nav {
+        flex-wrap: nowrap !important;
+    }
+
+    /* Para pantallas muy pequeñas */
+    @media (max-width: 576px) {
+        .navbar-brand img {
+            width: 20px !important;
+            height: 20px !important;
+        }
+        .navbar-brand span {
+            font-size: 0.6rem !important;
+        }
+        .navbar-brand small {
+            font-size: 0.5rem !important;
+        }
+        .navbar-nav .nav-link span {
+            display: none !important; /* Ocultar texto, mostrar solo íconos */
+        }
+        .navbar-nav .nav-link {
+            font-size: 0.75rem !important;
+            padding: 0.25rem 0.5rem !important;
+        }
     }
 
     /* --- 4. FOOTER --- */
@@ -111,3 +148,74 @@
         font-size: 1rem !important;
     }
 }
+
+
+
+
+
+/* ======================================= */
+/* RESPONSIVIDAD PARA TABLES Y DISPOSITIVOS MEDIANOS */
+/* ======================================= */
+
+ /* Hacer que la barra de navegacion se vea asi:
+    [ LOGO ]  Universidad Nacional de Guinea Ecuatorial
+          Facultad de Ciencias de la Salud          [ ☰ ]
+    */
+@media (max-width: 775px) {
+    /* Menú desplegable ocupa todo el ancho */
+    .navbar-collapse {
+        background-color: black; /* mismo azul */
+    }
+
+    /* Links verticales */
+    .navbar-nav {
+        width: 100%;
+    }
+
+    .navbar-nav .nav-link {
+        padding: 8px 0;
+        font-size: 1rem;
+    }
+
+    /* Permitir que los elementos bajen de línea */
+    header .container-fluid {
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+    }
+
+    /* Logo y texto */
+    .navbar-brand {
+        flex: 1 1 auto !important;      /* permite crecer y encoger */
+        min-width: 0 !important;        /* elimina restricción de ancho */
+    }
+
+    .brand-title {
+        font-size: 0.85rem;
+        white-space: normal !important;  /* permite dividir en varias líneas */
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+
+    .brand-subtitle {
+        font-size: 0.7rem;
+        white-space: normal !important;
+        margin-left: 2rem; /* Indentar para alinear con el título */
+    }
+
+    /* Hamburguesa alineada a la derecha */
+    .navbar-toggler {
+        flex-shrink: 0 !important;
+        margin-left: auto !important;
+    }
+
+    /* Para asegurar que el menú colapsable ocupe toda la pantalla */
+    #navbarNav {
+        width: 100% !important;
+    }
+}
+
+
+
+
+
+

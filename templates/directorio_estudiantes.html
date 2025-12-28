@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="fw-bold text-dark"><i class="fas fa-user-graduate me-2 text-success"></i>Directorio de Estudiantes</h2>
+            <p class="text-muted">Información centralizada de la base de datos de usuarios.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5 p-3 bg-white" style="border-radius: 15px;">
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="small fw-bold text-muted">Nombre</label>
+                <input type="text" id="filterName" class="form-control bg-light border-0" placeholder="Buscar por nombre...">
+            </div>
+            <div class="col-md-4">
+                <label class="small fw-bold text-muted">Carrera</label>
+                <select id="filterCarrera" class="form-select bg-light border-0">
+                    <option value="">Todas las Carreras</option>
+                    {% for c in carreras %}
+                        <option value="{{ c|lower }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="small fw-bold text-muted">Sexo</label>
+                <select id="filterSexo" class="form-select bg-light border-0">
+                    <option value="">Todos</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="femenino">Femenino</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            {% for item in directorio %}
+            <div class="card border-0 shadow-sm mb-3 estudiante-item card-hover" 
+                 style="border-radius: 12px;"
+                 data-name="{{ item.usuario.nombre|lower }} {{ item.usuario.apellidos|lower }}"
+                 data-carrera="{{ item.usuario.carrera|lower if item.usuario.carrera else '' }}"
+                 data-sexo="{{ item.usuario.sexo|lower if item.usuario.sexo else '' }}">
+                
+                <div class="card-body d-flex align-items-center p-3">
+                    <div class="flex-shrink-0">
+                        <img src="{{ url_for('static', filename='uploads/perfiles/' + item.foto_display) if item.foto_display else 'https://ui-avatars.com/api/?name=' + item.usuario.nombre + '&background=198754&color=fff' }}" 
+                             class="rounded-circle border border-2 border-white shadow-sm" width="60" height="60" style="object-fit: cover;">
+                    </div>
+
+                    <div class="ms-4 flex-grow-1">
+                        <h6 class="mb-0 fw-bold text-dark">{{ item.usuario.nombre }} {{ item.usuario.apellidos }}</h6>
+                        <p class="mb-0 text-success small fw-bold">{{ item.usuario.carrera or 'Estudiante' }}</p>
+                    </div>
+
+                    <div class="ms-auto">
+                        <button class="btn btn-outline-success rounded-pill px-4 btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modal-{{ item.usuario.id }}">
+                            Ver Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal-{{ item.usuario.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-custom-width">
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; background-color: #f0f4f8;">
+                        <div class="text-center p-4">
+                            <div class="mb-3">
+                                <img src="{{ url_for('static', filename='uploads/perfiles/' + item.foto_display) if item.foto_display else 'https://ui-avatars.com/api/?name=' + item.usuario.nombre + '&background=198754&color=fff' }}" 
+                                     class="rounded-circle border border-4 border-white shadow-sm" width="100" height="100" style="object-fit: cover;">
+                            </div>
+                            <h5 class="fw-bold mb-0 text-dark">{{ item.usuario.nombre }} {{ item.usuario.apellidos }}</h5>
+                            <p class="text-success small fw-bold mb-0">{{ item.usuario.curso or 'Curso no asignado' }}</p>
+                        </div>
+
+                        <div class="modal-body px-4 py-0">
+                            <div class="bg-white p-3 rounded-4 shadow-sm mb-4">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">DIP</small>
+                                        <span class="fw-bold text-dark" style="font-size: 0.9rem;">{{ item.usuario.dip or 'N/A' }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">TELÉFONO</small>
+                                        <span class="fw-bold text-dark" style="font-size: 0.9rem;">{{ item.usuario.telefono or 'N/A' }}</span>
+                                    </div>
+
+                                    <div class="col-12 border-top mt-2 pt-2">
+                                        <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">CARRERA ACTUAL</small>
+                                        <span class="fw-bold text-dark" style="font-size: 0.9rem;">{{ item.usuario.carrera or 'No registrada' }}</span>
+                                    </div>
+
+                                    <div class="col-12 border-top mt-2 pt-2">
+                                        <small class="text-muted d-block uppercase" style="font-size: 0.7rem;">TALENTO / HABILIDAD</small>
+                                        <span class="fw-bold text-dark" style="font-size: 0.9rem;">{{ item.usuario.talento or 'No especificado' }}</span>
+                                    </div>
+
+                                    <div class="col-12 border-top mt-2 pt-2 text-center">
+                                        <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">CORREO</small>
+                                        <span class="fw-bold text-success" style="font-size: 0.85rem;">{{ item.usuario.correo_institucional or item.usuario.correo }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pb-4 pt-0 justify-content-center">
+                            <a href="mailto:{{ item.usuario.correo }}" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold text-white">
+                                <i class="fas fa-envelope me-2"></i>Contactar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-hover:hover {
+        background-color: #f7fafc;
+        transform: translateX(8px);
+        transition: 0.3s ease;
+    }
+    @media (min-width: 576px) {
+        .modal-custom-width { max-width: 380px; }
+    }
+    .uppercase { text-transform: uppercase; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterName = document.getElementById('filterName');
+        const filterCarrera = document.getElementById('filterCarrera');
+        const filterSexo = document.getElementById('filterSexo');
+        const items = document.querySelectorAll('.estudiante-item');
+
+        function applyFilters() {
+            const nameVal = filterName.value.toLowerCase().trim();
+            const carrVal = filterCarrera.value.toLowerCase().trim();
+            const sexoVal = filterSexo.value.toLowerCase().trim();
+
+            items.forEach(item => {
+                const name = item.getAttribute('data-name') || '';
+                const carr = item.getAttribute('data-carrera') || '';
+                const sexo = item.getAttribute('data-sexo') || '';
+
+                const matchName = name.includes(nameVal);
+                const matchCarrera = carrVal === "" || carr.includes(carrVal);
+                const matchSexo = sexoVal === "" || sexo === sexoVal;
+
+                item.style.setProperty('display', (matchName && matchCarrera && matchSexo) ? 'block' : 'none', 'important');
+            });
+        }
+
+        filterName.addEventListener('input', applyFilters);
+        filterCarrera.addEventListener('change', applyFilters);
+        filterSexo.addEventListener('change', applyFilters);
+    });
+</script>
+{% endblock %}

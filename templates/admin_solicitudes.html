@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - UNGE</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .table-vcenter td { vertical-align: middle; }
+        .btn-action { width: 100px; }
+        .card-filter { border-left: 5px solid #0d6efd; background: #fff; }
+        .modal-info-label { font-weight: bold; color: #495057; font-size: 0.9rem; }
+        .doc-item { padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 8px; transition: background 0.3s; }
+        .doc-item:hover { background: #f8f9fa; }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid bg-light border-bottom">
+        <div class="container py-2">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('inicio') }}" class="text-decoration-none">
+                          <i class="bi bi-house-door"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
+                          <i class="bi bi-building"></i> Biblioteca
+                        </a>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="card mb-4 shadow-sm card-filter border-0">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">BUSCAR POR NOMBRE / DIP</label>
+                        <input type="text" id="inputBusqueda" class="form-control" placeholder="Escriba para filtrar..." onkeyup="aplicarFiltros()">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">FILTRAR POR TITULACIÓN</label>
+                        <select id="selectCarrera" class="form-select" onchange="aplicarFiltros()">
+                            <option value="">Todas las carreras</option>
+                            {% set carreras = [] %}
+                            {% for s in solicitudes %}
+                                {% if s.carrera not in carreras %}
+                                    <option value="{{ s.carrera }}">{{ s.carrera }}</option>
+                                    {% set _ = carreras.append(s.carrera) %}
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">TIPO DE MATRÍCULA</label>
+                        <select id="selectTipo" class="form-select" onchange="aplicarFiltros()">
+                            <option value="">Todos los tipos</option>
+                            <option value="nuevo">Nuevo Ingreso</option>
+                            <option value="continuante">Continuante</option>
+                            <option value="grado">Grado Conseguido</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0"><i class="bi bi-person-badge-fill me-2"></i>Activacion de cuentas estudiantiles</h5>
+                <button class="btn btn-outline-light btn-sm" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Actualizar
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="tablaSolicitudes">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Estudiante / DIP</th>
+                            <th>Carrera</th>
+                            <th>Tipo Matrícula</th>
+                            <th>Estado</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in solicitudes %}
+                        {% set info_codigo = codigos.get(s.dni_numero) %}
+                        {% set mensaje_alumno = mensajes_buzon.get(s.dni_numero, '') %}
+                        <tr class="fila-estudiante">
+                            <td class="dato-nombre">
+                                <div class="fw-bold text-primary" style="cursor: pointer;" 
+                                     onclick="verComprobante('{{ s.doc_ficha_matricula }}', '{{ s.nombre }} {{ s.apellidos }}', '{{ mensaje_alumno|replace('\n', ' ')|replace("'", "\\'") }}')">
+                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i>{{ s.nombre }} {{ s.apellidos }}
+                                </div>
+                                <small class="text-secondary">DIP: <span class="dato-dip">{{ s.dni_numero }}</span></small>
+                                {% if mensaje_alumno %}
+                                    <span class="badge bg-info-subtle text-info ms-1"><i class="bi bi-chat-dots"></i> Con nota</span>
+                                {% endif %}
+                            </td>
+                            <td class="dato-carrera"><span class="small">{{ s.carrera }}</span></td>
+                            <td class="dato-tipo">
+                                <span class="badge bg-light text-dark border">{{ s.tipo_estudiante }}</span>
+                            </td>
+                            <td>
+                                {% if not info_codigo %}
+                                    {% if s.estado == 'Rechazada' %}
+                                        <span class="badge rounded-pill bg-danger">Rechazada</span>
+                                    {% else %}
+                                        <span class="badge rounded-pill bg-warning text-dark">Pendiente</span>
+                                    {% endif %}
+                                {% elif info_codigo.usado %}
+                                    <span class="badge rounded-pill bg-success"><i class="bi bi-check-all"></i> Cuenta Activada</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-info text-dark">Código Enviado</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if not info_codigo %}
+                                    <div class="btn-group shadow-sm">
+                                        <button class="btn btn-primary btn-sm px-3" onclick="aprobarYEnviar('{{ s.id }}', '{{ s.nombre }}')">
+                                            Aprobar
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="abrirRechazo('{{ s.id }}', '{{ s.nombre }}')">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <button class="btn btn-light btn-sm border text-muted" disabled>Procesado</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="pdfModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white py-3">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-file-earmark-person-fill me-2"></i>
+                        Expediente: <span id="pdfNombreEstudiante" class="ms-2 fw-light"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0 bg-secondary-subtle">
+                    <div id="contenedorMensaje" class="p-4 bg-white border-bottom shadow-sm d-none">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <span class="badge bg-primary-subtle text-primary p-2 rounded-circle">
+                                    <i class="bi bi-chat-left-dots-fill fs-5"></i>
+                                </span>
+                            </div>
+                            <div class="ms-3 w-100">
+                                <h6 class="fw-bold text-dark mb-1">Nota captada en buzón:</h6>
+                                <div class="p-3 rounded bg-light border-start border-primary border-4">
+                                    <p id="textoMensajeBuzon" class="mb-0 text-dark font-monospace small"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="contenedorPDF" class="pdf-container" style="background-color: #525659; height: 750px; overflow: hidden;"></div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
+                    <a id="btnDescargar" href="#" target="_blank" class="btn btn-danger px-4">
+                        <i class="bi bi-download me-2"></i>Descargar PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="rechazoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Rechazar Solicitud</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Indique a <strong><span id="nombreRechazo"></span></strong> el motivo:</p>
+                    <textarea id="motivoRechazo" class="form-control" rows="4" placeholder="Ej: Documento ilegible..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmarRechazo()">Confirmar Rechazo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="resModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-body text-center p-5">
+                    <div id="loader" class="spinner-border text-primary mb-3"></div>
+                    <div id="successIcon" class="d-none mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 id="modalTitle">Procesando...</h5>
+                    <p id="modalMsg" class="text-muted"></p>
+                    <div id="codigoBox" class="d-none alert alert-primary fs-2 fw-bold"></div>
+                    <button type="button" class="btn btn-secondary w-100 mt-3 d-none" id="btnCerrar" onclick="location.reload()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    // LÓGICA DE FILTRADO DINÁMICO
+    function aplicarFiltros() {
+        const busqueda = document.getElementById('inputBusqueda').value.toLowerCase();
+        const carrera = document.getElementById('selectCarrera').value.toLowerCase();
+        const tipo = document.getElementById('selectTipo').value.toLowerCase();
+        const filas = document.querySelectorAll('.fila-estudiante');
+
+        filas.forEach(fila => {
+            const nombre = fila.querySelector('.dato-nombre').textContent.toLowerCase();
+            const dip = fila.querySelector('.dato-dip').textContent.toLowerCase();
+            const filaCarrera = fila.querySelector('.dato-carrera').textContent.toLowerCase();
+            const filaTipo = fila.querySelector('.dato-tipo').textContent.toLowerCase();
+
+            const coincideNombre = nombre.includes(busqueda) || dip.includes(busqueda);
+            const coincideCarrera = carrera === "" || filaCarrera.includes(carrera);
+            const coincideTipo = tipo === "" || filaTipo.includes(tipo);
+
+            fila.style.display = (coincideNombre && coincideCarrera && coincideTipo) ? "" : "none";
+        });
+    }
+
+    // TUS FUNCIONES ORIGINALES
+    let idSolicitudAccion = null;
+
+    function verComprobante(nombreArchivo, nombreEstudiante, mensajeBuzon) {
+        if (!nombreArchivo || nombreArchivo === 'None' || nombreArchivo === '') {
+            alert("Sin documento adjunto.");
+            return;
+        }
+        const contenedorMsg = document.getElementById('contenedorMensaje');
+        const txtMensaje = document.getElementById('textoMensajeBuzon');
+        if (mensajeBuzon && mensajeBuzon.trim() !== '' && mensajeBuzon !== 'None') {
+            txtMensaje.innerText = mensajeBuzon;
+            contenedorMsg.classList.remove('d-none');
+        } else {
+            contenedorMsg.classList.add('d-none');
+        }
+        document.getElementById('pdfNombreEstudiante').innerText = nombreEstudiante;
+        const urlParaVer = "/ver-documento/" + nombreArchivo;
+        document.getElementById('btnDescargar').href = "/static/uploads/matriculas_docs/" + nombreArchivo;
+        const contenedorPDF = document.getElementById('contenedorPDF');
+        contenedorPDF.innerHTML = ""; 
+        const modalElement = document.getElementById('pdfModal');
+        const myModal = new bootstrap.Modal(modalElement);
+        modalElement.addEventListener('shown.bs.modal', function () {
+            const nuevoVisor = document.createElement('embed');
+            nuevoVisor.src = urlParaVer + "#toolbar=1&navpanes=0&view=FitH";
+            nuevoVisor.type = "application/pdf";
+            nuevoVisor.width = "100%";
+            nuevoVisor.height = "100%";
+            nuevoVisor.style.border = "none";
+            contenedorPDF.appendChild(nuevoVisor);
+        }, { once: true });
+        myModal.show();
+    }
+
+    function aprobarYEnviar(id, nombre) {
+        const modalRes = new bootstrap.Modal(document.getElementById('resModal'));
+        resetModal();
+        modalRes.show();
+        fetch(`/admin/aprobar-solicitud/${id}`)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loader').classList.add('d-none');
+            if(data.status === 'success') {
+                document.getElementById('successIcon').classList.remove('d-none');
+                document.getElementById('modalTitle').innerText = "¡Aprobado!";
+                document.getElementById('modalMsg').innerText = "Código generado para " + nombre;
+                document.getElementById('codigoBox').innerText = data.codigo;
+                document.getElementById('codigoBox').classList.remove('d-none');
+            } else {
+                document.getElementById('modalTitle').innerText = "Error";
+                document.getElementById('modalMsg').innerText = data.message;
+            }
+            document.getElementById('btnCerrar').classList.remove('d-none');
+        });
+    }
+
+    function abrirRechazo(id, nombre) {
+        idSolicitudAccion = id;
+        document.getElementById('nombreRechazo').innerText = nombre;
+        new bootstrap.Modal(document.getElementById('rechazoModal')).show();
+    }
+
+    function confirmarRechazo() {
+        const motivo = document.getElementById('motivoRechazo').value;
+        if (!motivo) return alert("Escriba un motivo.");
+        const modalRes = new bootstrap.Modal(document.getElementById('resModal'));
+        bootstrap.Modal.getInstance(document.getElementById('rechazoModal')).hide();
+        resetModal();
+        modalRes.show();
+        fetch(`/admin/rechazar-solicitud/${idSolicitudAccion}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ motivo: motivo })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loader').classList.add('d-none');
+            if(data.status === 'success') {
+                document.getElementById('successIcon').classList.remove('d-none');
+                document.getElementById('modalTitle').innerText = "Rechazada";
+                document.getElementById('modalMsg').innerText = "Notificación enviada.";
+            }
+            document.getElementById('btnCerrar').classList.remove('d-none');
+        });
+    }
+
+    function resetModal() {
+        document.getElementById('loader').classList.remove('d-none');
+        document.getElementById('successIcon').classList.add('d-none');
+        document.getElementById('btnCerrar').classList.add('d-none');
+        document.getElementById('codigoBox').classList.add('d-none');
+        document.getElementById('modalTitle').innerText = "Procesando...";
+        document.getElementById('modalMsg').innerText = "";
+    }
+    </script>
+</body>
+</html>

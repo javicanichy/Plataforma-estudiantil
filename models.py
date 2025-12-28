@@ -3,110 +3,91 @@ from sqlalchemy import Nullable
 from sqlalchemy.sql import func
 from datetime import date, datetime
 
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 db = SQLAlchemy()
-
-
-# ============================================================
-#   TABLA 0: PRE-MATRÍCULA (antes de tener cuenta)
-# ============================================================
-class Matricula(db.Model):
-    __tablename__ = 'matriculas'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    correo = db.Column(db.String(100), nullable=False, unique=True)
-    carrera = db.Column(db.String(100), nullable=False)
-    fecha_solicitud = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-
-    def __repr__(self):
-        return f"<Matricula {self.id} {self.nombre} {self.carrera}>"
 
 
 # ============================================================
 #   TABLA 1: CÓDIGOS DEL ESTUDIANTE (para registro)
 # ============================================================
 class CodigoEstudiante(db.Model):
-    __tablename__ = 'codigos_estudiante'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    codigo = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    correo = db.Column(db.String(100), nullable=False)
-    usado = db.Column(db.Boolean, default=False, nullable=False)
-    fecha_creacion = db.Column(db.DateTime, server_default=func.now(), nullable=False)
+    __tablename__ = 'codigos_estudiantes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    codigo = db.Column(db.String(50), unique=True, nullable=False)
+    estudiante_dip = db.Column(db.String(20), nullable=False)
+    usado = db.Column(db.Boolean, default=False)
+    titulacion_autorizada = db.Column(db.String(100), nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"<CodigoEstudiante {self.codigo} {self.correo} usado={self.usado}>"
+        return f'<Codigo {self.codigo} - Usado: {self.usado}>'
 
 
 # ============================================================
 #   TABLA 2: USUARIOS
 # ============================================================
-class Usuario(db.Model):
+class Usuario(db.Model, UserMixin):
     __tablename__ = 'usuarios'
+    
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nombre = db.Column(db.String(100), nullable=False)
-    apellido = db.Column(db.String(100), nullable=True)
+    nombre = db.Column(db.String(100), nullable=True)
+    apellidos = db.Column(db.String(100), nullable=True) # Unificado a plural
+    sexo = db.Column(db.String(20), nullable=True)
     correo = db.Column(db.String(100), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    rol = db.Column(db.String(20), nullable=False)  # estudiante, profesor, directivo, administrador
-    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
-    foto_perfil = db.Column(db.String(255), nullable=True)  # ruta a la foto de perfil
-    curso = db.Column(db.String(100), nullable=True)
-    fecha_nacimiento = db.Column(db.String(20), nullable=True)
-    foto_portada = db.Column(db.PickleType, nullable=True)
+    rol = db.Column(db.String(20), nullable=False, default='estudiante') # estudiante, profesor, admin
+    dip = db.Column(db.String(20), unique=True, nullable=True)
     telefono = db.Column(db.String(20), nullable=True)
     biografia = db.Column(db.Text, nullable=True)
+    fecha_nacimiento = db.Column(db.String(20), nullable=True)
+    carrera = db.Column(db.String(100), nullable=True)
+    curso = db.Column(db.String(100), nullable=True)
     pais = db.Column(db.String(100), nullable=True)
     residencia = db.Column(db.String(100), nullable=True)
-    notificaciones_activas = db.Column(db.Boolean, default=True)  # recibir notificaciones por correo
-    dip = db.Column(db.String(10), nullable=True)
-
-    # Relación con las notificaciones
+    debate = db.Column(db.Integer, default=0) # Para el contador de debates
+    notificaciones_activas = db.Column(db.Boolean, default=True)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    foto_perfil = db.Column(db.String(255), nullable=True)
+    foto_portada = db.Column(db.PickleType, nullable=True) # Mantenemos PickleType como pediste
+    correo_institucional = db.Column(db.String(150), unique=True, nullable=True)
+    talento = db.Column(db.String(100), nullable=True)
+    
+    # Relaciones con las demas tablas
     notificaciones = db.relationship("Notificacion", backref="usuario", lazy=True)
 
-    # Relaciones 1 a 1
+
+    # Relaciones 1 a 1 (Perfiles específicos)
+    # uselist=False asegura que un usuario solo tenga un perfil de estudiante o profesor
     estudiante = db.relationship('Estudiante', backref='usuario', uselist=False)
     profesor = db.relationship('Profesor', backref='usuario', uselist=False)
     directivo = db.relationship('Directivo', backref='usuario', uselist=False)
     administrador = db.relationship('Administrador', backref='usuario', uselist=False)
 
-    # Relaciones mensajes
-    mensajes_enviados = db.relationship(
-        'Mensaje',
-        foreign_keys='Mensaje.emisor_id',
-        backref='emisor',
-        lazy='dynamic'
-    )
-    mensajes_recibidos = db.relationship(
-        'Mensaje',
-        foreign_keys='Mensaje.receptor_id',
-        backref='receptor',
-        lazy='dynamic'
-    )
+# Método para cifrar la clave al registrarse
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
-    def __repr__(self):
-        return f"<Usuario {self.id} {self.correo}>"
-
-
+    # Método para verificar la clave al entrar (Login)
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 # ============================================================
 #   TABLA 3: ESTUDIANTES
 # ============================================================
 class Estudiante(db.Model):
     __tablename__ = 'estudiantes'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
-    matricula = db.Column(db.String(50), unique=True, nullable=False)
-    carrera = db.Column(db.String(100), nullable=False)
-    semestre = db.Column(db.Integer, nullable=True)
-    grupo = db.Column(db.String(20), nullable=True)
-    estado_academico = db.Column(db.String(20), default="activo")  # activo, retirado, graduado
-    tutor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='SET NULL'))
-    fecha_ingreso = db.Column(db.DateTime, server_default=func.now())
-
-    # notas
-    notas = db.relationship('Nota', backref='estudiante', lazy='dynamic')
-
-    # expedientes
-    expedientes = db.relationship('Expediente', backref='estudiante', lazy='dynamic')
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    matricula = db.Column(db.String(50))
+    carrera = db.Column(db.String(100), nullable=True)
+    tutor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='SET NULL'), nullable=True)
+    
+    # Este es el atajo: permite hacer "estudiante.notas" para ver todos sus expedientes
+    notas = db.relationship('Expediente', backref='estudiante', lazy=True)
 
     def __repr__(self):
         return f"<Estudiante {self.id} {self.matricula}>"
@@ -117,20 +98,28 @@ class Estudiante(db.Model):
 # ============================================================
 class Profesor(db.Model):
     __tablename__ = 'profesores'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
-    departamento = db.Column(db.String(100), nullable=False)
-    fecha_ingreso = db.Column(db.DateTime, server_default=func.now())
-
-    # asignaturas
-    asignaturas = db.relationship('Asignatura', backref='profesor', lazy='dynamic')
-
-    # tutorías
-    tutorados = db.relationship('Estudiante', backref='tutor', lazy='dynamic')
-
-    def __repr__(self):
-        return f"<Profesor {self.id}>"
-
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # El usuario_id debe ser nullable=True porque al inicio NO existe
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    
+    # Campos para guardar los datos del que se registra
+    nombre_aspirante = db.Column(db.String(100))
+    apellidos_aspirante = db.Column(db.String(100))
+    correo_personal = db.Column(db.String(100))
+    dip_aspirante = db.Column(db.String(20))
+    telefono_aspirante = db.Column(db.String(20))
+    sexo_aspirante = db.Column(db.String(20))
+    
+    # Datos profesionales
+    departamento = db.Column(db.String(100))
+    especialidad = db.Column(db.String(100))
+    archivo_foto = db.Column(db.String(255))
+    archivo_dip = db.Column(db.String(255))
+    
+    # Estado
+    cuenta_activa = db.Column(db.Boolean, default=False)
+    codigo_activacion = db.Column(db.String(20))
 
 # ============================================================
 #   TABLA 5: DIRECTIVOS
@@ -139,10 +128,13 @@ class Directivo(db.Model):
     __tablename__ = 'directivos'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
-    cargo = db.Column(db.String(100), nullable=False)
+    
+    cargo = db.Column(db.String(100), nullable=False)    # Ej: Ilmo. Decano
+    facultad = db.Column(db.String(150), nullable=False) # Ej: FICI
+    firma_digital = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
-        return f"<Directivo {self.id}>"
+        return f"<Directivo {self.cargo}>"
 
 
 # ============================================================
@@ -167,51 +159,65 @@ class Mensaje(db.Model):
 
 
 # ============================================================
-#   TABLA 7: ASIGNATURAS
+#   TABLA 8: NOTAS
+# ============================================================
+class Nota(db.Model):
+    __tablename__ = 'notas'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    asignatura_id = db.Column(db.Integer, db.ForeignKey('asignaturas.id'), nullable=False)
+    
+    # 'Práctica', 'Seminario' o 'Evaluación'
+    tipo = db.Column(db.String(50), nullable=False) 
+    
+    # El número de columna (1 al 10)
+    posicion = db.Column(db.Integer, nullable=False) 
+    
+    # Aquí guardamos la calificación o el texto escrito en la celda
+    contenido = db.Column(db.String(100), nullable=True) 
+    
+    # 'like', 'dislike' o None (opcional: puedes ponerlo en Asignatura si es por materia)
+    reaccion = db.Column(db.String(20), nullable=True) 
+    
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+
+    usuario = db.relationship('Usuario', backref=db.backref('notas_rel', lazy=True))
+
+
+# ============================================================
+#   TABLA 7: ASIGNATURAS (Se mantiene casi igual)
 # ============================================================
 class Asignatura(db.Model):
     __tablename__ = 'asignaturas'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100), nullable=False)
-    codigo = db.Column(db.String(50), unique=True, nullable=False, index=True)
+    # Nueva columna en lugar de codigo
+    creditos = db.Column(db.Integer, default=0) 
     profesor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='SET NULL'))
 
-    # notas
     notas = db.relationship('Nota', backref='asignatura', lazy='dynamic')
-
-    def __repr__(self):
-        return f"<Asignatura {self.codigo}>"
-
-
-# ============================================================
-#   TABLA 8: NOTAS
-# ============================================================
-class Nota(db.Model):
-    __tablename__ = 'notas'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id', ondelete='CASCADE'), nullable=False)
-    asignatura_id = db.Column(db.Integer, db.ForeignKey('asignaturas.id', ondelete='CASCADE'), nullable=False)
-    nota = db.Column(db.Float, nullable=False)
-    fecha_registro = db.Column(db.DateTime, server_default=func.now())
-
-    def __repr__(self):
-        return f"<Nota {self.id} {self.nota}>"
-
 
 # ============================================================
 #   TABLA 9: EXPEDIENTES
 # ============================================================
 class Expediente(db.Model):
     __tablename__ = 'expedientes'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id', ondelete='CASCADE'), nullable=False)
-    nombre_documento = db.Column(db.String(200), nullable=False)
-    tipo = db.Column(db.String(50), nullable=True)  # pdf, imagen, certificado...
-    ruta_archivo = db.Column(db.Text, nullable=False)
-    fecha_subida = db.Column(db.DateTime, server_default=func.now())
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Relación con el estudiante
+    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id'), nullable=False)
+    
+    # Datos de la materia
+    asignatura_nombre = db.Column(db.String(100), nullable=False)
+    nota_final = db.Column(db.Float, nullable=False, default=0.0)
+    anio_academico = db.Column(db.String(20), default="2024-2025")
+    
+    # El sistema de firma
+    firmado = db.Column(db.Boolean, default=False)
+    fecha_firma = db.Column(db.DateTime, nullable=True) # Para saber cuándo firmó
 
     def __repr__(self):
-        return f"<Expediente {self.id}>"
+        return f'<Nota {self.asignatura_nombre}: {self.nota_final}>'
 
 
 # ============================================================
@@ -249,16 +255,6 @@ class Evento(db.Model):
 # ============================================================
 #   TABLA 11: RELACIÓN ESTUDIANTE ↔ ASIGNATURA (INSCRIPCIONES)
 # ============================================================
-class EstudianteAsignatura(db.Model):
-    __tablename__ = 'estudiante_asignatura'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id', ondelete='CASCADE'), nullable=False)
-    asignatura_id = db.Column(db.Integer, db.ForeignKey('asignaturas.id', ondelete='CASCADE'), nullable=False)
-    fecha_inscripcion = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-
-    def __repr__(self):
-        return f"<EstudianteAsignatura estudiante={self.estudiante_id} asignatura={self.asignatura_id}>"
-
 
 # ============================================================
 #   TABLA 12: ANUNCIOS
@@ -381,3 +377,89 @@ class Biblioteca(db.Model):
 
     # Relaciones
     uploader = db.relationship('Usuario', backref='biblioteca_items')
+
+
+
+# ============================================================
+#   TABLA 19: BUZON
+# ============================================================
+class Buzon(db.Model):
+    __tablename__ = 'buzon'
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_consulta = db.Column(db.String(100), nullable=True) # Ej: "Información académica", "Soporte técnico"
+    nombre = db.Column(db.String(100), nullable=True)
+    dip = db.Column(db.String(20), nullable=True)
+    correo = db.Column(db.String(100), nullable=True)
+    mensaje = db.Column(db.Text, nullable=True)
+    archivo = db.Column(db.String(255), nullable=True) # Guarda la ruta
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================================
+#   TABLA 20: SELECTIVIDAD
+# ============================================================
+class Selectividad(db.Model):
+    __tablename__ = 'selectividad'
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(200), nullable=False) # Ej: "Gran fracaso en Biología"
+    comentario_admin = db.Column(db.Text, nullable=True) # El comentario que pusimos antes
+    ruta_pdf = db.Column(db.String(255), nullable=False)
+    ruta_foto = db.Column(db.String(255), nullable=True)
+    ruta_pie_foto = db.Column(db.String(255), nullable=True)
+    fecha_publicacion = db.Column(db.DateTime, default=datetime.utcnow)
+    # Relación para obtener los comentarios de los alumnos
+    opiniones = db.relationship('OpinionSelectividad', backref='selectividad', lazy=True)
+
+
+#============================================================
+#   TABLA 21: OPINIONES SELECTIVIDAD
+# ============================================================
+class OpinionSelectividad(db.Model):
+    __tablename__ = 'opiniones_selectividad'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre_usuario = db.Column(db.String(100), nullable=False) # Para invitados y logueados
+    comentario = db.Column(db.Text, nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    selectividad_id = db.Column(db.Integer, db.ForeignKey('selectividad.id'), nullable=False)
+
+
+
+#============================================================
+#   TABLA 22: SOLICITAR LA MATRICULA
+# ============================================================
+class SolicitudMatricula(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Datos Personales
+    tipo_estudiante = db.Column(db.String(50), nullable=False) # Nuevo, Graduado, Continuante
+    nombre = db.Column(db.String(100), nullable=False)
+    apellidos = db.Column(db.String(100), nullable=False)
+    fecha_nacimiento = db.Column(db.Date, nullable=False)
+    residencia = db.Column(db.String(200), nullable=False)
+    natural_de = db.Column(db.String(100), nullable=False)
+    dni_numero = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    carrera = db.Column(db.String(100), nullable=False)
+    telefono = db.Column(db.String(20))
+    sexo = db.Column(db.String(20), nullable=False)
+    nacionalidad = db.Column(db.String(100), nullable=False)
+
+    # Archivos Comunes (Para todos)
+    doc_dni = db.Column(db.String(255))
+    doc_cert_selectividad = db.Column(db.String(255))
+    doc_instancia = db.Column(db.String(255))
+    doc_hoja_bachillerato = db.Column(db.String(255))
+    doc_foto_carnet = db.Column(db.String(255))
+    doc_conducta_comunidad = db.Column(db.String(255))
+    doc_conducta_centro = db.Column(db.String(255))
+    doc_ficha_matricula = db.Column(db.String(255))
+    doc_ficha_permanencia = db.Column(db.String(255))
+
+    # Archivos Extra (Graduados / Continuantes / Extranjeros)
+    doc_hoja_facultad = db.Column(db.String(255))
+    doc_acta_defensa = db.Column(db.String(255))
+    doc_convalidaciones = db.Column(db.String(255))
+    doc_homologacion = db.Column(db.String(255))
+
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    estado = db.Column(db.String(20), default='Pendiente')
+    observaciones_admin = db.Column(db.Text)

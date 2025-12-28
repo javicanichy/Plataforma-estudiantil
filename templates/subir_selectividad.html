@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white p-3">
+                    <h4 class="mb-0">📤 Publicar Resultados de Selectividad</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título de la publicación</label>
+                            {{ form.titulo(class="form-control", placeholder="Ej: Resultados Nacionales 2024") }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Comentario del Administrador</label>
+                            {{ form.comentario_admin(class="form-control", rows="3", placeholder="Explique brevemente el proceso...") }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">📄 Archivo PDF (Notas)</label>
+                                {{ form.pdf_file(class="form-control") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">📸 Foto (Opcional)</label>
+                                {{ form.foto_examen(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Pie de foto</label>
+                            {{ form.pie_foto(class="form-control", placeholder="Ej: Estudiantes en el campus de Bata") }}
+                        </div>
+
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{{ url_for('selectividad') }}" class="text-muted">Cancelar y volver</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

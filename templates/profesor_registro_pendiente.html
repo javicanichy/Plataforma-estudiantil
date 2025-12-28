@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 text-center">
+            <div class="card shadow-lg border-0 p-5">
+                <div class="mb-4">
+                    <i class="bi bi-clock-history text-warning" style="font-size: 5rem;"></i>
+                </div>
+                
+                <h2 class="fw-bold text-dark">Solicitud en Revisión</h2>
+                
+                <p class="lead text-muted mt-3">
+                    Hola, <strong>{{ usuario.nombre if usuario else 'Docente' }}</strong>. 
+                    Hemos recibido tus datos y documentos correctamente.
+                </p>
+
+                <div class="alert alert-info border-0 shadow-sm mt-4 text-start">
+                    <i class="bi bi-shield-check me-2"></i> 
+                    Nuestro equipo administrativo verificará tu <strong>DIP</strong> y credenciales académicas para confirmar tu identidad como docente de la institución.
+                </div>
+
+                <p class="mt-4">
+                    Una vez validado, recibirás un <strong>código de activación</strong> en tu correo electrónico para habilitar tu cuenta.
+                </p>
+
+                <div class="mt-5 pt-4 border-top">
+                    <div class="p-3 bg-light rounded shadow-sm">
+                        {% if usuario %}
+                            <p class="mb-0 text-muted">
+                                <i class="bi bi-info-circle-fill text-primary me-1"></i>
+                                Asegúrate que los datos ingresados sean los correctos: <br>
+                                Tu DIP es <strong class="text-dark">{{ aspirante.dip_aspirante }}</strong> y el correo que ingresaste es <strong class="text-dark">{{ aspirante.correo_personal }}</strong>.
+                            </p>
+                        {% else %}
+                            <p class="mb-0 text-danger">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                No se pudo cargar la información de verificación, pero tu registro fue procesado.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('inicio') }}" class="btn btn-primary btn-lg px-5 shadow">
+                        <i class="bi bi-house-door me-2"></i>Volver al Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -24,3 +24,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   initInscripcion($id);
   initCalendario($id);
 });
+
+
+
+
+
+// Barra de navegación superior: cambiar estilo al hacer scroll
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.hover-dropdown > a').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                this.parentElement.classList.toggle('active');
+            }
+        });
+    });
+});

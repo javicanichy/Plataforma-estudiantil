@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .step { display: none; }
+    .step.active { display: block; }
+    .step-indicator { width: 35px; height: 35px; border-radius: 50%; background: #e0e0e0; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.3s; }
+    .step-indicator.active { background: #0d6efd; color: white; box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2); }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                
+                <div class="card-header bg-white py-4 border-0">
+                    <div class="d-flex justify-content-around text-center">
+                        <div><div class="step-indicator active" id="ind-0">1</div><p class="small fw-bold mt-1 mb-0">Personal</p></div>
+                        <div><div class="step-indicator" id="ind-1">2</div><p class="small fw-bold mt-1 mb-0">Académico</p></div>
+                        <div><div class="step-indicator" id="ind-2">3</div><p class="small fw-bold mt-1 mb-0">Documentos</p></div>
+                    </div>
+                </div>
+
+                <div class="card-body p-5">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                           {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form id="regForm" action="{{ url_for('profesor_registro') }}" method="POST" enctype="multipart/form-data">
+                        
+                        <div class="step active">
+                            <h5 class="text-primary border-bottom pb-2 mb-4"><i class="fas fa-user me-2"></i>Paso 1: Identificación Personal</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Nombre</label>
+                                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Juan" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Apellidos</label>
+                                    <input type="text" name="apellidos" class="form-control" placeholder="Ej: Obama Nsue" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Teléfono</label>
+                                    <input type="text" name="telefono" class="form-control" placeholder="Ej: 222..." required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">DIP / Pasaporte</label>
+                                    <input type="text" name="dip_numero" class="form-control" placeholder="Número de identidad" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Sexo</label>
+                                    <select name="sexo" class="form-select" required>
+                                        <option value="" selected disabled>Seleccione...</option>
+                                        <option value="Masculino">Masculino</option>
+                                        <option value="Femenino">Femenino</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Fecha Nacimiento</label>
+                                    <input type="date" name="fecha_nacimiento" class="form-control" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <h5 class="text-primary border-bottom pb-2 mb-4"><i class="fas fa-graduation-cap me-2"></i>Paso 2: Información Académica</h5>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Correo Personal</label>
+                                <input type="email" name="email_personal" class="form-control" placeholder="donde recibirá la confirmación" required>
+                                <div class="form-text text-muted small">Usaremos este correo para enviarle sus credenciales institucionales una vez validado.</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Departamento</label>
+                                    <input type="text" name="departamento" class="form-control" placeholder="Ej: Enfermería" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Especialidad</label>
+                                    <input type="text" name="especialidad" class="form-control" placeholder="Ej: Pediatría" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="step">
+                            <h5 class="text-danger border-bottom pb-2 mb-4"><i class="fas fa-file-upload me-2"></i>Paso 3: Documentación y Foto</h5>
+                            <div class="mb-4 p-3 bg-light rounded shadow-sm">
+                                <label class="form-label fw-bold">Copia DIP (PDF o Imagen)</label>
+                                <input type="file" name="archivo_dip" class="form-control" accept=".pdf, .jpg, .jpeg, .png" required>
+                            </div>
+                            <div class="mb-4 p-3 bg-light rounded shadow-sm">
+                                <label class="form-label fw-bold">Foto Tamaño Carnet</label>
+                                <input type="file" name="archivo_foto" class="form-control" accept=".jpg, .jpeg, .png" required>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+                            <button type="button" class="btn btn-outline-secondary px-4" id="prevBtn" onclick="nextPrev(-1)">Anterior</button>
+                            <button type="button" class="btn btn-primary px-4" id="nextBtn" onclick="nextPrev(1)">Siguiente</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentTab = 0; 
+    showTab(currentTab); 
+
+    function showTab(n) {
+        let tabs = document.getElementsByClassName("step");
+        tabs[n].style.display = "block";
+        
+        document.getElementById("prevBtn").style.visibility = (n == 0) ? "hidden" : "visible";
+        document.getElementById("nextBtn").innerHTML = (n == (tabs.length - 1)) ? "Enviar Solicitud" : "Siguiente";
+        
+        updateIndicators(n);
+    }
+
+    function nextPrev(n) {
+        let tabs = document.getElementsByClassName("step");
+        
+        if (n == 1 && !validateForm()) return false;
+
+        tabs[currentTab].style.display = "none";
+        currentTab = currentTab + n;
+
+        if (currentTab >= tabs.length) {
+            // Animación de envío
+            const btn = document.getElementById("nextBtn");
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Enviando...`;
+            document.getElementById("regForm").submit();
+            return false;
+        }
+        showTab(currentTab);
+    }
+
+    function validateForm() {
+        let tab = document.getElementsByClassName("step")[currentTab];
+        let inputs = tab.querySelectorAll("input[required], select[required]");
+        let valid = true;
+        
+        inputs.forEach(input => {
+            if (input.value.trim() === "") {
+                input.classList.add("is-invalid");
+                valid = false;
+            } else {
+                input.classList.remove("is-invalid");
+            }
+        });
+        
+        if (!valid) {
+            alert("Por favor, rellene todos los campos obligatorios de este paso.");
+        }
+        
+        return valid;
+    }
+
+    function updateIndicators(n) {
+        let indicators = document.getElementsByClassName("step-indicator");
+        for (let i = 0; i < indicators.length; i++) {
+            indicators[i].classList.remove("active");
+            if (i <= n) indicators[i].classList.add("active");
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-lg overflow-hidden">
+                
+                <div class="p-4 text-center text-white" style="background-color: #800000;">
+                    <div class="mb-3">
+                        {% if d.usuario.foto_perfil %}
+                            <img src="{{ url_for('static', filename='uploads/fotos/' + d.usuario.foto_perfil) }}" 
+                                 class="rounded-circle border border-4 border-white shadow" 
+                                 width="150" height="150" style="object-fit: cover;">
+                        {% else %}
+                            <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center text-danger shadow" style="width: 150px; height: 150px;">
+                                <i class="fas fa-user-tie fa-5x" style="color: #800000;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ d.cargo }}</h2>
+                    <p class="mb-0 opacity-75 text-uppercase small fw-bold">{{ d.facultad }}</p>
+                </div>
+
+                <div class="card-body p-5 bg-white">
+                    <div class="row g-4">
+                        <div class="col-md-6 border-end">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Información Personal</h6>
+                            <div class="mb-3">
+                                <label class="d-block text-muted small">Nombre Completo</label>
+                                <p class="fw-bold fs-5 mb-0">{{ d.usuario.nombre }} {{ d.usuario.apellidos }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="d-block text-muted small">DIP / Identificación</label>
+                                <p class="fw-bold mb-0">{{ d.usuario.dip }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 ps-md-4">
+                            <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Contacto Oficial</h6>
+                            <div class="mb-3">
+                                <label class="d-block text-muted small">Correo Institucional</label>
+                                <p class="fw-bold mb-0" style="color: #800000;">{{ d.usuario.correo_institucional }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="d-block text-muted small">Ubicación</label>
+                                <p class="fw-bold mb-0">Edificio Central - Despacho Decanato</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 d-flex gap-2 justify-content-center">
+                        <a href="mailto:{{ d.usuario.correo_institucional }}" class="btn px-4 text-white" style="background-color: #800000;">
+                            <i class="fas fa-envelope me-2"></i>Enviar Consulta
+                        </a>
+                        <button class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-calendar-check me-2"></i>Solicitar Cita
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light text-center py-3">
+                    <small class="text-muted italic">"Excelencia, Disciplina y Servicio" - UNGE</small>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="javascript:history.back()" class="text-muted text-decoration-none small">
+                    <i class="fas fa-arrow-left me-1"></i> Volver a la página anterior
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

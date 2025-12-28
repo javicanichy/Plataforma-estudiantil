@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="bg-success py-4">
+                    <i class="bi bi-patch-check-fill text-white" style="font-size: 4rem;"></i>
+                    <h2 class="text-white mt-2 fw-bold">¡Cuenta Activada Exitosamente!</h2>
+                </div>
+
+                <div class="card-body p-5">
+                    <h4 class="fw-bold mb-3">¡Bienvenido/a, {{ usuario.nombre }} {{ usuario.apellidos }}!</h4>
+                    <p class="text-muted">Su perfil docente ha sido validado. A continuación se detallan sus credenciales de acceso y datos registrados en el sistema.</p>
+
+                    <div class="alert alert-light border text-start p-4 my-4 shadow-sm">
+                        <h6 class="text-uppercase text-primary fw-bold small mb-4 border-bottom pb-2">Información del Perfil Docente</h6>
+                        
+                        <div class="mb-4">
+                            <label class="text-muted small d-block">Correo Institucional (Usuario):</label>
+                            <div class="d-flex justify-content-between align-items-center bg-white p-2 border rounded">
+                                <span class="fw-bold text-dark fs-5" id="correo-inst">{{ usuario.correo_institucional }}</span>
+                                <button onclick="copyToClipboard()" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-clipboard"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="text-muted small d-block">Departamento:</label>
+                                <span class="fw-bold text-dark">{{ usuario.profesor[0].departamento if usuario.profesor is iterable else usuario.profesor.departamento }}</span>
+                            </div>
+                            <div class="col-6">
+                                <label class="text-muted small d-block">Especialidad:</label>
+                                <span class="fw-bold text-dark">{{ usuario.profesor[0].especialidad if usuario.profesor is iterable else usuario.profesor.especialidad }}</span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="text-muted small d-block">DIP (Identificación):</label>
+                                <span class="fw-bold text-dark">{{ usuario.dip }}</span>
+                            </div>
+                            <div class="col-6">
+                                <label class="text-muted small d-block">Teléfono de Contacto:</label>
+                                <span class="fw-bold text-dark">{{ usuario.telefono }}</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <label class="text-muted small d-block">Estado de Identidad:</label>
+                                <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+                                    <i class="bi bi-shield-check"></i> Verificado por Administración UNGE
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <div class="small text-start">
+                            <strong>Seguridad:</strong> Su contraseña es la que introdujo en el registro. No la comparta. Si olvida sus datos, acuda a la oficina de IT de la UNGE.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                        <a href="{{ url_for('login_page') }}" class="btn btn-success btn-lg px-4 shadow-sm">
+                            <i class="bi bi-door-open me-2"></i>Iniciar Sesión
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-printer me-2"></i>Imprimir Ficha
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light py-3 border-0">
+                    <p class="small text-muted mb-0">© 2025 Facultad de Ciencias de la Salud - UNGE</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+<script>
+    var duration = 3500;
+    var end = Date.now() + duration;
+
+    (function frame() {
+      confetti({
+        particleCount: 2,
+        angle: 60, spread: 55, origin: { x: 0 },
+        colors: ['#198754', '#ffc107', '#0d6efd']
+      });
+      confetti({
+        particleCount: 2,
+        angle: 120, spread: 55, origin: { x: 1 },
+        colors: ['#198754', '#ffc107', '#0d6efd']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+
+    function copyToClipboard() {
+        const text = document.getElementById('correo-inst').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Correo institucional copiado al portapapeles');
+        });
+    }
+</script>
+{% endblock %}

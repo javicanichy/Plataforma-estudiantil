@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="card border-0 shadow-sm mb-4 bg-primary text-white p-4" style="border-radius: 15px;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="fw-bold mb-1">Expediente Académico</h2>
+                <p class="mb-0 opacity-75">Estudiante: {{ usuario.nombre }} {{ usuario.apellidos }}</p>
+                <p class="small opacity-75 mb-0">Carrera: {{ usuario.carrera }} | DIP: {{ usuario.dip }}</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <button onclick="window.print()" class="btn btn-light btn-sm fw-bold px-4 rounded-pill">
+                    <i class="bi bi-printer-fill me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Puntuación (Suma)</small>
+                <span class="fs-3 fw-bold text-dark">{{ puntuacion }}</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 border-bottom border-primary border-4">
+                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Aprobado (Media)</small>
+                <span class="fs-3 fw-bold text-primary">{{ aprobado }}</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Matrícula</small>
+                <span class="fs-5 fw-bold text-dark mt-2">{{ estudiante.matricula }}</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Rol Sistema</small>
+                <div class="mt-2">
+                    <span class="badge bg-info text-white rounded-pill px-3">{{ usuario.rol|upper }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-journal-check me-2 text-primary"></i>Historial Académico Completo
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-center">
+                <thead class="bg-light text-muted">
+                    <tr>
+                        <th class="ps-4 text-start">Asignatura</th>
+                        <th>Nota</th>
+                        <th>Estado / Firma</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in registros %}
+                    <tr>
+                        <td class="ps-4 text-start">
+                            <div class="fw-bold">{{ item.asignatura_nombre }}</div>
+                            <small class="text-muted">{{ item.anio_academico }}</small>
+                        </td>
+                        <td>
+                            <span class="fs-5 fw-bold">{{ item.nota_final }}</span>
+                        </td>
+                        <td>
+                            {% if item.firmado %}
+                                <span class="text-success fw-bold">
+                                    <i class="bi bi-check-circle-fill"></i> Conforme
+                                </span>
+                            {% else %}
+                                {% if current_user.id == usuario.id %}
+                                    <a href="{{ url_for('firmar_nota', nota_id=item.id) }}" class="btn btn-primary btn-sm rounded-pill px-4">
+                                        Firmar
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted small italic">Pendiente</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center py-5">
+                            <i class="bi bi-cloud-slash fs-1 text-muted opacity-25 d-block mb-3"></i>
+                            <p class="text-muted">No hay notas registradas para este estudiante.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary { background: linear-gradient(45deg, #0d6efd, #0b5ed7) !important; }
+    .table thead th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    @media print {
+        .btn, .bi-journal-check { display: none !important; }
+        .card { border: 1px solid #dee2e6 !important; box-shadow: none !important; }
+        .bg-primary { background: #f8f9fa !important; color: black !important; border: 1px solid #ddd !important; }
+    }
+</style>
+
+{% endblock %}

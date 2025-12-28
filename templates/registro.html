@@ -1,112 +1,75 @@
 {% extends "base.html" %}
-{% block title %}Registro - UNGE Facultad de Ciencias de la Salud{% endblock %}
 
 {% block content %}
-<!--
-  registro.html — Formulario de registro de nuevo usuario
-  IDs y names DEBEN coincidir con main.js y backend:
-  - nombre (id="nombre", name="nombre")
-  - correo (id="correo", name="correo")
-  - clave (id="clave", name="clave") — IMPORTANTE: NO password_hash
-  - codigo_estudiante (id="codigo_estudiante", name="codigo_estudiante")
-  - form-registro (id obligatorio para main.js)
-  - registro-mensaje (id para mostrar errores)
--->
-<section class="container container-narrow my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h2 class="card-title text-center mb-4">Crear nueva cuenta</h2>
-
-          <!-- Formulario id obligatorio: form-registro -->
-          <form id="form-registro" novalidate>
-            <!-- Campo nombre -->
-            <div class="mb-3">
-              <label for="nombre" class="form-label">Nombre completo</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="nombre" 
-                name="nombre" 
-                placeholder="Tu nombre completo"
-                required
-              >
-              <div class="invalid-feedback">El nombre es obligatorio.</div>
-            </div>
-
-            <!-- Campo correo -->
-            <div class="mb-3">
-              <label for="correo" class="form-label">Correo electrónico</label>
-              <input 
-                type="email" 
-                class="form-control" 
-                id="correo" 
-                name="correo" 
-                placeholder="tu@correo.com"
-                required
-              >
-              <div class="invalid-feedback">Introduce un correo válido.</div>
-            </div>
-
-            <!-- Campo contraseña: id/name DEBE ser 'clave' (NO password_hash) -->
-            <div class="mb-3">
-              <label for="clave" class="form-label">Contraseña</label>
-              <input 
-                type="password" 
-                class="form-control" 
-                id="clave" 
-                name="clave" 
-                placeholder="Mínimo 8 caracteres"
-                required
-              >
-              <div class="invalid-feedback">La contraseña es obligatoria.</div>
-            </div>
-
-            <!-- Campo código de estudiante: OBLIGATORIO por backend -->
-            <div class="mb-3">
-              <label for="codigo_estudiante" class="form-label">Código de estudiante</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="codigo_estudiante" 
-                name="codigo_estudiante" 
-                placeholder="Código proporcionado por la universidad"
-                required
-              >
-              <div class="invalid-feedback">El código de estudiante es obligatorio.</div>
-            </div>
-
-            <!-- Mensaje de estado (error/éxito) — id obligatorio: registro-mensaje -->
-            <div id="registro-mensaje" class="mb-3 text-center" role="status" aria-live="polite"></div>
-
-            <!-- Botón enviar -->
-            <div class="d-grid">
-              <button type="submit" class="btn btn-success btn-lg">Crear cuenta</button>
-            </div>
-
-            <!-- Enlace a login -->
-            <p class="text-center mt-3 small">
-              ¿Ya tienes cuenta? <a href="/login" class="fw-bold">Inicia sesión</a>
-            </p>
-          </form>
-          <!-- fin formulario -->
-        </div>
-      </div>
+<div class="container py-5 mt-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold display-5">Crear una cuenta</h1>
+        <p class="text-muted fs-5">Selecciona tu perfil en la UNGE para continuar con el registro</p>
     </div>
-  </div>
-</section>
-{% endblock %}
 
-{% block scripts %}
-<!--
-  Script local para mostrar el rol oculto (opcional).
-  El campo rol se gestiona vía localStorage/sesión tras autenticación.
--->
-<script>
-if (!window.__registro_init__) {
-  window.__registro_init__ = true;
-  console.log('Registro.html cargado con IDs compatibles: form-registro, nombre, correo, clave, codigo_estudiante, registro-mensaje');
-}
-</script>
+    <div class="row justify-content-center g-4">
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 transition-hover p-4">
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="icon-circle bg-primary-light text-primary mb-4 mx-auto">
+                        <i class="bi bi-mortarboard-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold">Estudiante o Alumnos</h3>
+                    <p class="text-muted mb-4">
+                        Para alumnos matriculados. Necesitarás el <strong>Código de Estudiante</strong> y tu <strong>DIP</strong> para validar tu identidad.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('registro_estudiante') }}" class="btn btn-primary w-100 py-2 fw-bold rounded-pill">
+                            Soy Estudiante
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 transition-hover p-4">
+                <div class="card-body text-center d-flex flex-column">
+                    <div class="icon-circle bg-dark-light text-dark mb-4 mx-auto">
+                        <i class="bi bi-person-badge-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold">Personal de la Facultad</h3>
+                    <p class="text-muted mb-4">
+                        Acceso exclusivo para personal administrativo, requiere <strong>verificación</strong> previa y cuenta <strong>activada</strong>.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('profesor_registro') }}" class="btn btn-dark w-100 py-2 fw-bold rounded-pill">
+                            Soy personal de la institucion
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <p class="text-muted">¿Ya tienes una cuenta? <a href="{{ url_for('login_page') }}" class="text-primary fw-bold">Inicia sesión</a></p>
+    </div>
+</div>
+
+<style>
+    /* Estilos extra para que se vea profesional */
+    .transition-hover {
+        transition: transform 0.3s ease, shadow 0.3s ease;
+    }
+    .transition-hover:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    .bg-primary-light { background-color: #e7f1ff; }
+    .bg-dark-light { background-color: #f8f9fa; }
+</style>
 {% endblock %}
