@@ -19,3 +19,4 @@ flask_login==0.6.3
 fpdf2
 supabase
 psutil==7.2.1
+openpyxl==3.1.5

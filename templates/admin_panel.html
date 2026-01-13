@@ -136,6 +136,9 @@
             <a href="{{url_for('ver_matriculas')}}" class="nav-link">
                 <i class="fas fa-file-signature"></i> Matrículas
             </a>
+            <a href="{{url_for('panel_control_disciplinario')}}" class="nav-link">
+                <i class="fas fa-user-checkgit "></i> Activar cuentas
+            </a>
             <a href="{{url_for('buzon_general')}}" class="nav-link">
                 <i class="fas fa-envelope-open-text"></i> Buzón General
             </a>
@@ -271,10 +274,11 @@
                             </a>
                             <a href="{{ url_for('consola_maestra') }}" target="_blank" class="btn btn-white border py-3 text-start px-3 rounded-4 shadow-sm">
                                 <div class="d-flex align-items-center text-primary">
-                                    <i class="fas fa-user-plus me-3 fa-lg"></i>
-                                    <div class="fw-bold small">Consola de Administración</div>
+                                    <i class="fas fa-user-cog me-3 fa-lg"></i>
+                                        <div class="fw-bold small">Consola de Administración</div>
                                 </div>
                             </a>
+                            
                             <button class="btn btn-unge-light py-3 text-start px-3 rounded-4 border-0">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-bullhorn me-3 fa-lg"></i>

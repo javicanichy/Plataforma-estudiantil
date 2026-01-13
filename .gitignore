@@ -9,3 +9,7 @@ static/uploads/
 
 # Login directo
 cuentas_directas.py
+
+# Basura
+__pycache__/
+*.pyc
