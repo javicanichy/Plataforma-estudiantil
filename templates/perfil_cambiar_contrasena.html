@@ -1,22 +1,93 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container my-4">
-  <h3>Cambiar contraseña</h3>
-  <form method="POST">
-    <div class="mb-3">
-      <label>Contraseña actual</label>
-      <input type="password" name="actual" class="form-control">
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas {% if category == 'danger' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white py-3">
+                    <h4 class="mb-0 h5 text-center"><i class="fas fa-key me-2"></i>Seguridad de la Cuenta</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-4 text-center">
+                        Para proteger tu cuenta, asegúrate de que tu nueva contraseña sea difícil de adivinar.
+                    </p>
+                    
+                    <form method="POST" id="passwordForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Contraseña Actual</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-lock-open text-muted"></i></span>
+                                <input type="password" name="actual" class="form-control" placeholder="Clave vigente" required>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nueva Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-lock text-primary"></i></span>
+                                <input type="password" name="nueva" id="nueva" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Confirmar Nueva Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="fas fa-check-double text-primary"></i></span>
+                                <input type="password" name="confirmar" id="confirmar" class="form-control" placeholder="Repite la nueva clave" required>
+                            </div>
+                            <div id="passwordError" class="text-danger small mt-1 d-none">
+                                Las contraseñas no coinciden.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary fw-bold py-2 shadow-sm">
+                                Actualizar Contraseña
+                            </button>
+                            <a href="{{ url_for('ver_perfil', user_id=current_user.id) }}" class="btn btn-light border py-2">
+                                Cancelar y volver al perfil
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="mb-3">
-      <label>Nueva contraseña</label>
-      <input type="password" name="nueva" class="form-control">
-    </div>
-    <div class="mb-3">
-      <label>Confirmar nueva contraseña</label>
-      <input type="password" name="confirmar" class="form-control">
-    </div>
-    <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
-    <a href="{{ url_for('ver_perfil', usuario_id=session.get('usuario_id')) }}" class="btn btn-secondary">Cancelar</a>
-  </form>
 </div>
+
+<script>
+    const form = document.getElementById('passwordForm');
+    const nueva = document.getElementById('nueva');
+    const confirmar = document.getElementById('confirmar');
+    const errorDiv = document.getElementById('passwordError');
+
+    form.addEventListener('submit', function(e) {
+        if (nueva.value !== confirmar.value) {
+            e.preventDefault(); // Detiene el envío
+            errorDiv.classList.remove('d-none');
+            confirmar.classList.add('is-invalid');
+        }
+    });
+
+    // Limpiar error mientras escribe
+    confirmar.addEventListener('input', function() {
+        errorDiv.classList.add('d-none');
+        confirmar.classList.remove('is-invalid');
+    });
+</script>
 {% endblock %}

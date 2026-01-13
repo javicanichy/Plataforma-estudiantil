@@ -189,31 +189,54 @@
 
   <!--NOTICIAS EN EL INICIO-->
   <section id="noticias" class="mb-5">
-    <h3 class="mb-3">Últimas noticias</h3>
-      <div class="row g-3">
-        
-        <!-- Noticia 1 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Últimas noticias</h3>
+        <a href="{{ url_for('lista_noticias') }}" class="text-decoration-none fw-bold text-success">
+            Ver todo <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="row g-3">
         {% for noticia in noticias %}
         <div class="col-md-4">
-            <div class="noticia-card">
-              <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" alt="{{ noticia.titulo }}">
+            <div class="noticia-card shadow-sm">
+                
+                {% if noticia.archivo %}
+                    {% if noticia.tipo_archivo == 'video' %}
+                        <video src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}#t=0.1" 
+                               preload="metadata"
+                               class="media-content">
+                        </video>
+                        <div class="badge-video">
+                            <i class="bi bi-play-fill"></i> VIDEO
+                        </div>
+                    {% else %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" 
+                             alt="{{ noticia.titulo }}" class="media-content">
+                    {% endif %}
+                {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                        <i class="bi bi-newspaper fs-1 text-muted opacity-25"></i>
+                    </div>
+                {% endif %}
         
-              <div class="noticia-overlay">
-                <p class="fecha">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
-                <h5 class="titulo">{{ noticia.titulo }}</h5>
-                <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" class="stretched-link" title="Leer noticia completa: {{ noticia.titulo }}"></a>
-              </div>
+                <div class="noticia-overlay">
+                    <p class="fecha">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
+                    <h5 class="titulo">{{ noticia.titulo }}</h5>
+                    <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" 
+                       class="stretched-link" 
+                       title="Leer noticia completa: {{ noticia.titulo }}"></a>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Enlace al final de todas las noticias destacadas -->
-    <div class="text-center mt-3">
-        <a href="{{ url_for('lista_noticias') }}" class="btn btn-primary">Leer todas las noticias</a>
+    <div class="text-center mt-4 d-md-none">
+        <a href="{{ url_for('lista_noticias') }}" class="btn btn-success rounded-pill px-4">Leer todas las noticias</a>
     </div>
+</section>
 
-  </section>
 
   <!--EVENTOS EN EL INICIO-->
   <!-- Calendario de eventos -->

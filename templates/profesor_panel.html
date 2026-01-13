@@ -1,120 +1,242 @@
 {% extends "base.html" %}
 {% block content %}
+
 <div class="container-fluid py-4" style="background-color: #f4f7f6; min-height: 100vh;">
     
-    <div class="row mb-5">
+    <div class="row mb-5 mt-3">
         <div class="col d-flex justify-content-end align-items-center px-4">
-            <div class="text-end me-3">
-                <h6 class="mb-0 fw-bold">{{ current_user.nombre }} {{ current_user.apellidos }}</h6>
-                <small class="badge bg-success-subtle text-success">ID Docente: #{{ current_user.id }}</small>
+            <div class="text-end me-4">
+                {# Nombre más grande para acompañar la foto #}
+                <h4 class="mb-1 fw-bold text-dark">{{ usuario.nombre }} {{ usuario.apellidos }}</h4>
+                <small class="badge {% if puedo_editar %}bg-success-subtle text-success{% else %}bg-primary-subtle text-primary{% endif %} border px-3 py-2 rounded-pill">
+                    ID Docente: #{{ usuario.id }}
+                </small>
             </div>
             <div class="position-relative">
-                <img src="{{ url_for('static', filename='uploads/fotos/' + profe.archivo_foto) }}" 
-                     class="rounded-circle border border-3 border-white shadow" 
-                     width="65" height="65" style="object-fit: cover;">
-                <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle p-1"></span>
+                {% if profe and profe.archivo_foto %}
+                    <img src="{{ url_for('static', filename='uploads/fotos/' + profe.archivo_foto) }}" 
+                         class="rounded-circle border border-4 border-white shadow-lg" 
+                         width="120" height="120" style="object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center shadow-lg" 
+                         style="width: 120px; height: 120px; font-size: 3rem; border: 4px solid white;">
+                        {{ usuario.nombre[0] }}
+                    </div>
+                {% endif %}
+                {# Punto de estado online un poco más grande #}
+                <span class="position-absolute bottom-0 end-0 bg-success border border-3 border-white rounded-circle" 
+                      style="width: 22px; height: 22px; margin-bottom: 8px; margin-right: 8px;"></span>
             </div>
         </div>
     </div>
 
     <div class="row justify-content-center">
         <div class="col-lg-9">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-address-card me-2"></i>Expediente del Instructor</h5>
+            
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-primary fw-bold">
+                        <i class="fas fa-address-card me-2"></i>Expediente del Instructor
+                    </h5>
+                    {% if not puedo_editar %}
+                        <span class="badge bg-light text-muted border rounded-pill px-3">Vista Pública</span>
+                    {% endif %}
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label class="text-muted small">Correo Institucional</label>
-                            <p class="fw-bold border-bottom pb-2">{{ current_user.correo_institucional }}</p>
+                            <p class="fw-bold border-bottom pb-2">{{ usuario.correo_institucional }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small">Número de DIP</label>
-                            <p class="fw-bold border-bottom pb-2">{{ current_user.dip }}</p>
+                            <p class="fw-bold border-bottom pb-2">{{ usuario.dip }}</p>
                         </div>
+                        {% if profe %}
                         <div class="col-md-4">
                             <label class="text-muted small">Departamento</label>
-                            <p class="fw-bold text-dark">{{ profe.departamento }}</p>
+                            <p class="fw-bold text-dark">{{ profe.departamento or 'No asignado' }}</p>
                         </div>
                         <div class="col-md-4">
                             <label class="text-muted small">Especialidad</label>
-                            <p class="fw-bold text-dark">{{ profe.especialidad }}</p>
+                            <p class="fw-bold text-dark">{{ profe.especialidad or 'No asignado' }}</p>
                         </div>
                         <div class="col-md-4">
                             <label class="text-muted small">Título Académico</label>
-                            <p class="fw-bold text-dark">{{ profe.titulo_academico }}</p>
+                            <p class="fw-bold text-dark">{{ profe.titulo_academico or 'No asignado' }}</p>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="row g-4 mb-4">
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100 btn-modulo" data-bs-toggle="modal" data-bs-target="#modalTitulacion">
-                        <div class="card-body text-center p-5">
-                            <div class="rounded-circle bg-success-subtle text-success mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
-                                <i class="fas fa-graduation-cap fs-2"></i>
+                {% if puedo_editar %}
+                    {# --- LO QUE VE EL PROFESOR DUEÑO --- #}
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 btn-modulo" data-bs-toggle="modal" data-bs-target="#modalTitulacion">
+                            <div class="card-body text-center p-5">
+                                <div class="rounded-circle bg-success-subtle text-success mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                    <i class="fas fa-file-medical fs-2"></i>
+                                </div>
+                                <h5 class="fw-bold">Enviar Calificación</h5>
+                                <p class="text-muted small">Subir notas por carrera y asignatura vía Excel.</p>
                             </div>
-                            <h5 class="fw-bold">Enviar Calificación</h5>
-                            <p class="text-muted small">Registrar notas por titulación seleccionada.</p>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100 btn-modulo">
-                        <div class="card-body text-center p-5">
-                            <div class="rounded-circle bg-info-subtle text-info mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
-                                <i class="fas fa-comments fs-2"></i>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm h-100 btn-modulo" onclick="window.location.href='{{ url_for('bandeja_entrada') }}'">
+                            <div class="card-body text-center p-5">
+                                <div class="rounded-circle bg-info-subtle text-info mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                    <i class="fas fa-comments fs-2"></i>
+                                </div>
+                                <h5 class="fw-bold">Mensajería</h5>
+                                <p class="text-muted small">Comunicación oficial con alumnos y colegas.</p>
                             </div>
-                            <h5 class="fw-bold">Mensajería</h5>
-                            <p class="text-muted small">Comunicación oficial con alumnos y colegas.</p>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('mis_documentos_vista') }}" target="_blank" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100 btn-modulo">
+                                <div class="card-body text-center p-5 text-dark">
+                                    <div class="rounded-circle bg-primary-subtle text-primary mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-folder-open fs-2"></i>
+                                    </div>
+                                    <h5 class="fw-bold">Guardar archivos</h5>
+                                    <p class="text-muted small">Almacene actas o exámenes en su repositorio personal.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('profesor_entregar_acta') }}" target="_blank" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100 btn-modulo">
+                                <div class="card-body text-center p-5">
+                                    <div class="rounded-circle bg-success-subtle text-success mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-file-export fs-2"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">Entregar acta</h5>
+                                    <p class="text-muted small">Envíe de forma oficial su acta final al departamento.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('profesor_editar_perfil') }}" target="_blank" class="text-decoration-none">
+                            <div class="card border-0 shadow-sm h-100 btn-modulo">
+                                <div class="card-body text-center p-5">
+                                    <div class="rounded-circle bg-warning-subtle text-warning mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                                        <i class="fas fa-user-edit fs-2"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark">Editar perfil</h5>
+                                    <p class="text-muted small">Modifique sus datos personales y preferencias.</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm h-100 btn-modulo" onclick="window.location.href='{{ url_for('facultad') }}'">
+            <div class="card-body text-center p-5">
+                <div class="rounded-circle bg-info-subtle text-info mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                    <i class="fas fa-university fs-2"></i>
                 </div>
+                <h5 class="fw-bold">Mi facultad</h5>
+                <p class="text-muted small">Acceda al área de miembros y recursos institucionales.</p>
             </div>
-
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100 btn-modulo">
-                        <div class="card-body text-center p-5">
-                            <div class="rounded-circle bg-primary-subtle text-primary mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
-                                <i class="fas fa-user-graduate fs-2"></i>
+        </div>
+    </div>
+</div>
+                {% else %}
+                    {# --- LO QUE VE EL ESTUDIANTE O VISITANTE --- #}
+                    <div class="col-md-12">
+                        <div class="card border-0 shadow-sm p-5 text-center" style="border-radius: 15px; background: white;">
+                            <div class="rounded-circle bg-primary-subtle text-primary mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-paper-plane fs-2"></i>
                             </div>
-                            <h5 class="fw-bold">Todos los Estudiantes</h5>
-                            <p class="text-muted small">Listado general de alumnos registrados en la facultad.</p>
+                            <h4 class="fw-bold">Contactar con el docente</h4>
+                            <p class="text-muted">¿Tienes alguna duda sobre la asignatura de {{ usuario.nombre }}?</p>
+                            <a href="{{ url_for('bandeja_entrada', receptor_id=usuario.id) }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm mt-3">
+                                <i class="fas fa-envelope me-2"></i> Enviar Mensaje Directo
+                            </a>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm h-100 btn-modulo">
-                        <div class="card-body text-center p-5">
-                            <div class="rounded-circle bg-warning-subtle text-warning mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
-                                <i class="fas fa-chalkboard-teacher fs-2"></i>
-                            </div>
-                            <h5 class="fw-bold">Todos los Profesores</h5>
-                            <p class="text-muted small">Directorio de contacto del cuerpo docente institucional.</p>
-                        </div>
-                    </div>
-                </div>
+                {% endif %}
             </div>
-
         </div>
     </div>
 </div>
 
+{# MODAL DE IMPORTACIÓN: MANTENIDO ÍNTEGRO SEGÚN TU SOLICITUD #}
+{% if puedo_editar %}
+<div class="modal fade" id="modalTitulacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header bg-success text-white py-3" style="border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-upload me-2"></i>Importar Notas de Salud</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('importar_notas') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning border-0 small mb-4" style="background-color: #fff4e5; color: #856404;">
+                        <i class="fas fa-exclamation-triangle me-1"></i> El Excel debe incluir obligatoriamente: <b>Estudiante</b>, <b>DIP</b> y <b>Nota</b>.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Carrera / Titulación</label>
+                        <select name="carrera_nombre" class="form-select border-0 bg-light shadow-none" required>
+                            <option value="" selected disabled>Seleccione la titulación...</option>
+                            <option value="Medicina General">Medicina General</option>
+                            <option value="Grado II Enfermería">Grado II Enfermería</option>
+                            <option value="Grado I Enfermería">Grado I Enfermería</option>
+                            <option value="Ginecología y Obstetricia">Ginecología y Obstetricia</option>
+                            <option value="Fisioterapia">Fisioterapia</option>
+                            <option value="Laboratorio Clínico y Biomédico">Laboratorio Clínico y Biomédico</option>
+                            <option value="Higiene y Epidemiología">Higiene y Epidemiología</option>
+                            <option value="Imagenología">Imagenología</option>
+                            <option value="Anestesiología">Anestesiología</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Nombre de la Asignatura</label>
+                        <input type="text" name="materia_nombre" class="form-control border-0 bg-light shadow-none" placeholder="Ej: Morfofisiología II" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Semestre Académico</label>
+                        <select name="semestre_nombre" class="form-select border-0 bg-light shadow-none" required>
+                            <option value="" selected disabled>Seleccione el semestre...</option>
+                            {% set semestres = ['Primer', 'Segundo', 'Tercer', 'Cuarto', 'Quinto', 'Sexto', 'Séptimo', 'Octavo', 'Noveno', 'Décimo', 'Undécimo', 'Duodécimo'] %}
+                            {% for sem in semestres %}
+                                <option value="{{ sem }} Semestre">{{ sem }} Semestre</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Archivo Excel (.xlsx)</label>
+                        <input type="file" name="archivo_excel" class="form-control shadow-none" accept=".xlsx, .xls" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 bg-light" style="border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success px-4 fw-bold rounded-pill shadow-sm">Enviar a Estudiantes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <style>
-    .btn-modulo { cursor: pointer; transition: 0.3s; border: 1px solid transparent !important; }
+    .btn-modulo { cursor: pointer; transition: all 0.3s ease; border-radius: 15px; }
     .btn-modulo:hover { 
         transform: translateY(-5px); 
-        background-color: #ffffff; 
-        border-color: #dee2e6 !important;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.08)!important; 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; 
+        background-color: #fff;
     }
-    /* Colores suaves para los iconos */
-    .bg-primary-subtle { background-color: #e7f0ff !important; }
-    .bg-warning-subtle { background-color: #fff3cd !important; }
+    .bg-success-subtle { background-color: #d1e7dd !important; }
+    .bg-info-subtle { background-color: #cff4fc !important; }
+    .bg-primary-subtle { background-color: #cfe2ff !important; }
 </style>
 {% endblock %}

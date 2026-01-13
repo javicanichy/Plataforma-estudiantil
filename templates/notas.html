@@ -1,46 +1,59 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Matriz Académica Editable</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root { --border-color: #ced4da; }
-        .table-excel { font-size: 11px; border-collapse: collapse; }
-        .table-excel th, .table-excel td { 
-            border: 1px solid var(--border-color); 
-            padding: 0 !important; 
-            text-align: center;
-            vertical-align: middle;
-        }
-        .excel-input {
-            width: 100%; border: none; padding: 6px 2px;
-            outline: none; background: transparent; text-align: center;
-        }
-        .excel-input:focus { background-color: #fff9c4; }
-        .header-main { background-color: #f1f3f4; font-weight: bold; font-size: 12px; }
-        .bg-cp { background-color: #e3f2fd; }
-        .bg-sm { background-color: #fff3e0; }
-        .bg-ev { background-color: #e8f5e9; }
-        .sticky-col { 
-            position: sticky; left: 0; 
-            background-color: #f8f9fa !important; z-index: 5; 
-            min-width: 140px; border-right: 2px solid #ddd !important;
-        }
-        .sticky-sem { left: 140px; min-width: 90px; }
-        .btn-reaccion { font-size: 16px; opacity: 0.3; transition: 0.2s; cursor: pointer; border: none; background: none; }
-        .btn-reaccion.active { opacity: 1; transform: scale(1.2); }
-    </style>
-</head>
-<body class="bg-light p-4">
+{% extends "base.html" %}
 
-<div class="card shadow-sm">
+{% block content %}
+<style>
+    :root { --border-color: #ced4da; }
+    .table-excel { font-size: 11px; border-collapse: collapse; }
+    .table-excel th, .table-excel td { 
+        border: 1px solid var(--border-color); 
+        padding: 0 !important; 
+        text-align: center;
+        vertical-align: middle;
+    }
+    .excel-input {
+        width: 100%; border: none; padding: 6px 2px;
+        outline: none; background: transparent; text-align: center;
+    }
+    
+    /* Estilo de "Solo Lectura" más marcado para evitar confusiones */
+    .excel-input[readonly] { 
+        background-color: #fcfcfc; 
+        color: #555; 
+        cursor: default; 
+        font-style: italic;
+    }
+    .excel-input:focus:not([readonly]) { background-color: #fff9c4; }
+
+    .header-main { background-color: #f1f3f4; font-weight: bold; font-size: 12px; }
+    .bg-cp { background-color: #e3f2fd; }
+    .bg-sm { background-color: #fff3e0; }
+    .bg-ev { background-color: #e8f5e9; }
+    .sticky-col { 
+        position: sticky; left: 0; 
+        background-color: #f8f9fa !important; z-index: 5; 
+        min-width: 140px; border-right: 2px solid #ddd !important;
+    }
+    .sticky-sem { left: 140px; min-width: 90px; }
+    .btn-reaccion { font-size: 16px; opacity: 0.2; transition: 0.2s; cursor: pointer; border: none; background: none; }
+    .btn-reaccion.active { opacity: 1; transform: scale(1.2); }
+    /* Deshabilitar clicks en reacciones si no es el dueño */
+    .btn-reaccion.disabled { cursor: default; pointer-events: none; }
+</style>
+
+<div class="card shadow-sm m-4">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-        <h5 class="mb-0 text-primary fw-bold">Registro de Calificaciones Académicas</h5>
+        <div>
+            <h5 class="mb-0 text-primary fw-bold">Notas de: {{ nombre_perfil }}</h5>
+            <span class="badge {{ 'bg-success' if puedo_editar else 'bg-secondary' }}">
+                {{ "Mi Blog de Notas (Editable)" if puedo_editar else "Vista de Visitante (Solo Lectura)" }}
+            </span>
+        </div>
+        {% if puedo_editar %}
         <div>
             <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="agregarFila()">+ Añadir Asignatura</button>
-            <button type="button" class="btn btn-success btn-sm fw-bold" onclick="guardarCambios()">💾 Guardar Cambios</button>
+            <button type="button" class="btn btn-success btn-sm fw-bold" onclick="guardarCambios()">💾 Guardar Mis Cambios</button>
         </div>
+        {% endif %}
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -62,29 +75,45 @@
                     </tr>
                 </thead>
                 <tbody id="cuerpo-tabla">
+                    {# 1. MOSTRAR DATOS: Solo se mostrarán los que el servidor filtre por el ID del perfil visitado #}
                     {% for fila in tabla_datos %}
                     <tr data-reaccion="{{ fila.reaccion or '' }}">
-                        <td class="sticky-col"><input type="text" class="excel-input fw-bold" value="{{ fila.asignatura.nombre }}"></td>
-                        <td class="sticky-col sticky-sem"><input type="text" class="excel-input" value="1er Sem"></td>
-                        <td><input type="number" class="excel-input" value="{{ fila.asignatura.creditos }}"></td>
+                        <td class="sticky-col">
+                            <input type="text" class="excel-input fw-bold" value="{{ fila.asignatura_nombre }}" {{ 'readonly' if not puedo_editar }}>
+                        </td>
+                        <td class="sticky-col sticky-sem">
+                            <input type="text" class="excel-input" value="{{ fila.semestre }}" {{ 'readonly' if not puedo_editar }}>
+                        </td>
+                        <td>
+                            <input type="number" class="excel-input" value="{{ fila.creditos }}" {{ 'readonly' if not puedo_editar }}>
+                        </td>
                         
-                        {% for i in range(1, 11) %}<td class="bg-cp"><input type="text" class="excel-input" value="{{ fila.cps[i] }}"></td>{% endfor %}
-                        {% for i in range(1, 11) %}<td class="bg-sm"><input type="text" class="excel-input" value="{{ fila.sms[i] }}"></td>{% endfor %}
-                        {% for i in range(1, 11) %}<td class="bg-ev"><input type="text" class="excel-input" value="{{ fila.evs[i] }}"></td>{% endfor %}
+                        {% for nota in fila.lista_notas %}
+                        <td class="{{ 'bg-cp' if loop.index <= 10 else 'bg-sm' if loop.index <= 20 else 'bg-ev' }}">
+                            <input type="text" class="excel-input" value="{{ nota }}" {{ 'readonly' if not puedo_editar }}>
+                        </td>
+                        {% endfor %}
                         
                         <td>
-                            <button type="button" class="btn-reaccion {{ 'active' if fila.reaccion == 'like' }}" onclick="reaccionar(this, 'like')">👍</button>
-                            <button type="button" class="btn-reaccion {{ 'active' if fila.reaccion == 'dislike' }}" onclick="reaccionar(this, 'dislike')">👎</button>
+                            <button type="button" class="btn-reaccion {{ 'active' if fila.reaccion == 'like' }} {{ 'disabled' if not puedo_editar }}" 
+                                    {% if puedo_editar %}onclick="reaccionar(this, 'like')"{% endif %}>👍</button>
+                            <button type="button" class="btn-reaccion {{ 'active' if fila.reaccion == 'dislike' }} {{ 'disabled' if not puedo_editar }}" 
+                                    {% if puedo_editar %}onclick="reaccionar(this, 'dislike')"{% endif %}>👎</button>
                         </td>
                     </tr>
                     {% endfor %}
 
-                    {% if not tabla_datos %}
-                    <tr>
-                        <td class="sticky-col"><input type="text" class="excel-input fw-bold" placeholder="Nombre asignatura..."></td>
+                    {# 2. FILA VACÍA: Solo aparece si el DUEÑO entra y no tiene nada guardado aún #}
+                    {% if not tabla_datos and puedo_editar %}
+                    <tr data-reaccion="">
+                        <td class="sticky-col"><input type="text" class="excel-input fw-bold" placeholder="Escribe asignatura..."></td>
                         <td class="sticky-col sticky-sem"><input type="text" class="excel-input" placeholder="Semestre..."></td>
                         <td><input type="number" class="excel-input" value="0"></td>
-                        {% for i in range(1, 31) %}<td><input type="text" class="excel-input"></td>{% endfor %}
+                        {% for i in range(30) %}
+                        <td class="{{ 'bg-cp' if loop.index <= 10 else 'bg-sm' if loop.index <= 20 else 'bg-ev' }}">
+                            <input type="text" class="excel-input">
+                        </td>
+                        {% endfor %}
                         <td>
                             <button type="button" class="btn-reaccion" onclick="reaccionar(this, 'like')">👍</button>
                             <button type="button" class="btn-reaccion" onclick="reaccionar(this, 'dislike')">👎</button>
@@ -98,8 +127,11 @@
 </div>
 
 <script>
-// Manejo visual de reacciones
+// Bloqueo de seguridad en JS
+const PUE_EDITAR = {{ 'true' if puedo_editar else 'false' }};
+
 function reaccionar(btn, tipo) {
+    if(!PUE_EDITAR) return;
     const parent = btn.parentElement;
     const fila = btn.closest('tr');
     parent.querySelectorAll('.btn-reaccion').forEach(b => b.classList.remove('active'));
@@ -107,18 +139,19 @@ function reaccionar(btn, tipo) {
     fila.setAttribute('data-reaccion', tipo);
 }
 
-// Añadir nueva fila dinámicamente
 function agregarFila() {
+    if(!PUE_EDITAR) return;
     const cuerpo = document.getElementById('cuerpo-tabla');
     const tr = document.createElement('tr');
     let html = `
-        <td class="sticky-col"><input type="text" class="excel-input fw-bold" placeholder="Nueva Asignatura..."></td>
+        <td class="sticky-col"><input type="text" class="excel-input fw-bold" placeholder="Asignatura..."></td>
         <td class="sticky-col sticky-sem"><input type="text" class="excel-input" placeholder="Semestre..."></td>
         <td><input type="number" class="excel-input" value="0"></td>`;
     
-    for(let i=0; i<10; i++) html += '<td class="bg-cp"><input type="text" class="excel-input"></td>';
-    for(let i=0; i<10; i++) html += '<td class="bg-sm"><input type="text" class="excel-input"></td>';
-    for(let i=0; i<10; i++) html += '<td class="bg-ev"><input type="text" class="excel-input"></td>';
+    for(let i=0; i<30; i++) {
+        let clase = i < 10 ? 'bg-cp' : (i < 20 ? 'bg-sm' : 'bg-ev');
+        html += `<td class="${clase}"><input type="text" class="excel-input"></td>`;
+    }
     
     html += `<td>
         <button type="button" class="btn-reaccion" onclick="reaccionar(this, 'like')">👍</button>
@@ -129,23 +162,25 @@ function agregarFila() {
     cuerpo.appendChild(tr);
 }
 
-// Enviar datos al servidor Flask
 async function guardarCambios() {
+    if(!PUE_EDITAR) return;
     const filas = document.querySelectorAll('#cuerpo-tabla tr');
     const data = [];
 
     filas.forEach(f => {
         const inputs = f.querySelectorAll('input');
-        if(inputs[0].value.trim() === "") return;
-
-        data.push({
-            asignatura: inputs[0].value,
-            semestre: inputs[1].value,
-            creditos: inputs[2].value,
-            reaccion: f.getAttribute('data-reaccion'),
-            notas: Array.from(inputs).slice(3).map(i => i.value)
-        });
+        if(inputs.length > 0 && inputs[0].value.trim() !== "") {
+            data.push({
+                asignatura: inputs[0].value,
+                semestre: inputs[1].value,
+                creditos: inputs[2].value,
+                reaccion: f.getAttribute('data-reaccion'),
+                notas: Array.from(inputs).slice(3).map(i => i.value)
+            });
+        }
     });
+
+    if (data.length === 0) return;
 
     try {
         const res = await fetch('/guardar_matriz', {
@@ -153,14 +188,15 @@ async function guardarCambios() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         });
-        if(res.ok) alert("¡Datos guardados con éxito!");
-        else alert("Error al guardar en el servidor.");
+        if(res.ok) {
+            alert("✅ Notas guardadas solo en tu perfil.");
+            location.reload(); // Recargar para confirmar vista
+        } else {
+            alert("❌ Error al guardar.");
+        }
     } catch(e) {
-        console.error(e);
         alert("Error de conexión.");
     }
 }
 </script>
-
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="fas fa-inbox text-danger me-2"></i>Bandeja de Gestión
+            </h2>
+            <p class="text-muted mb-0">Revisión, validación y control de expedientes universitarios.</p>
+        </div>
+        <div class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold">
+            {{ reportes|length }} Documentos Pendientes
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+            <form method="GET" class="row g-3">
+                <div class="col-md-5">
+                    <label class="small fw-bold text-muted mb-1">Buscar Remitente</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search"></i></span>
+                        <input type="text" name="remitente" class="form-control bg-light border-0" placeholder="Nombre o Apellido..." value="{{ request.args.get('remitente', '') }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted mb-1">Categoría</label>
+                    <select name="categoria" class="form-select bg-light border-0">
+                        <option value="">Todos los registros</option>
+                        <option value="REPORTES" {% if request.args.get('categoria') == 'REPORTES' %}selected{% endif %}>Reportes Técnicos</option>
+                        <option value="EXPEDIENTES" {% if request.args.get('categoria') == 'EXPEDIENTES' %}selected{% endif %}>Expedientes Académicos</option>
+                        <option value="TESIS" {% if request.args.get('categoria') == 'TESIS' %}selected{% endif %}>Tesis / TFM</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold">
+                        <i class="fas fa-filter me-2"></i>Aplicar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 border-0 text-uppercase small fw-bold">Información del Documento</th>
+                        <th class="py-3 border-0 text-uppercase small fw-bold">Remitente</th>
+                        <th class="py-3 border-0 text-uppercase small fw-bold">Categoría</th>
+                        <th class="py-3 border-0 text-uppercase small fw-bold">Fecha</th>
+                        <th class="py-3 border-0 text-center text-uppercase small fw-bold">Acciones de un Click</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reporte in reportes %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-shape bg-danger-subtle text-danger rounded-3 p-2 me-3">
+                                    <i class="fas fa-file-pdf fa-lg"></i>
+                                </div>
+                                <div>
+                                    <span class="d-block fw-bold text-dark">{{ reporte.titulo }}</span>
+                                    <small class="text-muted">{{ reporte.archivo_nombre.split('_', 1)[1] if '_' in reporte.archivo_nombre else reporte.archivo_nombre }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center cursor-pointer" data-bs-toggle="modal" data-bs-target="#modalUser{{ reporte.id }}" style="cursor: pointer;">
+                                {% if reporte.remitente.rol == 'profesor' and reporte.remitente.profesor and reporte.remitente.profesor.archivo_foto %}
+                                    <img src="{{ url_for('static', filename='uploads/fotos/' ~ reporte.remitente.profesor.archivo_foto) }}" class="rounded-circle border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                                {% elif reporte.remitente.foto_perfil %}
+                                    <img src="{{ url_for('static', filename='uploads/perfiles/' ~ reporte.remitente.foto_perfil) }}" class="rounded-circle border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; font-weight: bold; text-transform: uppercase;">
+                                        {{ reporte.remitente.nombre[0] }}
+                                    </div>
+                                {% endif %}
+                                <span class="small fw-bold text-primary text-decoration-underline">{{ reporte.remitente.nombre }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if reporte.categoria == 'REPORTES' %}bg-info-subtle text-info{% else %}bg-warning-subtle text-warning{% endif %} rounded-pill border-0 px-3">
+                                {{ reporte.categoria }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted fw-bold">{{ reporte.fecha_envio.strftime('%d %b, %Y') }}</small></td>
+                        <td class="text-center">
+                            <div class="btn-group bg-white border rounded-pill p-1 shadow-sm">
+                                <a href="{{ url_for('static', filename='uploads/recibidos/' ~ reporte.archivo_nombre) }}" 
+                                   target="_blank" class="btn btn-sm btn-light rounded-circle mx-1" title="Ver">
+                                    <i class="fas fa-eye text-primary"></i>
+                                </a>
+
+                                {% if reporte.estado == 'validado' %}
+                                    <button class="btn btn-sm btn-success rounded-pill px-3 mx-1 fw-bold" disabled>
+                                        <i class="fas fa-check-circle me-1"></i> Validado
+                                    </button>
+                                {% elif reporte.estado == 'rechazado' %}
+                                    <button class="btn btn-sm btn-warning rounded-pill px-3 mx-1 fw-bold text-white" disabled>
+                                        <i class="fas fa-times-circle me-1"></i> Rechazado
+                                    </button>
+                                {% else %}
+                                    <form action="{{ url_for('validar_reporte', id=reporte.id, estado='validado') }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-white border-0 rounded-circle mx-1" title="Validar">
+                                            <i class="fas fa-check text-success"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('validar_reporte', id=reporte.id, estado='rechazado') }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-white border-0 rounded-circle mx-1" title="Rechazar">
+                                            <i class="fas fa-times text-warning"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                <button class="btn btn-sm btn-white border-0 rounded-circle mx-1" 
+                                        data-bs-toggle="modal" data-bs-target="#modalEliminar{{ reporte.id }}" title="Eliminar">
+                                    <i class="fas fa-trash-alt text-danger"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <div class="modal fade" id="modalUser{{ reporte.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content border-0 shadow-lg rounded-4">
+                                <div class="modal-header border-0 pb-0">
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center p-4">
+                                    <div class="position-relative d-inline-block mb-3">
+                                        {% if reporte.remitente.rol == 'profesor' and reporte.remitente.profesor and reporte.remitente.profesor.archivo_foto %}
+                                            <img src="{{ url_for('static', filename='uploads/fotos/' ~ reporte.remitente.profesor.archivo_foto) }}" class="rounded-circle border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                                        {% elif reporte.remitente.foto_perfil %}
+                                            <img src="{{ url_for('static', filename='uploads/perfiles/' ~ reporte.remitente.foto_perfil) }}" class="rounded-circle border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; font-weight: bold; text-transform: uppercase;">
+                                                {{ reporte.remitente.nombre[0] }}
+                                            </div>
+                                        {% endif %}
+                                        <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle p-2" title="Usuario Activo"></span>
+                                    </div>
+                                    <h4 class="fw-bold mb-1">{{ reporte.remitente.nombre }} {{ reporte.remitente.apellidos }}</h4>
+                                    <span class="badge bg-danger-subtle text-danger text-uppercase mb-4 px-3 rounded-pill">{{ reporte.remitente.rol }}</span>
+                                    
+                                    <div class="row g-3 text-start bg-light rounded-4 p-3 shadow-inner">
+                                        {% if reporte.remitente.rol == 'estudiante' %}
+                                            <div class="col-6">
+                                                <small class="text-muted d-block uppercase-label">Carrera</small>
+                                                <span class="fw-bold text-dark">{{ reporte.remitente.carrera or 'N/A' }}</span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block uppercase-label">Curso</small>
+                                                <span class="fw-bold text-dark">{{ reporte.remitente.curso or 'N/A' }}º Año</span>
+                                            </div>
+                                        {% elif reporte.remitente.rol == 'profesor' %}
+                                            <div class="col-6">
+                                                <small class="text-muted d-block uppercase-label">Departamento</small>
+                                                <span class="fw-bold text-dark">{{ reporte.remitente.departamento or 'General' }}</span>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted d-block uppercase-label">Especialidad</small>
+                                                <span class="fw-bold text-dark">{{ reporte.remitente.especialidad or 'N/A' }}</span>
+                                            </div>
+                                        {% else %}
+                                            <div class="col-12 text-center">
+                                                <small class="text-muted d-block uppercase-label">Cargo Institucional</small>
+                                                <span class="fw-bold text-danger">{{ reporte.remitente.cargo or 'Directivo / Admin' }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="col-12 border-top mt-3 pt-2">
+                                            <small class="text-muted d-block uppercase-label">Email de Contacto</small>
+                                            <span class="fw-bold text-primary"><i class="far fa-envelope me-2"></i>{{ reporte.remitente.correo_institucional }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="modalEliminar{{ reporte.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content border-0 shadow rounded-4 text-center">
+                                <div class="modal-body p-4">
+                                    <div class="bg-danger-subtle text-danger rounded-circle d-inline-block p-3 mb-3">
+                                        <i class="fas fa-trash-alt fa-2x"></i>
+                                    </div>
+                                    <h5 class="fw-bold">¿Eliminar reporte?</h5>
+                                    <p class="text-muted small">Esta acción no se puede deshacer. Se borrará el archivo y el registro.</p>
+                                    <form action="{{ url_for('eliminar_reporte', id=reporte.id) }}" method="POST">
+                                        <div class="d-grid gap-2 mt-4">
+                                            <button type="submit" class="btn btn-danger rounded-pill fw-bold">Confirmar Eliminación</button>
+                                            <button type="button" class="btn btn-light rounded-pill fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-shape { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+    .btn-white { background-color: white; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    .btn-white:hover { transform: scale(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important; z-index: 10; }
+    .table-hover tbody tr:hover { background-color: rgba(220, 53, 69, 0.03); }
+    .uppercase-label { text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px; font-weight: 800; }
+    .cursor-pointer { transition: opacity 0.2s; }
+    .cursor-pointer:hover { opacity: 0.8; }
+</style>
+{% endblock %}

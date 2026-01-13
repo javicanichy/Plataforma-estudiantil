@@ -1,16 +1,89 @@
 {% extends "base.html" %}
 
-{% block title %}Calendario UNGE{% endblock %}
+{% block title %}Calendario Académico | UNGE{% endblock %}
 
-{# ================= CSS SOLO DEL CALENDARIO ================= #}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='fullcalendar/index.global.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
 
+<style>
+    :root {
+        --unge-green: #0dbd2a;
+        --unge-blue: #0d6efd;
+        --unge-red: #dc3545;
+        --unge-yellow: #ffc107;
+    }
+
+    body.calendario-page {
+        background-color: #f8f9fa;
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.05);
+        padding: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.4rem !important;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .fc .fc-button-primary {
+        background-color: #fff !important;
+        border-color: #dee2e6 !important;
+        color: #495057 !important;
+        box-shadow: none !important;
+        text-transform: capitalize;
+    }
+
+    .fc .fc-button-primary:hover {
+        background-color: #f8f9fa !important;
+        color: var(--unge-green) !important;
+    }
+
+    .fc .fc-button-active {
+        background-color: var(--unge-green) !important;
+        border-color: var(--unge-green) !important;
+        color: white !important;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .dot {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        margin-right: 10px;
+        display: inline-block;
+    }
+
+    /* Mejora visual del Reloj */
+    #calendar-title {
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        color: var(--unge-green);
+        display: block;
+        line-height: 1.4;
+    }
+    
+    .clock-card {
+        background: #e8f5e9;
+        border-left: 4px solid var(--unge-green);
+    }
+</style>
 {% endblock %}
 
-{# ================= CONTENIDO ================= #}
 {% block content %}
-<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
 <div class="container-fluid bg-light border-bottom">
     <div class="container py-2">
         <nav aria-label="breadcrumb">
@@ -20,49 +93,120 @@
                       <i class="bi bi-house-door"></i> Inicio
                     </a>
                 </li>
-
-                <li class="breadcrumb-item">
+                <li class="breadcrumb-item active">
                       <i class="bi bi-calendar"></i> Calendario
-                    </a>
                 </li>
             </ol>
         </nav>
     </div>
 </div>
 
-<br>
-
-
-
-
-<!-- Relojo en tiempo real-->
-<h5 style="background-color: white; font-family: 'Times New Roman', Times, serif;">
-    <h2>Calendario general</h2>
-    En ese calendario encontraras información relacionada a las fechas de comienzo de las clases, matrícula, vacaciones y eventos.</h5>
-
-    <!-- Relojo en tiempo real-->
-    <div id="calendar-header" class="text-center mb-3">
-        <h4 id="calendar-title"></h4>
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- RELOJ-->
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: white !important; border-left: 5px solid black !important; overflow: visible !important;">
+    <div class="card-body" style="padding: 1.5rem !important; display: block !important;">
+        <h6 class="fw-bold mb-2 small text-uppercase" style="color: #666666 !important; display: block !important; visibility: visible !important;">
+            Reloj Institucional
+        </h6>
+        <div id="calendar-header" style="display: block !important; min-height: 30px !important;">
+            <span id="reloj-digital" style="
+                color: #000000 !important; 
+                font-weight: 8:00 !important; 
+                font-size: 1.1rem !important; 
+                display: block !important; 
+                visibility: visible !important; 
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 9999 !important;">
+                CARGANDO FECHA...
+            </span>
+        </div>
     </div>
-
-<!-- Calendario -->
-<div class="calendar-wrapper">
-    <div id="calendar"></div>
 </div>
 
-<style>
-    body.calendario-page{
-        background-color: darkgray;
-    }
-</style>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Categorías</h6>
+                    <div class="legend-list">
+                        <div class="legend-item"><span class="dot" style="background-color: var(--unge-blue);"></span> Académico / Clases</div>
+                        <div class="legend-item"><span class="dot" style="background-color: var(--unge-red);"></span> Exámenes / Matrícula</div>
+                        <div class="legend-item"><span class="dot" style="background-color: var(--unge-yellow);"></span> Vacaciones / Feriados</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if session['rol'] in ['admin', 'directivo'] %}
+            <div class="alert alert-success border-0 rounded-4 small shadow-sm animate__animated animate__fadeIn">
+                <i class="bi bi-shield-check me-2"></i> 
+                <strong>Modo Editor:</strong> Selecciona un rango de días para crear un evento.
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-9">
+            <div class="calendar-container">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="eventModal" data-bs-backdrop="static" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white border-0">
+                <h5 class="modal-title fw-bold" id="eventModalLabel">
+                    <i class="bi bi-calendar-plus me-2"></i>Nueva Actividad
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="eventForm">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Título del Evento</label>
+                        <input type="text" id="eventTitle" class="form-control border-2" placeholder="Ej: Inicio de Exámenes Finales" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Contenido / Detalles</label>
+                        <textarea id="eventDescription" class="form-control border-2" rows="3" placeholder="Escribe aquí los detalles para los alumnos..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Tipo de Categoría</label>
+                        <select id="eventTipo" class="form-select border-2">
+                            <option value="general">📘 Académico (General)</option>
+                            <option value="importante">🚩 Importante (Exámenes/Matrícula)</option>
+                            <option value="divertido">🎉 Feriado / Vacaciones</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" id="startStr">
+                    <input type="hidden" id="endStr">
+                    <input type="hidden" id="allDay">
+                </form>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="saveEventBtn" class="btn btn-success rounded-pill px-4 shadow-sm">
+                    <i class="bi bi-check-lg me-1"></i> Publicar Evento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
-{# ================= JS SOLO DEL CALENDARIO ================= #}
 {% block scripts %}
 <script src="{{ url_for('static', filename='fullcalendar/index.global.min.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/locales/es.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  var usuarioRol = "{{ session['rol'] if 'rol' in session else '' }}";
+    // Inyectamos el rol desde la sesión de Flask
+    var usuarioRol = "{{ session['rol'] if 'rol' in session else '' }}";
 </script>
 <script src="{{ url_for('static', filename='calendario.js') }}"></script>
 {% endblock %}

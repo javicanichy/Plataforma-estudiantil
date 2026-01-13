@@ -56,6 +56,17 @@ class Usuario(db.Model, UserMixin):
     foto_portada = db.Column(db.PickleType, nullable=True) # Mantenemos PickleType como pediste
     correo_institucional = db.Column(db.String(150), unique=True, nullable=True)
     talento = db.Column(db.String(100), nullable=True)
+    natural_de = db.Column(db.String(100), nullable=True) # Para todos
+    distrito_provincia = db.Column(db.String(100), nullable=True) # Para todos
+
+    # Datos para control de cuentas
+    activo = db.Column(db.Boolean, default=True)
+    fecha_expiracion = db.Column(db.DateTime, nullable=True)
+    motivo_suspension = db.Column(db.String(255), nullable=True)
+    # ... otros campos ...
+    recovery_code = db.Column(db.String(10), nullable=True)
+    recovery_expire = db.Column(db.DateTime, nullable=True)
+
     
     # Relaciones con las demas tablas
     notificaciones = db.relationship("Notificacion", backref="usuario", lazy=True)
@@ -67,6 +78,7 @@ class Usuario(db.Model, UserMixin):
     profesor = db.relationship('Profesor', backref='usuario', uselist=False)
     directivo = db.relationship('Directivo', backref='usuario', uselist=False)
     administrador = db.relationship('Administrador', backref='usuario', uselist=False)
+    secretaria = db.relationship('Secretaria', backref='usuario', uselist=False)
 
 # Método para cifrar la clave al registrarse
     def set_password(self, password):
@@ -100,12 +112,13 @@ class Profesor(db.Model):
     __tablename__ = 'profesores'
     id = db.Column(db.Integer, primary_key=True)
     
-    # El usuario_id debe ser nullable=True porque al inicio NO existe
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
     
-    # Campos para guardar los datos del que se registra
+    # Datos Personales (los que ya tenías)
     nombre_aspirante = db.Column(db.String(100))
     apellidos_aspirante = db.Column(db.String(100))
+    naturalde_aspirante = db.Column(db.String(100))
+    provinciadistrito_aspirante = db.Column(db.String(100))
     correo_personal = db.Column(db.String(100))
     dip_aspirante = db.Column(db.String(20))
     telefono_aspirante = db.Column(db.String(20))
@@ -114,12 +127,18 @@ class Profesor(db.Model):
     # Datos profesionales
     departamento = db.Column(db.String(100))
     especialidad = db.Column(db.String(100))
+    titulo_academico = db.Column(db.String(100))
     archivo_foto = db.Column(db.String(255))
     archivo_dip = db.Column(db.String(255))
-    
+
     # Estado
     cuenta_activa = db.Column(db.Boolean, default=False)
     codigo_activacion = db.Column(db.String(20))
+
+    # SUBIDA DE ARCHIVOS
+    mis_documentos_json = db.Column(db.Text) # Aquí guardaremos algo como: {"actas": ["acta1.xlsx"], "examenes": ["tema1.docx"]}
+    entregas_oficiales_json = db.Column(db.Text, default='{"entregas": []}') # Ebviar actas al departamento
+
 
 # ============================================================
 #   TABLA 5: DIRECTIVOS
@@ -129,9 +148,10 @@ class Directivo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
     
-    cargo = db.Column(db.String(100), nullable=False)    # Ej: Ilmo. Decano
-    facultad = db.Column(db.String(150), nullable=False) # Ej: FICI
-    firma_digital = db.Column(db.String(255), nullable=True)
+    cargo = db.Column(db.String(100), nullable=True)    # Ej: Ilmo. Decano
+    seccion = db.Column(db.String(150), nullable=True) # Ej: FICI
+    ubicacion = db.Column(db.String(255), nullable=True)
+    
 
     def __repr__(self):
         return f"<Directivo {self.cargo}>"
@@ -145,13 +165,19 @@ class Mensaje(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     emisor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='SET NULL'))
     receptor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='SET NULL'))
+    
+    # --- AÑADE ESTAS DOS LÍNEAS ---
+    emisor = db.relationship('Usuario', foreign_keys=[emisor_id], backref='mensajes_enviados')
+    receptor = db.relationship('Usuario', foreign_keys=[receptor_id], backref='mensajes_recibidos')
+    # ------------------------------
+
     contenido = db.Column(db.Text, nullable=False)
-    fecha = db.Column(db.DateTime, server_default=func.now())
+    fecha = db.Column(db.DateTime, server_default=db.func.now())
     leido = db.Column(db.Boolean, default=False)
-    enviado = db.Column(db.Boolean, default=True)  # true si es enviado, false si es borrador
-    recibido = db.Column(db.Boolean, default=True)  # true si está en bandeja de entrada, false si está eliminado
+    enviado = db.Column(db.Boolean, default=True)
+    recibido = db.Column(db.Boolean, default=True)
     mensaje_favorito = db.Column(db.Boolean, default=False)
-    archivo_adjunto = db.Column(db.String(255), nullable=True)  # ruta al archivo adjunto
+    archivo_adjunto = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f"<Mensaje {self.id}>"
@@ -169,6 +195,7 @@ class Nota(db.Model):
     
     # 'Práctica', 'Seminario' o 'Evaluación'
     tipo = db.Column(db.String(50), nullable=False) 
+    semestre = db.Column(db.String(20), nullable=False)
     
     # El número de columna (1 al 10)
     posicion = db.Column(db.Integer, nullable=False) 
@@ -195,7 +222,11 @@ class Asignatura(db.Model):
     creditos = db.Column(db.Integer, default=0) 
     profesor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='SET NULL'))
 
-    notas = db.relationship('Nota', backref='asignatura', lazy='dynamic')
+    # AÑADE ESTA LÍNEA CRÍTICA:
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True) 
+    
+    # Relación (opcional pero recomendada)
+    notas = db.relationship('Nota', backref='asignatura_rel', cascade="all, delete-orphan")
 
 # ============================================================
 #   TABLA 9: EXPEDIENTES
@@ -211,6 +242,7 @@ class Expediente(db.Model):
     asignatura_nombre = db.Column(db.String(100), nullable=False)
     nota_final = db.Column(db.Float, nullable=False, default=0.0)
     anio_academico = db.Column(db.String(20), default="2024-2025")
+    semestre = db.Column(db.String(50), nullable=True)
     
     # El sistema de firma
     firmado = db.Column(db.Boolean, default=False)
@@ -242,9 +274,11 @@ class Evento(db.Model):
         return {
             "id": self.id,
             "title": self.titulo,
+            "description": self.descripcion,
             "start": self.start.isoformat(),
             "end": self.end.isoformat() if self.end else None,
             "allDay": self.all_day,
+            "tipo": self.tipo,
             "className": f"evento-{self.tipo}" if self.tipo else "evento-general"
         }
 
@@ -299,31 +333,37 @@ class Noticia(db.Model):
 class Debate(db.Model):
     __tablename__ = 'debates'
     id = db.Column(db.Integer, primary_key=True)
-    autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    titulo = db.Column(db.String(150), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
-    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
     archivo = db.Column(db.String(255), nullable=True)
-    tipo_archivo = db.Column(db.String(20), nullable=True)
-
-    comentarios = db.relationship('Comentario', backref='debate', cascade='all, delete-orphan')
-
+    tipo_archivo = db.Column(db.String(20), nullable=True) # 'imagen', 'video' o 'documento'
+    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
     
+    autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    autor = db.relationship('Usuario', backref='mis_debates')
+    
+    # Relación con comentarios ordenada por fecha para el contador +1
+    comentarios = db.relationship('Comentario', 
+                                 backref='debate', 
+                                 cascade='all, delete-orphan', 
+                                 order_by="Comentario.fecha_creacion")
+
 # ============================================================
 #   TABLA 15: COMENTARIOS
 # ============================================================
 class Comentario(db.Model):
     __tablename__ = 'comentarios'
     id = db.Column(db.Integer, primary_key=True)
-    debate_id = db.Column(db.Integer, db.ForeignKey('debates.id'), nullable=False)  # <-- rename column
+    # Cambiamos nullable a True para que pueda ser o noticia o debate
+    debate_id = db.Column(db.Integer, db.ForeignKey('debates.id'), nullable=True)
+    noticia_id = db.Column(db.Integer, db.ForeignKey('noticias.id'), nullable=True) 
     autor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
     fecha_creacion = db.Column(db.DateTime, server_default=func.now())
-
-    autor = db.relationship('Usuario', backref='comentarios')
-
-    def __repr__(self):
-        return f"<Comentario {self.id} debate={self.debate_id} autor={self.autor_id}>"
-
+    
+    autor = db.relationship('Usuario', backref='sus_comentarios')
+    # Añadimos la relación con noticia
+    noticia = db.relationship('Noticia', backref=db.backref('comentarios', lazy=True, cascade="all, delete-orphan"))
 # ============================================================
 #   TABLA 16: NOTIFICACIONES
 # ============================================================
@@ -331,17 +371,11 @@ class Notificacion(db.Model):
     __tablename__ = 'notificaciones'
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
-    tipo = db.Column(db.String(50), nullable=False)  # 'noticia', 'evento', 'debate'
-    referencia_id = db.Column(db.Integer, nullable=True)  # id de noticia, evento o debate
-    mensaje = db.Column(db.String(255), nullable=False)
-    leida = db.Column(db.Boolean, default=False)
-    fecha_creacion = db.Column(db.DateTime, server_default=func.now())
-
-    # 🔗 Relación al usuario
-    usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False)
-    
-    def __repr__(self):
-        return f"<Notificacion {self.id} usuario={self.usuario_id} tipo={self.tipo}>"
+    tipo = db.Column(db.String(50)) # 'debate', 'evento', 'noticia'
+    mensaje = db.Column(db.String(255))
+    leida = db.Column(db.Boolean, default=False) # IMPORTANTE para el contador
+    item_id = db.Column(db.Integer) # ID del debate o evento para poder ir a él
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 
@@ -436,12 +470,16 @@ class SolicitudMatricula(db.Model):
     fecha_nacimiento = db.Column(db.Date, nullable=False)
     residencia = db.Column(db.String(200), nullable=False)
     natural_de = db.Column(db.String(100), nullable=False)
+    distrito_provincia = db.Column(db.String(100), nullable=True)
     dni_numero = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     carrera = db.Column(db.String(100), nullable=False)
     telefono = db.Column(db.String(20))
     sexo = db.Column(db.String(20), nullable=False)
     nacionalidad = db.Column(db.String(100), nullable=False)
+
+    # Para el buzon en activar cuenta
+    mensaje_buzon = db.Column(db.String(100), nullable=True)
 
     # Archivos Comunes (Para todos)
     doc_dni = db.Column(db.String(255))
@@ -463,3 +501,123 @@ class SolicitudMatricula(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     estado = db.Column(db.String(20), default='Pendiente')
     observaciones_admin = db.Column(db.Text)
+
+
+
+#============================================================
+#   TABLA 23: SECRETARIA ELABORACION DE ACTAS
+# ============================================================
+class SecretariaActa(db.Model):
+    __tablename__ = 'secretaria_actas'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # 1. Información de Identificación
+    asignatura = db.Column(db.String(150), nullable=False)
+    codigo_asig = db.Column(db.String(20)) # Ej: "MED-101"
+    semestre = db.Column(db.String(20))    # Ej: "Primero" o "Segundo"
+    periodo_lectivo = db.Column(db.String(20)) # Ej: "2025-2026"
+    convocatoria = db.Column(db.String(50))   # Ordinaria o Extraordinaria
+    estado = db.Column(db.String(50)) # Listar solo acras aceptadas
+    
+    # 2. El Archivo (Guardamos la ruta del Excel en el servidor)
+    nombre_archivo = db.Column(db.String(255), nullable=False) 
+    fecha_subida = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # 3. Relaciones
+    profesor_id = db.Column(db.Integer, db.ForeignKey('usuarios.id')) # Quién lo envió
+    profesor_nombre = db.Column(db.String(150)) # Guardamos el nombre para acceso rápido
+    
+    # 4. Control de Secretaría (La "Inteligencia" del flujo)
+    recibido = db.Column(db.Boolean, default=False) # Si la secretaria ya lo validó
+    acta_generada = db.Column(db.Boolean, default=False) # Para saber si ya se imprimió el PDF
+    fecha_validacion = db.Column(db.DateTime)
+
+    def __repr__(self):
+        return f'<EnvioNota {self.asignatura} - {self.profesor_nombre}>'
+
+
+
+#============================================================
+#   TABLA 23: SUBIDA DE ARCHIVOS TIPO EXPLORADOR
+# ============================================================
+class Carpeta(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    creador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    es_publica = db.Column(db.Boolean, default=True)
+
+    # Relación para poder hacer carpeta.documentos en el HTML
+    documentos = db.relationship('DocumentoArchivo', backref='carpeta', lazy=True, cascade="all, delete-orphan")
+
+class DocumentoArchivo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre_archivo = db.Column(db.String(255), nullable=False)
+    fecha_subida = db.Column(db.DateTime, default=datetime.utcnow)
+    carpeta_id = db.Column(db.Integer, db.ForeignKey('carpeta.id'), nullable=False)
+
+#============================================================
+#   TABLA 24: SECRETARIA
+# ============================================================
+class Secretaria(db.Model):
+    __tablename__ = 'secretarias'
+    id = db.Column(db.Integer, primary_key=True)
+    
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    
+    # Datos Personales (los que ya tenías)
+    nombre_secretaria = db.Column(db.String(100), nullable=False)
+    apellidos_secretaria = db.Column(db.String(100), nullable=False)
+    foto_perfil = db.Column(db.String(100), nullable=False)
+    departamento = db.Column(db.String(100), nullable=False)
+    titulo = db.Column(db.String(100), nullable=False)
+    correo_personal = db.Column(db.String(100), nullable=True)
+    correo_institucional = db.Column(db.String(100), nullable=False)
+    dip_secretaria = db.Column(db.String(20), nullable=False)
+    telefono_secretaria = db.Column(db.String(20), nullable=False)
+    decano = db.Column(db.String(20), nullable=False)
+    
+    # Opcional
+    archivos = db.Column(db.String(100), nullable=True)
+
+
+#============================================================
+#   TABLA 26: ANUNCIOS DEL/ DE LA DECANO/A
+# ============================================================
+class AnuncioDirectivo(db.Model):
+    __tablename__ = 'anuncios_directivos'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    directivo_id = db.Column(db.Integer, db.ForeignKey('directivos.id', ondelete='CASCADE'), nullable=False)
+    titulo = db.Column(db.String(200), nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    archivo_adjunto = db.Column(db.String(255), nullable=True) # Nombre del PDF o imagen
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    alcance = db.Column(db.Integer, default=0) # Nueva columna: número de personas
+    
+    # Relación para saber quién lo publicó
+    autor = db.relationship('Directivo', backref='anuncios')
+
+
+#============================================================
+#   TABLA 27: REPORTES DIRECTIVOS
+# ============================================================
+class DocumentoRecibido(db.Model):
+    __tablename__ = 'documentos_recibidos'
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(150))
+    archivo_nombre = db.Column(db.String(200))
+    
+    # IDs físicos
+    remitente_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    destinatario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    
+    categoria = db.Column(db.String(50))
+    fecha_envio = db.Column(db.DateTime, default=datetime.utcnow)
+    leido = db.Column(db.Boolean, default=False)
+    estado = db.Column(db.String(20), default='pendiente')
+
+    # RELACIONES VIRTUALES (Añade estas líneas)
+    # foreign_keys es necesario porque hay dos enlaces a la misma tabla 'usuarios'
+    remitente = db.relationship('Usuario', foreign_keys=[remitente_id], backref='envios')
+    destinatario = db.relationship('Usuario', foreign_keys=[destinatario_id], backref='recepciones')

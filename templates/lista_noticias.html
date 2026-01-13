@@ -1,41 +1,151 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+    /* Estilos para elevar el nivel visual */
+    body { background-color: #f4f7f6; }
+    
+    .noticia-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: #fff;
+    }
 
-<!-- Botón flotante fuera del container -->
-<div class="d-flex justify-content-end px-4 mt-3">
-    <a href="{{ url_for('nueva_noticia') }}" class="btn btn-success">
-        ➕ Crear noticia
-    </a>
-</div>
+    .noticia-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.12) !important;
+    }
 
-<div class="container mt-4">
+    .card-img-container {
+        height: 220px;
+        overflow: hidden;
+        position: relative;
+    }
 
-    <h2 class="mb-4">Todas las noticias</h2>
+    .card-img-container img, .card-img-container video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
 
-    <div class="row g-3">
+    .noticia-card:hover .card-img-container img {
+        transform: scale(1.1);
+    }
+
+    .badge-date {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        font-weight: bold;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-leer {
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+    }
+
+    .section-title {
+        position: relative;
+        padding-bottom: 15px;
+        font-weight: 800;
+        color: #2c3e50;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background-color: #198754; /* Verde éxito */
+        border-radius: 2px;
+    }
+</style>
+
+<div class="container py-5">
+    
+    <div class="d-flex justify-content-between align-items-end mb-5">
+        <div>
+            <h2 class="section-title">Actualidad Universitaria</h2>
+            <p class="text-muted mb-0">Descubre las últimas novedades y comunicados oficiales.</p>
+        </div>
+
+        {% if current_user.is_authenticated %}
+            <div class="text-md-end">
+                <a href="{{ url_for('nueva_noticia') }}" class="btn btn-success shadow-sm rounded-pill px-4">
+                    <i class="bi bi-plus-lg me-2"></i> Crear noticia
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
         {% for noticia in noticias %}
-        <div class="col-md-4">
-            <div class="card h-100 noticia-card">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 noticia-card shadow-sm">
                 
-                {% if noticia.archivo %}
-                    <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" 
-                         class="card-img-top" alt="{{ noticia.titulo }}">
-                {% endif %}
-                
-                <div class="card-body">
-                    <h5 class="card-title">{{ noticia.titulo }}</h5>
-                    <p class="text-muted">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
-                    <p class="card-text">{{ noticia.contenido[:100] }}...</p>
-                    <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" class="btn btn-primary">
-                        Leer noticia
-                    </a>
+                <div class="card-img-container bg-light">
+                    <span class="badge-date">{{ noticia.fecha.strftime('%d %b, %Y') }}</span>
+                    
+                    {% if noticia.archivo %}
+                        {% if noticia.tipo_archivo == 'imagen' %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" alt="{{ noticia.titulo }}">
+                        {% elif noticia.tipo_archivo == 'video' %}
+                            <video muted src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" class="w-100 h-100"></video>
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <i class="bi bi-play-circle-fill text-white fs-1 opacity-75"></i>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <i class="bi bi-newspaper fs-1 text-secondary opacity-25"></i>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="card-title fw-bold mb-3" style="min-height: 3rem;">
+                        {{ noticia.titulo }}
+                    </h5>
+                    
+                    <p class="card-text text-secondary mb-4 small">
+                        {{ noticia.contenido | striptags | truncate(110) }}
+                    </p>
+                    
+                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                        <div class="small text-muted">
+                            <i class="bi bi-person me-1"></i> {{ noticia.autor.nombre.split(' ')[0] }}
+                        </div>
+                        <a href="{{ url_for('noticia_completa', noticia_id=noticia.id) }}" class="btn btn-outline-primary btn-leer">
+                            Continuar leyendo
+                        </a>
+                    </div>
                 </div>
 
             </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="display-1 text-muted opacity-25"><i class="bi bi-mailbox"></i></div>
+            <p class="fs-4 text-muted">Aún no se han publicado noticias.</p>
         </div>
         {% endfor %}
     </div>
 
 </div>
+
 {% endblock %}

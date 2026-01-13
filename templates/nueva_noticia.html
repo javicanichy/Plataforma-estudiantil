@@ -1,68 +1,144 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="noticia-layout" style="display: flex; gap: 30px; flex-wrap: wrap;">
+<div class="container py-5">
+    <div class="row g-5">
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 20px; border-radius: 15px; background: #f8f9fa;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary text-white rounded-circle p-2 me-3">
+                            <i class="bi bi-info-circle-fill fs-4"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0">Políticas de Publicación</h4>
+                    </div>
+                    <hr class="opacity-10">
+                    <ul class="list-unstyled">
+                        <li class="mb-3 d-flex">
+                            <i class="bi bi-check2-circle text-success me-2 mt-1"></i>
+                            <span>El contenido debe ser <strong>relevante y verídico</strong>.</span>
+                        </li>
+                        <li class="mb-3 d-flex">
+                            <i class="bi bi-shield-check text-success me-2 mt-1"></i>
+                            <span>No se permite publicar información personal de terceros.</span>
+                        </li>
+                        <li class="mb-3 d-flex">
+                            <i class="bi bi-chat-heart text-success me-2 mt-1"></i>
+                            <span>Usa <strong>negritas y listas</strong> para mejorar la lectura.</span>
+                        </li>
+                        <li class="mb-3 d-flex">
+                            <i class="bi bi-image text-success me-2 mt-1"></i>
+                            <span>Se recomienda agregar imágenes o videos relacionados.</span>
+                        </li>
+                        <li class="mb-3 d-flex">
+                            <i class="bi bi-star-fill text-warning me-2 mt-1"></i>
+                            <span>Las noticias destacadas aparecerán en la página principal.</span>
+                        </li>
+                    </ul>
+                    <div class="alert alert-info border-0 small mt-4">
+                        <i class="bi bi-lightbulb me-2"></i> Mantén la calidad institucional en cada publicación.
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <!-- COLUMNA IZQUIERDA: Instrucciones / Políticas -->
-  <div class="noticia-instrucciones" style="flex: 1; min-width: 250px; padding-right: 20px; border-right: 2px solid #ccc;">
-    <h2>Instrucciones para crear noticias</h2>
-    <hr>
-    <p>Antes de publicar una noticia, asegúrate de cumplir con las siguientes políticas:</p>
-    <ul>
-      <li>El contenido debe ser relevante y verídico.</li>
-      <li>No se permite publicar información personal de terceros.</li>
-      <li>Evita lenguaje ofensivo o discriminatorio.</li>
-      <li>Se recomienda agregar imágenes o videos relacionados con la noticia.</li>
-      <li>Las noticias destacadas aparecerán en la página principal.</li>
-    </ul>
-    <p>Sigue estas recomendaciones para mantener la calidad y confiabilidad de las publicaciones.</p>
-  </div>
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    <h2 class="fw-bold text-dark mb-4 ugr-titulo-noticia">Agregar Nueva Noticia</h2>
+                    
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation">
+                        {{ form.hidden_tag() }}
 
-  <!-- COLUMNA DERECHA: Formulario -->
-  <div class="noticia-formulario" style="flex: 1; min-width: 300px; padding-left: 20px;">
-    <h1 class="ugr-titulo-noticia">Agregar Nueva Noticia</h1>
-    <hr>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold ugr-label">{{ form.titulo.label.text }}</label>
+                            {{ form.titulo(class_="form-control form-control-lg border-0 bg-light ugr-input", placeholder="Escribe un titular impactante...") }}
+                        </div>
 
-    <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold ugr-label">{{ form.contenido.label.text }}</label>
+                            {{ form.contenido(id="editor_noticia", class_="form-control border-0 bg-light ugr-textarea") }}
+                        </div>
 
-        <p>
-            {{ form.titulo.label(class_="ugr-label") }}<br>
-            {{ form.titulo(class_="ugr-input") }}
-        </p>
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold ugr-label">{{ form.archivo.label.text }} (Imagen/Video)</label>
+                                {{ form.archivo(class_="form-control border-0 bg-light ugr-input", accept="image/*, video/*") }}
+                            </div>
 
-        <p>
-            {{ form.contenido.label(class_="ugr-label") }}<br>
-            {{ form.contenido(class_="ugr-textarea") }}
-        </p>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold ugr-label">{{ form.documento.label.text }} (PDF/Word)</label>
+                                {{ form.documento(class_="form-control border-0 bg-light ugr-input", accept=".pdf, .doc, .docx, .xls, .xlsx, .ppt, .pptx") }}
+                            </div>
+                        </div>
 
-        <p>
-            {{ form.archivo.label(class_="ugr-label") }}<br>
-            {{ form.archivo(class_="ugr-input") }}
-        </p>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold ugr-label">{{ form.pie_archivo.label.text }}</label>
+                            {{ form.pie_archivo(class_="form-control border-0 bg-light ugr-input", placeholder="Descripción breve del archivo") }}
+                            {% for error in form.pie_archivo.errors %}
+                                <div class="text-danger small mt-1">{{ error }}</div>
+                            {% endfor %}
+                        </div>
 
-        <p>
-            {{ form.pie_archivo.label(class_="ugr-label") }}<br>
-            {{ form.pie_archivo(class_="ugr-input") }}
-            {% for error in form.pie_archivo.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </p>
+                        <div class="mb-4">
+                            <div class="form-check form-switch p-0 d-flex align-items-center">
+                                {{ form.destacado(class_="form-check-input ms-0 me-3", style="width: 45px; height: 23px;") }}
+                                <label class="form-check-label fw-bold ugr-label mb-0" for="destacado">
+                                    {{ form.destacado.label.text }}
+                                </label>
+                            </div>
+                        </div>
 
-        <p>
-          {{ form.documento.label(class_="ugr-label") }}<br>
-          {{ form.documento(class_="ugr-input") }}
-        </p>
+                        <input type="hidden" name="autor_id" id="autor_id" value="{{autor_id}}">
 
-        <p>
-            {{ form.destacado() }} {{ form.destacado.label(class_="ugr-label") }}
-        </p>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                            <a href="{{ url_for('lista_noticias') }}" class="btn btn-light px-5 fw-bold rounded-pill me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold rounded-pill shadow ugr-boton">
+                                <i class="bi bi-send-fill me-2"></i>{{ form.submit.label.text }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-        <input type="hidden" name="autor_id" id="autor_id" value="{{autor_id}}">
-
-        <button type="submit" class="ugr-boton">{{ form.submit.label.text }}</button>
-    </form>
-  </div>
-
+    </div>
 </div>
+
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('editor_noticia', {
+        // Configuración de herramientas: Negrita, Cursiva, Listas y Enlaces
+        toolbar: [
+            { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Underline', 'Strike', '-', 'RemoveFormat' ] },
+            { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent' ] },
+            { name: 'links', items: [ 'Link', 'Unlink' ] },
+            { name: 'insert', items: [ 'Table', 'HorizontalRule' ] },
+            { name: 'tools', items: [ 'Maximize' ] }
+        ],
+        height: 300,
+        removePlugins: 'elementspath',
+        resize_enabled: false,
+        // Color suave para combinar con tu diseño bg-light
+        uiColor: '#f8f9fa'
+    });
+</script>
+
+<style>
+    body { background-color: #f0f2f5; }
+    .ugr-input:focus {
+        background-color: #fff !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
+        border: 1px solid #0d6efd !important;
+    }
+    /* Estilizamos el contenedor de CKEditor para que combine con tus bordes redondeados */
+    .cke_chrome {
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
+</style>
 {% endblock %}

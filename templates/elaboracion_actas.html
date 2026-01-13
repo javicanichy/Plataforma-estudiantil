@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-dark"><i class="fas fa-file-invoice text-primary me-2"></i>Generador Inteligente de Actas</h2>
+            <p class="text-muted">El sistema procesará el Excel, cruzará los datos con la base de datos y generará el formato oficial de la UNGE.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('secretaria_panel') }}" class="btn btn-outline-secondary rounded-pill">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4" style="border-radius: 20px;">
+                <h5 class="fw-bold mb-4">1. Configuración del Acta</h5>
+                <form action="{{ url_for('procesar_acta_automatica') }}" method="POST" enctype="multipart/form-data">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Tipo de Examen</label>
+                        <select name="tipo_examen" class="form-select bg-light border-0" required>
+                            <option value="Ordinaria">Convocatoria Ordinaria</option>
+                            <option value="Extraordinaria">Convocatoria Extraordinaria</option>
+                            <option value="Examen de Grado">Examen de Grado</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Año Académico</label>
+                        <input type="text" name="periodo" class="form-control bg-light border-0" placeholder="Ej: 2025-2026" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Archivo de Notas (Excel)</label>
+                        <div class="upload-area p-3 text-center border-dashed rounded-3 bg-light" id="drop-area">
+                            <i class="fas fa-file-excel fa-2x text-success mb-2"></i>
+                            <input type="file" name="archivo_excel" class="form-control form-control-sm" accept=".xlsx, .xls" required>
+                            <p class="x-small text-muted mt-2">Arrastre aquí el archivo enviado por el profesor</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
+                        <i class="fas fa-sync-alt me-2"></i>Procesar y Validar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold text-primary"><i class="fas fa-microchip me-2"></i>Previsualización del Motor de Datos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <small class="d-block text-muted">Estado de Validación</small>
+                                <span class="badge bg-success-subtle text-success mt-1"><i class="fas fa-check-circle"></i> Esperando archivo...</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded bg-light">
+                                <small class="d-block text-muted">Detección de Errores</small>
+                                <span class="text-success fw-bold small">0 Conflictos detectados</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="small">DIP Estudiante</th>
+                                    <th class="small">Nombre Completo</th>
+                                    <th class="small text-center">Nota</th>
+                                    <th class="small">Resultado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-muted">
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <i class="fas fa-robot fa-3x mb-3 d-block opacity-25"></i>
+                                        Cargue un Excel para que la IA organice los datos alfabéticamente y valide las matrículas.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0 p-3 text-end" style="border-radius: 0 0 20px 20px;">
+                    <button class="btn btn-success disabled px-4 fw-bold">
+                        <i class="fas fa-print me-2"></i>Generar Acta Oficial (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-dashed { border: 2px dashed #dee2e6; transition: all 0.3s; }
+    .upload-area:hover { border-color: #0d6efd; background-color: #f8f9fa; }
+    .x-small { font-size: 0.75rem; }
+    .bg-success-subtle { background-color: #d1e7dd; }
+</style>
+{% endblock %}

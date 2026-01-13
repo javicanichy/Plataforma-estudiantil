@@ -38,19 +38,11 @@
 .ugr-pie-foto {
     margin-top: 6px;
     font-size: 14px;
-    color: green;
+    color: green important;
     text-align: center;
 }
 
 /* COMPARTIR */
-.ugr-compartir {
-    margin-top: 15px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 15px;
-    margin-left: 50px; /* Mover a la derecha */
-}
 
 .ugr-compartir span {
     color: green;

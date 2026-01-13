@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control | Administrador UNGE</title>
+    <title>Admin UNGE | Control Maestro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,17 +11,17 @@
     <style>
         :root {
             --unge-red: #800000;
-            --unge-dark: #2c3e50;
-            --sidebar-width: 260px;
+            --unge-dark: #1a1a1a;
+            --sidebar-width: 280px;
         }
 
         body {
-            background-color: #f8f9fa;
+            background-color: #f4f7f6;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
         }
 
-        /* Sidebar Styling */
+        /* Sidebar con estilo Premium */
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
@@ -30,73 +30,82 @@
             color: white;
             transition: all 0.3s;
             z-index: 1000;
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
 
         .sidebar-header {
-            padding: 2rem 1.5rem;
-            text-align: center;
-            background: rgba(0,0,0,0.1);
+            padding: 2.5rem 1.5rem;
+            background: linear-gradient(to bottom, rgba(128,0,0,0.2), transparent);
         }
 
         .nav-link {
-            color: rgba(255,255,255,0.7);
-            margin: 0.2rem 1rem;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
+            color: rgba(255,255,255,0.6);
+            margin: 0.3rem 1.2rem;
+            padding: 0.9rem 1.2rem;
+            border-radius: 12px;
             display: flex;
             align-items: center;
-            transition: 0.3s;
+            font-weight: 500;
+            transition: 0.2s;
         }
 
-        .nav-link i { width: 25px; }
+        .nav-link i { width: 30px; font-size: 1.1rem; }
 
         .nav-link:hover, .nav-link.active {
             background: var(--unge-red);
-            color: white;
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2);
+            color: white !important;
+            transform: translateX(5px);
         }
 
-        /* Main Content */
+        /* Main Content Area */
         .main-content {
             margin-left: var(--sidebar-width);
-            padding: 2rem;
+            padding: 2.5rem;
             min-height: 100vh;
         }
 
-        /* Cards & Stats */
+        /* Cards Estilizadas */
         .stat-card {
             border: none;
-            border-radius: 12px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
         }
 
-        .icon-box {
-            width: 48px;
-            height: 48px;
+        .avatar-initials {
+            width: 40px;
+            height: 40px;
+            background: var(--unge-red);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .table-card {
-            border-radius: 15px;
+            border-radius: 20px;
             border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
         }
 
         .badge-role {
-            padding: 0.5em 0.8em;
-            border-radius: 6px;
-            text-transform: capitalize;
-            font-weight: 500;
+            padding: 0.4em 1em;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
-        @media (max-width: 768px) {
+        .bg-unge-light { background-color: #f8d7da; color: #800000; }
+
+        @media (max-width: 992px) {
             .sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
             .main-content { margin-left: 0; }
             .sidebar.active { margin-left: 0; }
@@ -105,36 +114,43 @@
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <h4 class="fw-bold m-0"><i class="fas fa-university me-2"></i>FCS</h4>
-            <small class="opacity-50 text-uppercase ls-1">Administración</small>
+    <nav class="sidebar shadow">
+        <div class="sidebar-header text-center">
+            <div class="bg-white d-inline-block p-2 rounded-3 mb-3">
+                <i class="fas fa-shield-alt text-danger fa-2x"></i>
+            </div>
+            <h5 class="fw-bold m-0 tracking-tight">CENTRO DE CONTROL</h5>
+            <span class="badge bg-danger-subtle text-danger mt-2">UNGE ADMIN</span>
         </div>
         
-        <div class="mt-4">
+        <div class="mt-2">
             <a href="{{ url_for('panel_admin') }}" class="nav-link active">
-                <i class="fas fa-th-large"></i> Dashboard
+                <i class="fas fa-chart-line"></i> Dashboard
             </a>
             <a href="{{url_for('panel_admin_solicitudes')}}" class="nav-link">
-                <i class="fas fa-user-graduate"></i> Estudiantes
+                <i class="fas fa-users"></i> Estudiantes
             </a>
             <a href="{{url_for('admin_profesor_revision')}}" class="nav-link">
                 <i class="fas fa-chalkboard-teacher"></i> Profesores
             </a>
             <a href="{{url_for('ver_matriculas')}}" class="nav-link">
-                <i class="fas fa-id-card"></i> Matricula
+                <i class="fas fa-file-signature"></i> Matrículas
             </a>
             <a href="{{url_for('buzon_general')}}" class="nav-link">
-                <i class="fas fa-inbox"></i> Buzón
+                <i class="fas fa-envelope-open-text"></i> Buzón General
+            </a>
+            <hr class="mx-4 opacity-10">
+            <a href="#" class="nav-link">
+                <i class="fas fa-user-lock"></i> Seguridad
             </a>
             <a href="#" class="nav-link">
-                <i class="fas fa-cog"></i> Configuración
+                <i class="fas fa-database"></i> Logs del Sistema
             </a>
         </div>
 
-        <div class="position-absolute bottom-0 w-100 p-3">
-            <a href="{{ url_for('logout') }}" onclick="return confirm('¿Seguro que desea salir?');" class="btn btn-outline-light w-100 border-0 text-start">
-                <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
+        <div class="position-absolute bottom-0 w-100 p-4">
+            <a href="{{ url_for('logout') }}" onclick="return confirm('¿Finalizar sesión administrativa?');" class="btn btn-danger w-100 rounded-pill fw-bold py-2 shadow-sm">
+                <i class="fas fa-power-off me-2"></i> Salir
             </a>
         </div>
     </nav>
@@ -142,92 +158,63 @@
     <main class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
-                <h2 class="fw-bold text-dark m-0">Administración de la plataforma</h2>
-                <p class="text-muted">Estado global de la plataforma educativa</p>
+                <h2 class="fw-bold text-dark m-0">Consola de Administración</h2>
+                <p class="text-muted mb-0">Bienvenida de nuevo, <strong>{{ current_user.nombre }}</strong></p>
             </div>
-            <div class="d-flex align-items-center bg-white p-2 rounded-pill shadow-sm px-3">
-                <div class="text-end me-3">
-                    <p class="m-0 small fw-bold text-dark">{{ current_user.nombre }}</p>
-                    <p class="m-0 tiny text-muted" style="font-size: 0.7rem;">Super Administrador</p>
+            <div class="d-flex align-items-center bg-white p-2 rounded-4 shadow-sm px-3">
+                <div class="text-end me-3 d-none d-md-block">
+                    <p class="m-0 small fw-bold text-dark">{{ current_user.nombre }} {{ current_user.apellidos }}</p>
+                    <span class="badge bg-success-subtle text-success" style="font-size: 0.6rem;">SISTEMA ACTIVO</span>
                 </div>
-                <img src="https://ui-avatars.com/api/?name={{ current_user.nombre }}&background=800000&color=fff" class="rounded-circle" width="40">
+                <div class="avatar-initials">
+                    {{ current_user.nombre[0] }}{{ current_user.apellidos[0] if current_user.apellidos else '' }}
+                </div>
             </div>
         </div>
 
         <div class="row g-4 mb-5">
+            {% set stats = [
+                ('Estudiantes', total_estudiantes, 'fa-user-graduate', 'primary'),
+                ('Profesores', total_profesores, 'fa-chalkboard-teacher', 'success'),
+                ('Directivos', total_directivos, 'fa-user-tie', 'warning'),
+                ('Administradores', total_administradores, 'fa-user-shield', 'danger')
+            ] %}
+            {% for label, count, icon, color in stats %}
             <div class="col-xl-3 col-md-6">
-                <div class="card stat-card shadow-sm p-3 bg-white border-start border-primary border-5">
+                <div class="card stat-card shadow-sm p-3 bg-white border-start border-{{ color }} border-5">
                     <div class="d-flex align-items-center">
-                      <div class="icon-box bg-primary bg-opacity-10 text-primary me-3">
-                            <i class="fas fa-user-graduate fa-lg"></i>
+                        <div class="icon-box bg-{{ color }} bg-opacity-10 text-{{ color }} me-3">
+                            <i class="fas {{ icon }} fa-lg"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted small mb-1">Estudiantes</h6>
-                            <h3 class="fw-bold m-0">{{ total_estudiantes }}</h3>
+                            <h6 class="text-muted small mb-1 fw-bold">{{ label }}</h6>
+                            <h3 class="fw-bold m-0 text-dark">{{ count }}</h3>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-xl-3 col-md-6">
-                <div class="card stat-card shadow-sm p-3 bg-white border-start border-success border-5">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box bg-success bg-opacity-10 text-success me-3">
-                            <i class="fas fa-chalkboard-teacher fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-muted small mb-1">Profesores</h6>
-                            <h3 class="fw-bold m-0">{{ total_profesores }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6">
-                <div class="card stat-card shadow-sm p-3 bg-white border-start border-warning border-5">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box bg-warning bg-opacity-10 text-warning me-3">
-                            <i class="fas fa-user-tie fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-muted small mb-1">Directivos</h6>
-                            <h3 class="fw-bold m-0">{{ total_directivos }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6">
-                <div class="card stat-card shadow-sm p-3 bg-white border-start border-danger border-5">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box bg-danger bg-opacity-10 text-danger me-3">
-                            <i class="fas fa-user-shield fa-lg"></i>
-                        </div>
-                        <div>
-                            <h6 class="text-muted small mb-1">Administradores</h6>
-                            <h3 class="fw-bold m-0">{{ total_administradores }}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card table-card shadow-sm">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold m-0 text-dark">Últimos Registros</h5>
-                        <a href="#" class="btn btn-sm btn-light border">Ver todos</a>
+                <div class="card table-card shadow-sm h-100">
+                    <div class="card-header bg-white py-4 px-4 d-flex justify-content-between align-items-center border-0">
+                        <h5 class="fw-bold m-0 text-dark">Actividad Reciente</h5>
+                        <div class="input-group input-group-sm w-auto">
+                            <input type="text" class="form-control border-light bg-light" placeholder="Buscar usuario...">
+                            <button class="btn btn-outline-light border-light bg-light text-muted"><i class="fas fa-search"></i></button>
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+                                <thead class="bg-light">
                                     <tr>
-                                        <th class="ps-4">Usuario</th>
-                                        <th>Rol</th>
-                                        <th>Identificación</th>
-                                        <th class="text-end pe-4">Acción</th>
+                                        <th class="ps-4 border-0">Identidad</th>
+                                        <th class="border-0">Rol</th>
+                                        <th class="border-0">Identificación</th>
+                                        <th class="text-end pe-4 border-0">Gestión</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -235,31 +222,26 @@
                                     <tr>
                                         <td class="ps-4">
                                             <div class="d-flex align-items-center">
-                                                <div class="avatar-sm me-3 bg-light rounded-circle p-2 text-center" style="width:35px">
-                                                    <i class="fas fa-user text-muted"></i>
+                                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center fw-bold text-muted me-3" style="width:38px; height:38px; font-size: 0.8rem; border: 1px solid #eee;">
+                                                    {{ user.nombre[0] }}{{ user.apellidos[0] if user.apellidos else '' }}
                                                 </div>
                                                 <div>
                                                     <p class="m-0 fw-bold small text-dark">{{ user.nombre }} {{ user.apellidos }}</p>
-                                                    <p class="m-0 tiny text-muted" style="font-size: 0.75rem;">{{ user.correo_institucional }}</p>
+                                                    <p class="m-0 text-muted" style="font-size: 0.7rem;">{{ user.correo_institucional }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
-                                            {% if user.rol == 'admin' %}
-                                                <span class="badge bg-danger bg-opacity-10 text-danger badge-role">Admin</span>
-                                            {% elif user.rol == 'profesor' %}
-                                                <span class="badge bg-success bg-opacity-10 text-success badge-role">Profesor</span>
-                                            {% elif user.rol == 'directivo' %}
-                                                <span class="badge bg-warning bg-opacity-10 text-warning badge-role">Directivo</span>
-                                            {% else %}
-                                                <span class="badge bg-primary bg-opacity-10 text-primary badge-role">Estudiante</span>
-                                            {% endif %}
+                                            {% set role_badges = {'admin': 'danger', 'profesor': 'success', 'directivo': 'warning', 'estudiante': 'primary'} %}
+                                            <span class="badge bg-{{ role_badges[user.rol] or 'secondary' }} bg-opacity-10 text-{{ role_badges[user.rol] or 'secondary' }} badge-role">
+                                                {{ user.rol }}
+                                            </span>
                                         </td>
-                                        <td><code class="text-dark">{{ user.dip }}</code></td>
+                                        <td><span class="text-muted small fw-bold">{{ user.dip }}</span></td>
                                         <td class="text-end pe-4">
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-light border"><i class="fas fa-edit text-primary"></i></button>
-                                                <button class="btn btn-sm btn-light border"><i class="fas fa-trash text-danger"></i></button>
+                                            <div class="btn-group shadow-sm rounded-3">
+                                                <a href="#" class="btn btn-sm btn-white border-light text-primary" title="Editar"><i class="fas fa-pen"></i></a>
+                                                <button class="btn btn-sm btn-white border-light text-danger" title="Suspender"><i class="fas fa-user-slash"></i></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -272,37 +254,116 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="card table-card shadow-sm mb-4">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="fw-bold m-0">Acciones de Sistema</h5>
+                <div class="card table-card shadow-sm mb-4 border-0">
+                    <div class="card-header bg-white py-4 px-4 border-0">
+                        <h5 class="fw-bold m-0">Acciones de Control</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-dark py-2 text-start px-3">
-                                <i class="fas fa-file-export me-2"></i> Exportar Base de Datos
-                            </button>
-                            <button class="btn btn-outline-primary py-2 text-start px-3">
-                                <i class="fas fa-user-plus me-2"></i> Crear Nuevo Profesor
-                            </button>
-                            <button class="btn btn-outline-danger py-2 text-start px-3">
-                                <i class="fas fa-broadcast-tower me-2"></i> Notificar a todos
+                    <div class="card-body px-4 pb-4 pt-0">
+                        <div class="d-grid gap-3">
+                            <a href="{{ url_for('exportar_usuarios_excel') }}" class="btn btn-dark py-3 text-start px-3 rounded-4 transition-all">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-cloud-download-alt me-3 fa-lg text-warning"></i>
+                                    <div>
+                                        <div class="fw-bold small">Generar Exel</div>
+                                        <div class="tiny opacity-50" style="font-size: 0.7rem;">Descargar base de datos hoy</div>
+                                    </div>
+                                </div>
+                            </a>
+                            <a href="{{ url_for('consola_maestra') }}" target="_blank" class="btn btn-white border py-3 text-start px-3 rounded-4 shadow-sm">
+                                <div class="d-flex align-items-center text-primary">
+                                    <i class="fas fa-user-plus me-3 fa-lg"></i>
+                                    <div class="fw-bold small">Consola de Administración</div>
+                                </div>
+                            </a>
+                            <button class="btn btn-unge-light py-3 text-start px-3 rounded-4 border-0">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-bullhorn me-3 fa-lg"></i>
+                                    <div class="fw-bold small">Notificación Global</div>
+                                </div>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="card table-card shadow-sm bg-dark text-white">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-warning"></i>Estado del Servidor</h6>
-                        <div class="d-flex justify-content-between mb-2">
-                            <small class="opacity-75">Uso de Almacenamiento</small>
-                            <small>24%</small>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-warning" style="width: 24%"></div>
-                        </div>
-                    </div>
+                <!-- Control de hardware-->
+                <div class="card shadow-sm bg-dark text-white border-0 overflow-hidden">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h6 class="fw-bold m-0 small text-uppercase" style="letter-spacing: 1px;">
+                <i class="fas fa-microchip me-2 text-success"></i>Monitor de Sistema
+            </h6>
+            <span id="badge-entorno" class="badge bg-secondary small" style="font-size: 0.6rem;">Detectando...</span>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-6">
+                <div class="p-2 border border-secondary rounded">
+                    <small class="opacity-50 d-block mb-1" style="font-size: 0.7rem;">CPU</small>
+                    <h5 id="cpu-val" class="fw-bold m-0">0%</h5>
                 </div>
+            </div>
+            <div class="col-6">
+                <div class="p-2 border border-secondary rounded">
+                    <small class="opacity-50 d-block mb-1" style="font-size: 0.7rem;">RAM</small>
+                    <h5 id="ram-val" class="fw-bold m-0">0%</h5>
+                </div>
+            </div>
+
+            <div class="col-12 mt-3">
+                <div class="d-flex justify-content-between mb-1 small">
+                    <span class="opacity-75">Disco (<span id="disco-info">0 GB</span>)</span>
+                    <span id="disco-p" class="fw-bold">0%</span>
+                </div>
+                <div class="progress bg-secondary" style="height: 6px;">
+                    <div id="disco-bar" class="progress-bar bg-primary" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="col-12 mt-3 pt-2 border-top border-secondary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="opacity-75">Base de Datos:</small>
+                    <span id="db-status" class="badge bg-success">Verificando</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshStats() {
+    fetch('/admin/api/stats')
+        .then(res => res.json())
+        .then(data => {
+            // Entorno
+            document.getElementById('badge-entorno').innerText = data.entorno;
+            
+            // CPU y RAM
+            document.getElementById('cpu-val').innerText = data.cpu + '%';
+            document.getElementById('ram-val').innerText = data.ram + '%';
+            
+            // Disco
+            document.getElementById('disco-info').innerText = data.disco_info;
+            document.getElementById('disco-p').innerText = data.disco + '%';
+            const dBar = document.getElementById('disco-bar');
+            dBar.style.width = data.disco + '%';
+            
+            // Color de la barra de disco según nivel
+            dBar.className = data.disco > 85 ? "progress-bar bg-danger" : 
+                            data.disco > 60 ? "progress-bar bg-warning" : "progress-bar bg-success";
+
+            // DB
+            const dbB = document.getElementById('db-status');
+            dbB.innerText = data.db;
+            dbB.className = data.db === "En línea" ? "badge bg-success" : "badge bg-danger";
+        })
+        .catch(e => console.error("Error stats:", e));
+}
+
+// Actualizar cada 5 segundos
+setInterval(refreshStats, 5000);
+refreshStats();
+</script>
+                <!-- Control de hardware-->
             </div>
         </div>
     </main>

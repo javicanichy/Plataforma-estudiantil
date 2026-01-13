@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Certificación Académica - {{ e.nombre }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilos base para imitar el documento físico */
+        @page { size: A4; margin: 0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #555; 
+            display: flex; 
+            justify-content: center; 
+            padding: 20px;
+        }
+
+        .acta-container { 
+            width: 210mm; 
+            min-height: 297mm; 
+            padding: 15mm 20mm; 
+            background: white; 
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* Marcas de agua y logos */
+        .escudo-agua { 
+            position: absolute; 
+            top: 25%; left: 15%; 
+            width: 70%; opacity: 0.1; 
+            z-index: 0; pointer-events: none;
+        }
+
+        .header-table img { height: 60px; object-fit: contain; }
+        
+        /* Tipografía específica de la imagen */
+        .titulo-principal {
+            font-size: 11pt;
+            font-weight: bold;
+            text-decoration: underline;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .texto-oficial {
+            font-size: 9.5pt;
+            text-align: justify;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        /* Tablas: Clonando el diseño de bordes y colores */
+        .tabla-clon {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            margin-bottom: 5px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .tabla-clon th, .tabla-clon td {
+            border: 1px solid #444;
+            padding: 2px 5px;
+        }
+
+        .bg-gris { background-color: #e8e8e8; font-weight: bold; }
+        
+        /* Estilo de asignaturas en cursiva como en la foto */
+        .asignatura-nombre { font-style: italic; }
+
+        /* Filas de cabecera de semestre */
+        .header-semestre {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 9pt;
+        }
+
+        /* Fila de nota media (naranja suave/beige en la foto) */
+        .nota-media-row {
+            background-color: #ffebd7;
+            font-weight: bold;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 10pt;
+        }
+
+        .footer-firmas {
+            margin-top: 30px;
+            font-size: 9.5pt;
+        }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .no-print { display: none; }
+            .acta-container { box-shadow: none; width: 100%; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print position-fixed top-0 start-0 p-3">
+    <button onclick="window.print()" class="btn btn-danger shadow">Imprimir Clon Exacto</button>
+</div>
+
+<div class="acta-container">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfwbQjZeYAU00l-fb6-NNqQxWZP8NgfVeY-Q&s" class="escudo-agua">
+
+    <table class="w-100 header-table mb-2">
+        <tr>
+            <td class="text-center" style="width: 40%;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/Coat_of_arms_of_Equatorial_Guinea.svg"><br>
+                <small class="fw-bold">República de Guinea Ecuatorial</small>
+            </td>
+            <td class="text-center" style="width: 60%;">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfwbQjZeYAU00l-fb6-NNqQxWZP8NgfVeY-Q&s"><br>
+                <small class="fw-bold">Universidad Nacional de Guinea Ecuatorial</small><br>
+                <small class="fw-bold">Facultad de {{ e.facultad or 'Ciencias de la Salud' }}</small>
+            </td>
+        </tr>
+    </table>
+
+    <div class="titulo-principal">CERIFICACIÓN ACADÉMICA PERSONAL</div>
+
+    <div class="texto-oficial">
+        Doña Amparo Efiri NDUMU OYE, Máster en Investigación en Ciencias Sociosanitarias, Licenciada en Enfermería, Diplomada Universitaria en Ginecología y Obstetricia, Secretaria de la Facultad de Ciencias de la Salud, <strong>CERTIFICO</strong> que el/a estudiante cuyos datos abajo se reflejan, se ingresó en el año {{ anio_ingreso }} y tiene cursadas las asignaturas correspondientes a la carrera de <strong>{{ e.carrera or 'GRADO I EN ENFERMERÍA' }}</strong> como señala la relación de las asignaturas.
+    </div>
+
+    <table class="tabla-clon mb-3">
+        <tr>
+            <td class="bg-gris" style="width: 10%;">Nombre</td>
+            <td style="width: 20%; font-style: italic;">{{ e.nombre }}</td>
+            <td class="bg-gris" style="width: 15%;">1<sup>er</sup> Apellido</td>
+            <td style="width: 20%; font-style: italic;">{{ e.apellidos.split(' ')[0] if e.apellidos else '' }}</td>
+            <td class="bg-gris" style="width: 15%;">2º Apellido</td>
+            <td style="font-style: italic;">{{ e.apellidos.split(' ')[1] if (e.apellidos and ' ' in e.apellidos) else '' }}</td>
+        </tr>
+        <tr>
+            <td class="bg-gris">DIP Nº</td>
+            <td class="fw-bold">{{ e.dip }}</td>
+            <td class="bg-gris">Fecha de Nacimiento</td>
+            <td class="text-center">{{ e.fecha_nacimiento }}</td>
+            <td class="bg-gris">Natural de</td>
+            <td class="small">{{ usuario.natural_de }}</td>
+        </tr>
+        <tr>
+            <td class="bg-gris">Plan de Estudios</td>
+            <td class="text-center">GMD</td>
+            <td class="bg-gris">Expediente</td>
+            <td class="text-center fw-bold">{{ anio_expediente }}</td>
+            <td class="bg-gris">Provincia de</td>
+            <td>{{ e.distrito_provincia }}</td>
+        </tr>
+    </table>
+
+    {% for nivel, info in historial.items() %}
+    <table class="tabla-clon">
+        <thead>
+            <tr class="bg-gris">
+                <th style="width: 40%;">{{ nivel }} CURSO ({{ info.anio_texto }}):-</th>
+                <th style="width: 10%;">CRÉDITOS</th>
+                <th style="width: 8%;">TIPO</th>
+                <th style="width: 8%;">NOTA</th>
+                <th style="width: 12%;">CALIFICACIONES</th>
+                <th style="width: 10%;">CURSO</th>
+                <th style="width: 12%;">CONVOCATORIA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nombre_semestre, materias in info.semestres.items() %}
+            <tr class="header-semestre">
+                <td colspan="7">{{ nombre_semestre }}</td>
+            </tr>
+            {% for m in materias %}
+            <tr>
+                <td class="asignatura-nombre">{{ m.get('asignatura') }}</td>
+                <td class="text-center">{{ m.get('creditos') }}</td>
+                <td class="text-center">{{ m.get('tipo') or 'OB' }}</td>
+                <td class="text-center fw-bold">{{ "%.2f"|format(m.get('nota')|float)|replace('.', ',') }}</td>
+                <td>{{ m.get('estado') or 'Aprobado.' }}</td>
+                <td class="text-center small">{{ m.get('anio') }}</td>
+                <td class="small">{{ m.get('convocatoria') or 'ORDINARIA' }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+            
+            <tr class="nota-media-row">
+                <td colspan="7">
+                    NOTA MEDIA {{ nivel }} CURSO: {{ "%.2f"|format(info.suma_notas / info.conteo)|replace('.', ',') }} 
+                    {{ 'APROBADO' if (info.suma_notas / info.conteo) >= 5 else 'SUSPENSO' }}.-
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% endfor %}
+
+    <div class="text-center fw-bold mt-2" style="font-size: 10pt; background: #eee;">
+        NOTA MEDIA GLOBAL: {{ "%.2f"|format(media_general)|replace('.', ',') }}
+    </div>
+
+    <div class="footer-firmas row text-center">
+        <div class="col-12 text-end mb-5">
+            Bata, a {{ fecha.day }} de {{ fecha.strftime('%B') }} de {{ fecha.year }}
+        </div>
+        <div class="col-6">
+            <br><br>
+            <p>__________________________</p>
+            <p class="fw-bold">SELLO</p>
+        </div>
+        <div class="col-6">
+            <br><br>
+            <p>__________________________</p>
+            <p class="fw-bold">Doña Amparo Efiri NDUMU OYE</p>
+            <p>Secretaria de la Facultad</p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

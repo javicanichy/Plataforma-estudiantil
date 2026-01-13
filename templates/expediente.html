@@ -1,97 +1,140 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="container my-5">
-    <div class="card border-0 shadow-sm mb-4 bg-primary text-white p-4" style="border-radius: 15px;">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <h2 class="fw-bold mb-1">Expediente Académico</h2>
-                <p class="mb-0 opacity-75">Estudiante: {{ usuario.nombre }} {{ usuario.apellidos }}</p>
-                <p class="small opacity-75 mb-0">Carrera: {{ usuario.carrera }} | DIP: {{ usuario.dip }}</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <button onclick="window.print()" class="btn btn-light btn-sm fw-bold px-4 rounded-pill">
-                    <i class="bi bi-printer-fill me-2"></i>Imprimir
-                </button>
-            </div>
-        </div>
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-uppercase letter-spacing-2" style="color: #1a237e;">Expediente Académico</h1>
+        <div class="mx-auto" style="width: 80px; height: 4px; background: #0d6efd; border-radius: 2px;"></div>
     </div>
 
-    <div class="row g-3 mb-4 text-center">
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 bg-white">
-                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Puntuación (Suma)</small>
-                <span class="fs-3 fw-bold text-dark">{{ puntuacion }}</span>
+    <div class="row g-4 mb-5">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100 p-4 text-center" style="border-radius: 20px;">
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    <div class="rounded-circle p-1" style="background: linear-gradient(45deg, #0d6efd, #00d2ff, #0d6efd);">
+                        {% if usuario.foto_perfil %}
+                            <img src="{{ url_for('static', filename='uploads/perfiles/' + usuario.foto_perfil) }}" 
+                                 class="rounded-circle border border-4 border-white shadow-sm" width="120" height="120" style="object-fit: cover;">
+                        {% else %}
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm mx-auto border border-4 border-white" style="width: 120px; height: 120px; font-size: 3rem; font-weight: bold;">
+                                {{ usuario.nombre[0]|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-1">{{ usuario.nombre }} {{ usuario.apellidos }}</h4>
+                <p class="text-muted small mb-0">Estudiante Universitario</p>
             </div>
         </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 border-bottom border-primary border-4">
-                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Aprobado (Media)</small>
-                <span class="fs-3 fw-bold text-primary">{{ aprobado }}</span>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 bg-white">
-                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Matrícula</small>
-                <span class="fs-5 fw-bold text-dark mt-2">{{ estudiante.matricula }}</span>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 shadow-sm p-3 h-100 bg-white">
-                <small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Rol Sistema</small>
-                <div class="mt-2">
-                    <span class="badge bg-info text-white rounded-pill px-3">{{ usuario.rol|upper }}</span>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100 p-4" style="border-radius: 20px;">
+                <div class="row h-100 align-items-center">
+                    <div class="col-md-6 border-end-md">
+                        <div class="d-flex align-items-center mb-3 mb-md-0">
+                            <div class="icon-box bg-primary-subtle text-primary me-3">
+                                <i class="bi bi-mortarboard-fill fs-3"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted small text-uppercase mb-1">Carrera Académica</h6>
+                                <p class="fw-bold mb-0 text-dark">{{ usuario.carrera if usuario.carrera else "No especificada" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-info-subtle text-info me-3">
+                                <i class="bi bi-card-checklist fs-3"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-muted small text-uppercase mb-1">ID / Matrícula</h6>
+                                <p class="fw-bold mb-0 text-dark">{{ estudiante.matricula }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 15px;">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h5 class="mb-0 fw-bold text-dark">
-                <i class="bi bi-journal-check me-2 text-primary"></i>Historial Académico Completo
-            </h5>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 text-center bg-primary text-white" style="border-radius: 15px;">
+                <h6 class="text-white-50 small text-uppercase">Puntuación Total</h6>
+                <h2 class="fw-bold mb-0">{{ puntuacion }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 text-center bg-white border-start border-primary border-4" style="border-radius: 15px;">
+                <h6 class="text-muted small text-uppercase">Promedio General</h6>
+                <h2 class="fw-bold mb-0 text-primary">{{ aprobado }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 15px;">
+                <h6 class="text-muted small text-uppercase">Materias Registradas</h6>
+                <h2 class="fw-bold mb-0 text-dark">{{ registros|length }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+        <div class="card-header bg-dark text-white py-3 border-0">
+            <h5 class="mb-0 fw-bold small text-uppercase"><i class="bi bi-journal-check me-2"></i>Hoja de Calificaciones</h5>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 text-center">
-                <thead class="bg-light text-muted">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-muted small text-uppercase">
                     <tr>
-                        <th class="ps-4 text-start">Asignatura</th>
-                        <th>Nota</th>
-                        <th>Estado / Firma</th>
+                        <th class="ps-4">Asignatura</th>
+                        <th class="text-center">Semestre</th>
+                        <th class="text-center">Nota Final</th>
+                        <th class="text-center">Validación</th>
+                        <th class="text-center">Acción</th>
+                        <th class="text-end pe-4">Curso Académico</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in registros %}
+                    {% for r in registros %}
                     <tr>
-                        <td class="ps-4 text-start">
-                            <div class="fw-bold">{{ item.asignatura_nombre }}</div>
-                            <small class="text-muted">{{ item.anio_academico }}</small>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ r.asignatura_nombre }}</div>
                         </td>
-                        <td>
-                            <span class="fs-5 fw-bold">{{ item.nota_final }}</span>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark fw-normal border">
+                                {{ r.semestre if r.semestre else "N/A" }}
+                            </span>
                         </td>
-                        <td>
-                            {% if item.firmado %}
-                                <span class="text-success fw-bold">
-                                    <i class="bi bi-check-circle-fill"></i> Conforme
+                        <td class="text-center">
+                            <span class="fs-5 fw-bold {% if r.nota_final >= 5 %}text-success{% else %}text-danger{% endif %}">
+                                {{ r.nota_final }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            {% if r.firmado %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Oficializado
                                 </span>
                             {% else %}
-                                {% if current_user.id == usuario.id %}
-                                    <a href="{{ url_for('firmar_nota', nota_id=item.id) }}" class="btn btn-primary btn-sm rounded-pill px-4">
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+                                    <i class="bi bi-clock-history me-1"></i> Pendiente
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if not r.firmado %}
+                                {% if puedo_editar %}
+                                    <a href="{{ url_for('firmar_nota', nota_id=r.id) }}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                                         Firmar
                                     </a>
                                 {% else %}
-                                    <span class="text-muted small italic">Pendiente</span>
+                                    <i class="bi bi-shield-lock text-muted" title="Requiere firma del estudiante"></i>
                                 {% endif %}
+                            {% else %}
+                                <div class="text-muted x-small fw-bold">{{ r.fecha_firma.strftime('%d/%m/%Y') }}</div>
                             {% endif %}
                         </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="3" class="text-center py-5">
-                            <i class="bi bi-cloud-slash fs-1 text-muted opacity-25 d-block mb-3"></i>
-                            <p class="text-muted">No hay notas registradas para este estudiante.</p>
+                        <td class="text-end pe-4">
+                            <span class="text-secondary small fw-bold">{{ r.anio_academico }}</span>
                         </td>
                     </tr>
                     {% endfor %}
@@ -99,17 +142,19 @@
             </table>
         </div>
     </div>
+
+    <div class="text-center mt-5">
+        <a href="{{ url_for('perfil_page', user_id=usuario.id) }}" class="btn btn-link text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-2"></i>Regresar al Perfil Principal
+        </a>
+    </div>
 </div>
 
 <style>
-    .bg-primary { background: linear-gradient(45deg, #0d6efd, #0b5ed7) !important; }
-    .table thead th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
-    
-    @media print {
-        .btn, .bi-journal-check { display: none !important; }
-        .card { border: 1px solid #dee2e6 !important; box-shadow: none !important; }
-        .bg-primary { background: #f8f9fa !important; color: black !important; border: 1px solid #ddd !important; }
-    }
+    .letter-spacing-2 { letter-spacing: 2px; }
+    .icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .x-small { font-size: 0.65rem; }
+    @media (min-width: 768px) { .border-end-md { border-right: 1px solid #eee !important; } }
+    .table tbody tr:hover { background-color: #fcfdff; }
 </style>
-
 {% endblock %}

@@ -16,3 +16,6 @@ Flask-Mail==0.10.0
 email-validator==2.3.0
 pandas==2.3.3
 flask_login==0.6.3
+fpdf2
+supabase
+psutil==7.2.1

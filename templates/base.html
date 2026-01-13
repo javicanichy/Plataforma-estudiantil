@@ -71,14 +71,19 @@
                         {% else %}
                         <li class="nav-item">
                             {% if current_user.rol == 'profesor' %}
-                                <a class="nav-link fs-5 text-white" href="{{ url_for('profesor_panel') }}">
+                                <a class="nav-link fs-5 text-white" href="{{ url_for('profesor_panel', user_id=current_user.id) }}">
+                                    <i class="bi bi-person-workspace fs-5 text-white"></i> 
+                                        <span>{{ current_user.nombre }}</span>
+                                </a>
+                            {% elif current_user.rol == 'admin' %}
+                                <a class="nav-link fs-5 text-white" href="#">
                                     <i class="bi bi-person-workspace fs-5 text-white"></i> 
                                         <span>{{ current_user.nombre }}</span>
                                 </a>
                             {% elif current_user.rol == 'directivo' %}
                                  
                                 {% if current_user.directivo %}
-                                    <a class="nav-link fs-5 text-white" href="{{ url_for('ver_perfil_directivo', directivo_id=current_user.directivo.id) }}">
+                                    <a class="nav-link fs-5 text-white" href="{{ url_for('perfil_directivo_publico', user_id=current_user.id) }}">
                                         <i class="bi bi-shield-lock fs-5 text-white"></i> 
                                             <span>{{ current_user.nombre }}</span>
                                     </a>
@@ -89,7 +94,7 @@
                                     </a>
                                 {% endif %}
                             {% else %}
-                                <a class="nav-link fs-5 text-white" href="/perfil">
+                                <a class="nav-link fs-5 text-white" href="{{ url_for('ver_perfil', user_id=current_user.id) }}">
                                     <i class="bi bi-person-circle fs-5 text-white"></i> 
                                         <span>{{ current_user.nombre }}</span>
                                 </a>
@@ -112,6 +117,51 @@
                                 <i class="bi bi-envelope fs-5 text-white"></i> Contacto
                             </a>
                         </li>
+                        
+                        <!-- Notificaciones especiales-->
+                         {% if current_user.is_authenticated %}
+        <li class="nav-item dropdown">
+            <a class="nav-link position-relative" href="#" id="notifDrop" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-bell fa-fw" style="color:springgreen;"></i>
+                
+                {# Lógica para contar solo las no leídas #}
+                {% set unread = current_user.notificaciones | selectattr('leida', 'equalto', false) | list | length %}
+                
+                {% if unread > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                        {{ unread }}
+                        <span class="visually-hidden">mensajes no leídos</span>
+                    </span>
+                {% endif %}
+            </a>
+            
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notifDrop" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                <li class="dropdown-header border-bottom pb-2 mb-2">Notificaciones</li>
+                
+                {% for n in current_user.notificaciones | selectattr('leida', 'equalto', false) | sort(attribute='fecha_creacion', reverse=True) %}
+                    <li>
+                        <a class="dropdown-item py-2 {% if not n.leida %}bg-light fw-bold{% endif %}" 
+                           href="{{ url_for('ir_a_notificacion', notif_id=n.id) }}">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0 me-2">
+                                    {% if n.tipo == 'debate' %}<i class="fas fa-comments text-primary"></i>
+                                    {% elif n.tipo == 'evento' %}<i class="fas fa-calendar-alt text-success"></i>
+                                    {% else %}<i class="fas fa-bullhorn text-warning"></i>{% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="small text-wrap" style="line-height: 1.2;">{{ n.mensaje }}</div>
+                                    <div class="text-muted" style="font-size: 0.65rem;">{{ n.fecha_creacion.strftime('%d/%m %H:%M') }}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                {% else %}
+                    <li><span class="dropdown-item text-center text-muted small py-3">No tienes notificaciones</span></li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endif %}
+                        <!-- fin notificaciones-->
                     </ul>
                 </div>
             </div>

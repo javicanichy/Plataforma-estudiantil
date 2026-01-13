@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-5 px-4" style="background-color: #f4f7f6; min-height: 100vh;">
+    <div class="card border-0 shadow-sm rounded-0 overflow-hidden">
+        <div class="card-header bg-dark text-white p-4 d-flex justify-content-between align-items-center border-0 rounded-0">
+            <div>
+                <h4 class="fw-bold mb-0 text-uppercase" style="letter-spacing: 1px;">
+                    <i class="fas fa-user-shield me-2 text-warning"></i>Control Disciplinario UNGE
+                </h4>
+                <p class="small mb-0 opacity-75">Gestión de estados de cuenta y vigencia de acceso</p>
+            </div>
+            <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-0">
+                {{ estudiantes|length }} REGISTROS
+            </span>
+        </div>
+
+        <div class="card-body p-4 bg-white">
+            <form method="GET" action="{{ url_for('panel_control_disciplinario') }}" class="row g-2 mb-4 p-3 bg-light border">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">BÚSQUEDA</label>
+                    <input type="text" name="q" class="form-control rounded-0" placeholder="Nombre, Apellido o DIP..." value="{{ request.args.get('q', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">TITULACIÓN</label>
+                    <select name="carrera" class="form-select rounded-0">
+                        <option value="">Todas las Carreras</option>
+                        {% for t in titulaciones %}
+                        <option value="{{ t }}" {{ 'selected' if request.args.get('carrera') == t }}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">ESTADO</label>
+                    <select name="estado" class="form-select rounded-0">
+                        <option value="">Todos</option>
+                        <option value="activo" {{ 'selected' if request.args.get('estado') == 'activo' }}>Activos</option>
+                        <option value="inactivo" {{ 'selected' if request.args.get('estado') == 'inactivo' }}>Inactivos</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100 fw-bold rounded-0">APLICAR</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr class="text-uppercase small fw-bold">
+                            <th class="ps-3" style="width: 300px;">Estudiante</th>
+                            <th>DIP</th>
+                            <th>Titulación</th>
+                            <th class="text-center">Estado</th>
+                            <th>Vence en</th>
+                            <th class="text-end pe-3">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for est in estudiantes %}
+                        <tr>
+                            <td class="ps-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        {% if est.foto_perfil %}
+                                            <img src="{{ url_for('static', filename='uploads/perfiles/' + est.foto_perfil) }}" 
+                                                 class="rounded-circle border" width="45" height="45" style="object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" 
+                                                 style="width: 45px; height: 45px; font-size: 14px;">
+                                                {{ est.nombre[0] }}{{ est.apellidos[0] }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ est.nombre }} {{ est.apellidos }}</div>
+                                        <small class="text-muted" style="font-size: 11px;">{{ est.correo }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><code>{{ est.dip }}</code></td>
+                            <td><small class="d-block fw-bold text-primary">{{ est.carrera }}</small>
+                                <small class="text-muted">{{ est.curso }}º Año</small>
+                            </td>
+                            <td class="text-center">
+                                {% if est.activo %}
+                                <span class="badge bg-success rounded-0 px-3">ACTIVO</span>
+                                {% else %}
+                                <span class="badge bg-danger rounded-0 px-3">INACTIVO</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if est.fecha_expiracion %}
+                                    <span class="small fw-bold {{ 'text-danger' if est.fecha_expiracion < now else '' }}">
+                                        {{ est.fecha_expiracion.strftime('%d/%m/%Y') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small">Indefinido</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <button class="btn btn-sm {{ 'btn-outline-danger' if est.activo else 'btn-success' }} fw-bold rounded-0 px-3" 
+                                        data-bs-toggle="modal" data-bs-target="#modal{{ est.id }}">
+                                    {{ 'SUSPENDER' if est.activo else 'REACTIVAR' }}
+                                </button>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="modal{{ est.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content rounded-0 border-dark shadow-lg">
+                                    <form action="{{ url_for('cambiar_estado_estudiante', id=est.id) }}" method="POST">
+                                        <div class="modal-header {{ 'bg-danger' if est.activo else 'bg-success' }} text-white rounded-0 border-0">
+                                            <h5 class="modal-title fw-bold text-uppercase small">
+                                                Confirmar {{ 'Suspensión' if est.activo else 'Activación' }}
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        
+                                        <div class="modal-body p-4 bg-white text-dark">
+                                            <div class="d-flex align-items-center mb-4 p-3 border">
+                                                {% if est.foto_perfil %}
+                                                    <img src="{{ url_for('static', filename='uploads/perfiles/' + est.foto_perfil) }}" 
+                                                         class="rounded-0 border me-3" width="60" height="60" style="object-fit: cover;">
+                                                {% endif %}
+                                                <div>
+                                                    <label class="small text-muted text-uppercase d-block mb-0">Estudiante</label>
+                                                    <h5 class="fw-bold mb-0">{{ est.nombre }} {{ est.apellidos }}</h5>
+                                                    <small class="text-muted">{{ est.dip }}</small>
+                                                </div>
+                                            </div>
+
+                                            <input type="hidden" name="accion" value="{{ 'desactivar' if est.activo else 'activar' }}">
+
+                                            {% if not est.activo %}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold small">DURACIÓN DEL ACCESO</label>
+                                                <select name="meses" class="form-select rounded-0 border-dark">
+                                                    <option value="0">Sin límite (Indefinido)</option>
+                                                    <option value="1">1 Mes</option>
+                                                    <option value="3">3 Meses</option>
+                                                    <option value="6">6 Meses</option>
+                                                    <option value="12">12 Meses</option>
+                                                </select>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="mb-0">
+                                                <label class="form-label fw-bold small">MOTIVO DEL CAMBIO (Obligatorio)</label>
+                                                <textarea name="motivo" class="form-control rounded-0 border-dark" rows="3" required placeholder="Escriba la razón..."></textarea>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="modal-footer bg-light border-top rounded-0">
+                                            <button type="button" class="btn btn-secondary rounded-0 fw-bold" data-bs-dismiss="modal">CANCELAR</button>
+                                            <button type="submit" class="btn {{ 'btn-danger' if est.activo else 'btn-success' }} rounded-0 fw-bold px-4">
+                                                {{ 'CONFIRMAR DESACTIVACIÓN' if est.activo else 'CONFIRMAR ACTIVACIÓN' }}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

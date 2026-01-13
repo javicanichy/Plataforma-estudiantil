@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid py-5 px-4" style="background-color: #f8f9fa; min-height: 100vh;">
+    <div class="row">
+        <div class="col-lg-4 col-md-5 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0 text-danger"><i class="fas fa-history me-2"></i>Historial de Envíos</h6>
+                    <span class="badge rounded-pill bg-danger-subtle text-danger px-3">{{ anuncios|length }}</span>
+                </div>
+                <div class="card-body p-0 overflow-auto" style="max-height: 700px;">
+                    {% if anuncios %}
+                        <div class="list-group list-group-flush">
+                            {% for a in anuncios %}
+                            <div class="list-group-item p-3 border-light hover-anuncio">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">{{ a.titulo }}</h6>
+                                    <small class="text-muted">{{ a.fecha_creacion.strftime('%d/%m/%Y') }}</small>
+                                </div>
+                                <p class="small text-muted mb-2 text-truncate-2">{{ a.contenido }}</p>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="badge border-0 rounded-pill bg-success-subtle text-success py-1 px-2" style="font-size: 0.7rem;">
+                                        <i class="fas fa-users me-1"></i> {{ a.alcance }}
+                                    </span>
+                                    <button class="btn btn-sm btn-link text-danger p-0 fw-bold text-decoration-none" 
+                                            onclick='verAnuncio({{ a.titulo|tojson }}, {{ a.contenido|tojson }}, "{{ a.archivo_adjunto }}", "{{ a.fecha_creacion.strftime("%d/%m/%Y") }}")'>
+                                        Ver Detalles
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-3x text-light mb-3"></i>
+                            <p class="text-muted fw-bold">Sin anuncios creados</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-md-7">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-header bg-danger text-white py-3 border-0">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-broadcast-tower me-2"></i>Nuevo Comunicado Masivo</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form action="{{ url_for('publicar_anuncio_directivo') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase opacity-75">Asunto</label>
+                            <input type="text" name="titulo" class="form-control form-control-lg border-0 bg-light" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase opacity-75">Mensaje</label>
+                            <textarea name="contenido" class="form-control border-0 bg-light shadow-none" rows="12" style="resize: none;" required></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase opacity-75">Documento Adjunto (Opcional)</label>
+                            <input type="file" name="documento" class="form-control border-0 bg-light" accept=".pdf,.doc,.docx,.jpg,.png">
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-lg w-100 rounded-pill shadow-sm fw-bold">
+                            Enviar como DM y Notificar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAnuncio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold" id="modalTitulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="modalFecha" class="text-muted small mb-3"></div>
+                <div id="modalContenido" class="mb-4" style="white-space: pre-wrap; color: #444;"></div>
+                <div id="modalAdjunto" class="p-3 bg-light rounded-3 d-none">
+                    <i class="fas fa-paperclip me-2 text-primary"></i>
+                    <a href="#" id="modalLink" class="text-decoration-none fw-bold" target="_blank">Ver Archivo Adjunto</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+function verAnuncio(titulo, contenido, adjunto, fecha) {
+    document.getElementById('modalTitulo').innerText = titulo;
+    document.getElementById('modalContenido').innerText = contenido;
+    document.getElementById('modalFecha').innerText = "Enviado el: " + fecha;
+    
+    const divAdjunto = document.getElementById('modalAdjunto');
+    const linkAdjunto = document.getElementById('modalLink');
+
+    if (adjunto && adjunto !== 'None' && adjunto !== '') {
+        divAdjunto.classList.remove('d-none');
+        linkAdjunto.href = "/static/uploads/" + adjunto;
+    } else {
+        divAdjunto.classList.add('d-none');
+    }
+    
+    var myModal = new bootstrap.Modal(document.getElementById('modalAnuncio'));
+    myModal.show();
+}
+</script>
+
+<style>
+    .hover-anuncio { transition: all 0.2s ease; border-left: 3px solid transparent !important; }
+    .hover-anuncio:hover { background-color: #fcfcfc; border-left: 3px solid #dc3545 !important; }
+    .bg-danger-subtle { background-color: #f8d7da !important; }
+    .bg-success-subtle { background-color: #d1e7dd !important; }
+    .text-truncate-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+</style>
+{% endblock %}

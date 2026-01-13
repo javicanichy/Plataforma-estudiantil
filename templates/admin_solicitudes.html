@@ -91,16 +91,18 @@
                     </thead>
                     <tbody>
                         {% for s in solicitudes %}
-                        {% set info_codigo = codigos.get(s.dni_numero) %}
-                        {% set mensaje_alumno = mensajes_buzon.get(s.dni_numero, '') %}
-                        <tr class="fila-estudiante">
+                        {% set codigos_dict = codigos if codigos is defined else {} %}
+                        {% set info_codigo = codigos_dict.get(s.dni_numero) %}
+                        
+                        <tr class="fila-estudiante" id="fila-{{ s.id }}">
                             <td class="dato-nombre">
                                 <div class="fw-bold text-primary" style="cursor: pointer;" 
-                                     onclick="verComprobante('{{ s.doc_ficha_matricula }}', '{{ s.nombre }} {{ s.apellidos }}', '{{ mensaje_alumno|replace('\n', ' ')|replace("'", "\\'") }}')">
+                                     onclick="verComprobante('{{ s.doc_ficha_matricula }}', '{{ s.nombre }} {{ s.apellidos }}', '{{ s.mensaje_buzon if s.mensaje_buzon else '' }}')">
                                     <i class="bi bi-file-earmark-pdf-fill me-1"></i>{{ s.nombre }} {{ s.apellidos }}
                                 </div>
                                 <small class="text-secondary">DIP: <span class="dato-dip">{{ s.dni_numero }}</span></small>
-                                {% if mensaje_alumno %}
+                                
+                                {% if s.mensaje_buzon %}
                                     <span class="badge bg-info-subtle text-info ms-1"><i class="bi bi-chat-dots"></i> Con nota</span>
                                 {% endif %}
                             </td>
@@ -211,7 +213,7 @@
                     <h5 id="modalTitle">Procesando...</h5>
                     <p id="modalMsg" class="text-muted"></p>
                     <div id="codigoBox" class="d-none alert alert-primary fs-2 fw-bold"></div>
-                    <button type="button" class="btn btn-secondary w-100 mt-3 d-none" id="btnCerrar" onclick="location.reload()">Cerrar</button>
+                    <button type="button" class="btn btn-secondary w-100 mt-3 d-none" id="btnCerrar">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -220,7 +222,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-    // LÓGICA DE FILTRADO DINÁMICO
+    // FUNCIONALIDAD DE FILTROS ORIGINAL
     function aplicarFiltros() {
         const busqueda = document.getElementById('inputBusqueda').value.toLowerCase();
         const carrera = document.getElementById('selectCarrera').value.toLowerCase();
@@ -241,29 +243,36 @@
         });
     }
 
-    // TUS FUNCIONES ORIGINALES
     let idSolicitudAccion = null;
 
+    // VISUALIZACIÓN DE PDF Y MENSAJE
     function verComprobante(nombreArchivo, nombreEstudiante, mensajeBuzon) {
         if (!nombreArchivo || nombreArchivo === 'None' || nombreArchivo === '') {
             alert("Sin documento adjunto.");
             return;
         }
+
         const contenedorMsg = document.getElementById('contenedorMensaje');
         const txtMensaje = document.getElementById('textoMensajeBuzon');
+
+        // Lógica de mensaje actualizada para la nueva columna
         if (mensajeBuzon && mensajeBuzon.trim() !== '' && mensajeBuzon !== 'None') {
             txtMensaje.innerText = mensajeBuzon;
             contenedorMsg.classList.remove('d-none');
         } else {
             contenedorMsg.classList.add('d-none');
         }
+
         document.getElementById('pdfNombreEstudiante').innerText = nombreEstudiante;
         const urlParaVer = "/ver-documento/" + nombreArchivo;
         document.getElementById('btnDescargar').href = "/static/uploads/matriculas_docs/" + nombreArchivo;
+        
         const contenedorPDF = document.getElementById('contenedorPDF');
         contenedorPDF.innerHTML = ""; 
+
         const modalElement = document.getElementById('pdfModal');
         const myModal = new bootstrap.Modal(modalElement);
+
         modalElement.addEventListener('shown.bs.modal', function () {
             const nuevoVisor = document.createElement('embed');
             nuevoVisor.src = urlParaVer + "#toolbar=1&navpanes=0&view=FitH";
@@ -273,13 +282,16 @@
             nuevoVisor.style.border = "none";
             contenedorPDF.appendChild(nuevoVisor);
         }, { once: true });
+
         myModal.show();
     }
 
+    // APROBACIÓN
     function aprobarYEnviar(id, nombre) {
         const modalRes = new bootstrap.Modal(document.getElementById('resModal'));
         resetModal();
         modalRes.show();
+
         fetch(`/admin/aprobar-solicitud/${id}`)
         .then(res => res.json())
         .then(data => {
@@ -290,14 +302,21 @@
                 document.getElementById('modalMsg').innerText = "Código generado para " + nombre;
                 document.getElementById('codigoBox').innerText = data.codigo;
                 document.getElementById('codigoBox').classList.remove('d-none');
+                
+                // Al aprobar, recargamos para actualizar estados de "Procesado"
+                document.getElementById('btnCerrar').onclick = () => { location.reload(); };
             } else {
                 document.getElementById('modalTitle').innerText = "Error";
                 document.getElementById('modalMsg').innerText = data.message;
+                document.getElementById('btnCerrar').onclick = () => { 
+                    bootstrap.Modal.getInstance(document.getElementById('resModal')).hide(); 
+                };
             }
             document.getElementById('btnCerrar').classList.remove('d-none');
         });
     }
 
+    // RECHAZO
     function abrirRechazo(id, nombre) {
         idSolicitudAccion = id;
         document.getElementById('nombreRechazo').innerText = nombre;
@@ -307,10 +326,14 @@
     function confirmarRechazo() {
         const motivo = document.getElementById('motivoRechazo').value;
         if (!motivo) return alert("Escriba un motivo.");
+        
         const modalRes = new bootstrap.Modal(document.getElementById('resModal'));
-        bootstrap.Modal.getInstance(document.getElementById('rechazoModal')).hide();
+        const modalRechazoInstance = bootstrap.Modal.getInstance(document.getElementById('rechazoModal'));
+        if (modalRechazoInstance) modalRechazoInstance.hide();
+        
         resetModal();
         modalRes.show();
+        
         fetch(`/admin/rechazar-solicitud/${idSolicitudAccion}`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -322,7 +345,21 @@
             if(data.status === 'success') {
                 document.getElementById('successIcon').classList.remove('d-none');
                 document.getElementById('modalTitle').innerText = "Rechazada";
-                document.getElementById('modalMsg').innerText = "Notificación enviada.";
+                document.getElementById('modalMsg').innerText = "El estudiante ha sido retirado del panel.";
+                
+                // ELIMINACIÓN VISUAL: Borra la fila de la tabla inmediatamente
+                const fila = document.getElementById(`fila-${idSolicitudAccion}`);
+                if(fila) fila.remove();
+
+                document.getElementById('btnCerrar').onclick = () => { 
+                    bootstrap.Modal.getInstance(document.getElementById('resModal')).hide();
+                };
+            } else {
+                document.getElementById('modalTitle').innerText = "Error";
+                document.getElementById('modalMsg').innerText = data.message;
+                document.getElementById('btnCerrar').onclick = () => { 
+                    bootstrap.Modal.getInstance(document.getElementById('resModal')).hide();
+                };
             }
             document.getElementById('btnCerrar').classList.remove('d-none');
         });

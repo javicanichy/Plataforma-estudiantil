@@ -234,6 +234,7 @@ class MatriculaForm(FlaskForm):
     fecha_nacimiento = DateField('Fecha de Nacimiento', validators=[DataRequired()])
     residencia = StringField('Lugar de Residencia', validators=[DataRequired()])
     natural_de = StringField('Natural de', validators=[DataRequired()])
+    distrito_provincia = StringField('Distrito y Provincia', validators=[DataRequired()])
     dni_numero = StringField('DNI / Pasaporte', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     carrera = SelectField('Carrera', choices=[('Medicina General', 'Medicina General'),

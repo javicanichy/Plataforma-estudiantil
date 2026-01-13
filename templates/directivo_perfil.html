@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{{ url_for('facultad') }}" class="text-decoration-none text-muted">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Directorio
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm text-center p-4" style="border-radius: 20px; background: white;">
+                <div class="mb-3">
+                    {% if usuario.foto_perfil %}
+                        <img src="{{ url_for('static', filename='uploads/perfiles/' ~ usuario.foto_perfil) }}" 
+                             class="rounded-circle shadow-sm" width="150" height="150" style="object-fit: cover; border: 5px solid #f8f9fa;">
+                    {% else %}
+                        <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm" 
+                             style="width: 150px; height: 150px; font-size: 3rem; border: 5px solid #f8f9fa;">
+                            {{ usuario.nombre[0] }}{{ usuario.apellidos[0] if usuario.apellidos else '' }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <h3 class="fw-bold mb-1 text-dark">{{ usuario.nombre }} {{ usuario.apellidos }}</h3>
+                <span class="badge bg-danger px-3 py-2 rounded-pill mb-3 shadow-sm">
+                    <i class="fas fa-shield-alt me-1"></i> PERSONAL DIRECTIVO
+                </span>
+                
+                <div class="text-start mt-3 p-3 bg-light rounded-4">
+                    <p class="small mb-2 text-dark">
+                        <i class="fas fa-briefcase me-2 text-danger"></i>
+                        <strong>Cargo:</strong> {{ usuario.directivo.cargo or 'Miembro Directivo' }}
+                    </p>
+                    <p class="small mb-0 text-dark">
+                        <i class="fas fa-university me-2 text-danger"></i>
+                        <strong>Sección:</strong> {{ usuario.directivo.seccion or 'Administración Central' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background: white;">
+                <h4 class="fw-bold text-danger mb-4 border-bottom pb-2">Información Institucional</h4>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block text-uppercase fw-bold">Correo Institucional</label>
+                        <p class="fw-bold text-dark">{{ usuario.correo_institucional or 'No asignado' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block text-uppercase fw-bold">Número de DIP</label>
+                        <p class="fw-bold text-dark">{{ usuario.dip or '---' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block text-uppercase fw-bold">Teléfono de Contacto</label>
+                        <p class="fw-bold text-dark">{{ usuario.telefono or 'No disponible' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small d-block text-uppercase fw-bold">Ubicación de Oficina</label>
+                        <p class="fw-bold text-dark">
+                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                            {{ usuario.directivo.ubicacion or 'Edificio Central' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <h5 class="fw-bold text-dark">Biografía Profesional</h5>
+                    <p class="text-muted" style="text-align: justify; line-height: 1.6;">
+                        {{ usuario.biografia or "Este perfil directivo no ha proporcionado una biografía profesional todavía." }}
+                    </p>
+                </div>
+
+                <div class="row mt-auto pt-4 g-2">
+                    <div class="col-md-6">
+                        <a href="mailto:{{ usuario.correo_institucional }}" class="btn btn-outline-dark w-100 rounded-pill py-2 fw-bold">
+                            <i class="fas fa-envelope me-2"></i> Contactar por Correo
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{ url_for('enviar_reporte') }}" class="btn btn-danger w-100 rounded-pill py-2 fw-bold shadow-sm">
+                            <i class="fas fa-file-export me-2"></i> Entregar Reporte
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

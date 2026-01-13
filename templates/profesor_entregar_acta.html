@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 rounded-4 sticky-top" style="top: 20px;">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-success-subtle text-success p-3 me-3">
+                        <i class="fas fa-file-export fs-4"></i>
+                    </div>
+                    <h4 class="fw-bold mb-0 text-success">Nueva Entrega</h4>
+                </div>
+                <p class="text-muted small">Complete los detalles de la titulación. El sistema registrará su nombre y la fecha de forma automática.</p>
+                
+                <hr class="text-muted opacity-25">
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Titulación</label>
+                        <select name="titulacion" class="form-select border-2 shadow-none" required>
+                            <option value="" selected disabled>Seleccione una carrera...</option>
+                            <option>Grado II enfermeria</option>
+                            <option>grado I enfermeria</option>
+                            <option>Medicina</option>
+                            <option>Laboratorio</option>
+                            <option>Ginecobstetricia</option>
+                            <option>Imagenologia</option>
+                            <option>Fisioterapia</option>
+                            <option>Higiene y Epidemiologia</option>
+                            <option>Anestesiologia</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Asignatura</label>
+                        <input type="text" name="asignatura" class="form-control border-2 shadow-none" 
+                            placeholder="Ej: Fisiología II" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-secondary">Curso Académico</label>
+                            <input type="text" name="curso" class="form-control border-2 shadow-none" 
+                                placeholder="Ej: 2024-2025" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold text-secondary">Semestre</label>
+                            <select name="periodo" class="form-select border-2 shadow-none" required>
+                                <option value="" disabled selected>Seleccione...</option>
+                                <option value="PRIMER SEMESTRE">PRIMER SEMESTRE</option>
+                                <option value="SEGUNDO SEMESTRE">SEGUNDO SEMESTRE</option>
+                                <option value="TERCER SEMESTRE">TERCER SEMESTRE</option>
+                                <option value="CUARTO SEMESTRE">CUARTO SEMESTRE</option>
+                                <option value="QUINTO SEMESTRE">QUINTO SEMESTRE</option>
+                                <option value="SEXTO SEMESTRE">SEXTO SEMESTRE</option>
+                                <option value="SEPTIMO SEMESTRE">SÉPTIMO SEMESTRE</option>
+                                <option value="OCTAVO SEMESTRE">OCTAVO SEMESTRE</option>
+                                <option value="NOVENO SEMESTRE">NOVENO SEMESTRE</option>
+                                <option value="DECIMO SEMESTRE">DÉCIMO SEMESTRE</option>
+                                <option value="UNDECIMO SEMESTRE">UNDÉCIMO SEMESTRE</option>
+                                <option value="DUODECIMO SEMESTRE">DUODÉCIMO SEMESTRE</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Archivo del Acta (Excel/PDF)</label>
+                        <input type="file" name="archivo" class="form-control border-2 shadow-none" accept=".xlsx, .xls" required>
+                        <div class="form-text" style="font-size: 0.7rem;">Solo archivos oficiales de calificaciones.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 rounded-pill fw-bold py-2 shadow-sm">
+                        <i class="fas fa-paper-plane me-2"></i>Confirmar Envío Oficial
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">Estado de mis Entregas</h4>
+                <span class="badge bg-dark-subtle text-dark rounded-pill px-3">{{ entregas|length }} Registros</span>
+            </div>
+
+            <div class="table-responsive bg-white rounded-4 shadow-sm border p-3">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th style="width: 40%;">Detalles de Titulación</th>
+                            <th>Fecha Envío</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in entregas | reverse %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ e.titulacion }}</div>
+                                <div class="text-muted small">
+                                    <span class="badge bg-light text-dark border">{{ e.anio or e.curso }}</span>
+                                    <span class="badge bg-light text-dark border">{{ e.semestre or e.periodo }}</span>
+                                </div>
+                                <div class="text-primary mt-1" style="font-size: 0.75rem;">
+                                    <i class="fas fa-user-circle me-1"></i>{{ e.profesor_nombre }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small fw-bold">{{ e.fecha.split(' ')[0] }}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">{{ e.fecha.split(' ')[1] }}</div>
+                            </td>
+                            <td>
+                                {% if e.estado == 'Enviado' %}
+                                    <span class="badge rounded-pill bg-info-subtle text-info">
+                                        <i class="fas fa-spinner fa-spin me-1"></i>En revisión
+                                    </span>
+                                {% elif e.estado == 'Recibido' %}
+                                    <span class="badge rounded-pill bg-success-subtle text-success">
+                                        <i class="fas fa-check-double me-1"></i>Aceptado
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-danger-subtle text-danger" title="{{ e.observaciones }}">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Observado
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('static', filename='uploads/entregas/' + e.archivo) }}" 
+                                   class="btn btn-sm btn-outline-primary rounded-pill px-3" download>
+                                    <i class="fas fa-download me-1"></i> Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="fas fa-inbox fa-3x text-light mb-3"></i>
+                                    <p class="text-muted">Aún no ha realizado entregas de actas oficiales.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-3 p-3 bg-light rounded-3 border">
+                <p class="small text-muted mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Nota:</strong> Las actas enviadas no pueden ser editadas por el profesor. Si cometió un error, contacte con el departamento para que habiliten el estado "Observado" y pueda reenviar el archivo.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

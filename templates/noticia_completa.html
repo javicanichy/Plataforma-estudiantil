@@ -1,88 +1,226 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-
-  <!-- CONTENEDOR DE NOTICIA EN DOS COLUMNAS -->
-  <div class="noticia-layout" style="display: flex; gap: 30px; flex-wrap: wrap;">
-
-    <!-- COLUMNA IZQUIERDA (Texto) -->
-    <div class="noticia-texto" style="flex: 1; min-width: 250px;">
-
-      <!-- MIGAS DE PAN -->
-      <nav class="ugr-breadcrumb">
-        <a href="{{ url_for('inicio') }}">Inicio</a> /
-        <a href="{{ url_for('lista_noticias') }}">Noticias</a> /
-        <span>{{ noticia.titulo }}</span>
-      </nav>
-
-      <!-- TÍTULO -->
-      <h1 class="ugr-titulo-noticia">{{ noticia.titulo }}</h1>
-
-      <!-- FECHA -->
-      <p class="ugr-fecha-noticia">{{ noticia.fecha.strftime('%d/%m/%Y') }}</p>
-
-      <!-- AUTOR -->
-      <p class="ugr-autor-noticia">Autor: {{ noticia.autor.nombre }}</p>
-
-      <hr>
-
-      <!-- CUERPO -->
-      <div class="ugr-cuerpo-noticia">
-        {{ noticia.contenido | safe }}
-      </div>
-      <br>
-      <!-- DESCARGAR DOCUMENTO -->
-      {% if noticia.documento %}
-        <a href="{{ url_for('descargar_noticia', noticia_id=noticia.id) }}" 
-           target="_blank" class="leer-mas">Leer todo el documento...</a>
-      {% endif %}
-
-      <br>
-      <hr>
-
-      <!-- COMPARTIR -->
-      <div class="ugr-compartir">
-        <span>Compartir en:</span>
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-x-twitter"></i></a>
-        <a href="#"><i class="fab fa-linkedin"></i></a>
-        <a href="#"><i class="fab fa-telegram"></i></a>
-        <a href="#"><i class="fab fa-whatsapp"></i></a>
-        <a href="#"><i class="fas fa-envelope"></i></a>
-      </div>
-      <hr>
-
-      <!-- BOTONES DE ACCIÓN -->
-      {% if logueado and usuario_id == noticia.autor_id %}
-        <form action="{{ url_for('eliminar_noticia', noticia_id=noticia.id) }}" method="POST" 
-              onsubmit="return confirm('¿Seguro que quieres eliminar esta noticia?');">
-          <button type="submit" class="btn btn-danger">Eliminar</button>
-        </form>
-      {% endif %}
-
+<div class="container-fluid bg-light border-bottom">
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('inicio') }}" class="text-decoration-none">
+                      <i class="bi bi-house-door"></i> Inicio
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('lista_noticias') }}" class="text-decoration-none">
+                      <i class="bi bi-building"></i> Noticias
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-truncate" aria-current="page" style="max-width: 200px;">
+                    {{ noticia.titulo }}
+                </li>
+            </ol>
+        </nav>
     </div>
-
-    <!-- COLUMNA DERECHA (Archivo: imagen o video) -->
-    <div class="noticia-imagen" style="flex: 1; min-width: 300px;">
-      {% if noticia.archivo %}
-        {% if noticia.tipo_archivo == 'imagen' %}
-          <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" 
-               alt="{{ noticia.titulo }}" style="width: 100%; height: auto;">
-        {% elif noticia.tipo_archivo == 'video' %}
-          <video controls style="width: 100%; height: auto;">
-            <source src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" type="video/mp4">
-            Tu navegador no soporta la reproducción de videos.
-          </video>
-        {% endif %}
-      {% endif %}
-
-      {% if noticia.pie_archivo %}
-        <p class="ugr-pie-foto">{{ noticia.pie_archivo }}</p>
-      {% endif %}
-    </div>
-
-  </div>
-
 </div>
+
+<div class="container py-5">
+    <div class="row g-5 overflow-hidden">
+        <div class="col-lg-7 order-2 order-lg-1">
+            <h1 class="display-5 fw-bold text-dark mb-3 color-verde">{{ noticia.titulo }}</h1>
+            
+            <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                <div class="flex-shrink-0 me-3">
+                    {% if noticia.autor.rol == 'profesor' and noticia.autor.profesor and noticia.autor.profesor.archivo_foto %}
+                        <img src="{{ url_for('static', filename='uploads/fotos/' ~ noticia.autor.profesor.archivo_foto) }}" class="rounded-circle border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                    {% elif noticia.autor.foto_perfil %}
+                        <img src="{{ url_for('static', filename='uploads/perfiles/' ~ noticia.autor.foto_perfil) }}" class="rounded-circle border shadow-sm" style="width: 45px; height: 45px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; font-weight: bold; text-transform: uppercase;">
+                            {{ noticia.autor.nombre[0] }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="mb-0 fw-bold text-dark">{{ noticia.autor.nombre }}</p>
+                    <small class="text-muted">
+                        <i class="bi bi-calendar3 me-1"></i> {{ noticia.fecha.strftime('%d de %B, %Y') }}
+                    </small>
+                </div>
+            </div>
+
+            <div class="noticia-contenido text-secondary mb-5">
+                {{ noticia.contenido | safe }}
+            </div>
+
+            {% if noticia.documento %}
+            <div class="card border-0 bg-light mb-5" style="border-radius: 15px;">
+                <div class="card-body d-flex align-items-center p-4">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-file-earmark-arrow-down-fill text-primary fs-1"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 fw-bold">Material descargable</h6>
+                        <p class="mb-0 small text-muted">Archivo adjunto para más información.</p>
+                    </div>
+                    <a href="{{ url_for('descargar_noticia', noticia_id=noticia.id) }}" 
+                       target="_blank" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-download me-2"></i>Descargar
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="d-flex align-items-center py-4 border-top border-bottom mb-4">
+                <span class="me-3 fw-bold text-muted small text-uppercase">Compartir:</span>
+                <div class="share-icons">
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="bi bi-whatsapp"></i></a>
+                </div>
+            </div>
+
+            {% if current_user.is_authenticated and (current_user.id == noticia.autor_id or current_user.rol == 'admin') %}
+              <div class="mt-4 p-3 bg-light rounded-3 border">
+                  <p class="small text-muted mb-2"><i class="bi bi-shield-lock me-1"></i> Herramientas de administración:</p>
+                  <form action="{{ url_for('eliminar_noticia', noticia_id=noticia.id) }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm rounded-pill px-4" 
+                    onclick="return confirm('¿Estás seguro de que deseas eliminar esta noticia definitivamente?')">
+                    <i class="bi bi-trash3-fill me-1"></i> Eliminar publicación
+                    </button>
+                  </form>
+              </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-5 order-1 order-lg-2">
+            <div class="position-sticky" style="top: 2rem;">
+                <div class="media-container shadow-lg bg-dark overflow-hidden" style="border-radius: 20px;">
+                    {% if noticia.archivo %}
+                        {% if noticia.tipo_archivo == 'imagen' %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" 
+                                 alt="{{ noticia.titulo }}" class="w-100 img-fluid">
+                        {% elif noticia.tipo_archivo == 'video' %}
+                            <video controls class="w-100" style="max-height: 500px; background: black;">
+                                <source src="{{ url_for('static', filename='uploads/' ~ noticia.archivo) }}" type="video/mp4">
+                                Tu navegador no soporta videos.
+                            </video>
+                        {% endif %}
+                    {% else %}
+                        <div class="p-5 text-center text-white-50">
+                            <i class="bi bi-camera fs-1"></i>
+                            <p class="mt-2 small">Sin imagen o video destacado</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                {% if noticia.pie_archivo %}
+                <p class="mt-3 text-center text-muted fst-italic small">
+                    <i class="bi bi-info-circle me-1"></i> {{ noticia.pie_archivo }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-5 pt-4 border-top">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold">
+                <i class="bi bi-chat-left-text me-2"></i>
+                Comentarios 
+                <span class="text-muted">({{ noticia.comentarios | length }})</span>
+            </h4>
+            
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-success rounded-pill px-4 shadow-sm" data-bs-toggle="collapse" data-bs-target="#collapseComentario">
+                <i class="bi bi-pencil-square me-2"></i>Comentar esta noticia
+            </button>
+            {% else %}
+            <a href="{{ url_for('login_page') }}" class="btn btn-outline-primary rounded-pill px-4">
+                Inicia sesión para comentar
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="collapse mb-5" id="collapseComentario">
+            <div class="card card-body border-0 bg-light shadow-sm" style="border-radius: 15px;">
+                <form action="{{ url_for('agregar_comentario_noticia', noticia_id=noticia.id) }}" method="POST">
+                    <textarea name="contenido" class="form-control border-0 mb-3" rows="3" placeholder="Escribe tu opinión respetuosamente..." required style="border-radius: 10px;"></textarea>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary px-4 rounded-pill">Publicar comentario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="comentarios-lista">
+        {% for comentario in noticia.comentarios | sort(attribute='fecha_creacion', reverse=True) %}
+        <div class="d-flex mb-4 p-3 bg-white border rounded-3 shadow-sm position-relative">
+            <div class="flex-shrink-0">
+                {% if comentario.autor.rol == 'profesor' and comentario.autor.profesor and comentario.autor.profesor.archivo_foto%}
+                    <img src="{{ url_for('static', filename='uploads/fotos/' ~ comentario.autor.profesor.archivo_foto) }}" class="rounded-circle border shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                {% elif comentario.autor.foto_perfil %}
+                    <img src="{{ url_for('static', filename='uploads/perfiles/' ~ comentario.autor.foto_perfil) }}" class="rounded-circle border shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-weight: bold; text-transform: uppercase;">
+                        {{ comentario.autor.nombre[0] }}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="flex-grow-1 ms-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold">{{ comentario.autor.nombre }}</h6>
+                    <div class="d-flex align-items-center">
+                        <small class="text-muted me-2">{{ comentario.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</small>
+                        
+                        {% if current_user.is_authenticated and (current_user.id == comentario.autor_id or current_user.rol == 'admin') %}
+                        <form action="{{ url_for('eliminar_comentario_noticia', comentario_id=comentario.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-link text-danger p-0 border-0" 
+                                    onclick="return confirm('¿Eliminar este comentario?')" title="Eliminar comentario">
+                                <i class="bi bi-trash small"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <p class="mb-0 text-secondary mt-1" style="font-size: 0.95rem;">{{ comentario.contenido }}</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-chat-dots fs-1 d-block mb-2"></i>
+            <p>Nadie ha comentado aún. ¡Sé el primero!</p>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el contenido generado por CKEditor */
+    .noticia-contenido {
+        line-height: 1.8;
+        font-size: 1.15rem;
+    }
+    .noticia-contenido p { margin-bottom: 1.2rem; }
+    .noticia-contenido strong { color: #212529; font-weight: 700; }
+    .noticia-contenido ul, .noticia-contenido ol {
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+    }
+    .noticia-contenido li { margin-bottom: 0.5rem; }
+    .noticia-contenido a { color: #0d6efd; text-decoration: underline; }
+
+    /* Multimedia */
+    .media-container img, .media-container video {
+        display: block;
+        width: 100%;
+        object-fit: contain;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before { content: "›"; }
+    .share-icons a { width: 35px; height: 35px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .share-icons a:hover { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+    
+    .color-verde { color: #0dbd2a; } /* Tu verde institucional */
+</style>
 {% endblock %}

@@ -1,73 +1,57 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-lg overflow-hidden">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm p-4 mb-4 bg-white text-center" style="border-radius: 20px;">
                 
-                <div class="p-4 text-center text-white" style="background-color: #800000;">
-                    <div class="mb-3">
-                        {% if d.usuario.foto_perfil %}
-                            <img src="{{ url_for('static', filename='uploads/fotos/' + d.usuario.foto_perfil) }}" 
-                                 class="rounded-circle border border-4 border-white shadow" 
-                                 width="150" height="150" style="object-fit: cover;">
-                        {% else %}
-                            <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center text-danger shadow" style="width: 150px; height: 150px;">
-                                <i class="fas fa-user-tie fa-5x" style="color: #800000;"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <h2 class="fw-bold mb-1">{{ d.cargo }}</h2>
-                    <p class="mb-0 opacity-75 text-uppercase small fw-bold">{{ d.facultad }}</p>
-                </div>
-
-                <div class="card-body p-5 bg-white">
-                    <div class="row g-4">
-                        <div class="col-md-6 border-end">
-                            <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Información Personal</h6>
-                            <div class="mb-3">
-                                <label class="d-block text-muted small">Nombre Completo</label>
-                                <p class="fw-bold fs-5 mb-0">{{ d.usuario.nombre }} {{ d.usuario.apellidos }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="d-block text-muted small">DIP / Identificación</label>
-                                <p class="fw-bold mb-0">{{ d.usuario.dip }}</p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 ps-md-4">
-                            <h6 class="text-muted text-uppercase small fw-bold mb-3 border-bottom pb-2">Contacto Oficial</h6>
-                            <div class="mb-3">
-                                <label class="d-block text-muted small">Correo Institucional</label>
-                                <p class="fw-bold mb-0" style="color: #800000;">{{ d.usuario.correo_institucional }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="d-block text-muted small">Ubicación</label>
-                                <p class="fw-bold mb-0">Edificio Central - Despacho Decanato</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-5 d-flex gap-2 justify-content-center">
-                        <a href="mailto:{{ d.usuario.correo_institucional }}" class="btn px-4 text-white" style="background-color: #800000;">
-                            <i class="fas fa-envelope me-2"></i>Enviar Consulta
-                        </a>
-                        <button class="btn btn-outline-secondary px-4">
-                            <i class="fas fa-calendar-check me-2"></i>Solicitar Cita
-                        </button>
-                    </div>
-                </div>
+                {# --- LÓGICA DE FOTO RE-CORREGIDA (EVITANDO ATRIBUTOS PROHIBIDOS) --- #}
+                {% set u_id = u.id %}
+                {% set u_rol = u.rol %}
                 
-                <div class="card-footer bg-light text-center py-3">
-                    <small class="text-muted italic">"Excelencia, Disciplina y Servicio" - UNGE</small>
+                {% if u_rol == 'profesor' %}
+                    {# Accedemos a la relación profesor con seguridad extra #}
+                    {% if u.profesor and u.profesor.archivo_foto %}
+                        {% set foto_final = url_for('static', filename='uploads/fotos/' + u.profesor.archivo_foto) %}
+                    {% else %}
+                        {% set foto_final = none %}
+                    {% endif %}
+                {% else %}
+                    {# Estudiantes y Directivos usan foto_perfil del modelo Usuario #}
+                    {% set foto_final = url_for('static', filename='uploads/perfiles/' + u.foto_perfil) if u.foto_perfil else none %}
+                {% endif %}
+
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    {% if foto_final %}
+                        <img src="{{ foto_final }}" 
+                             class="rounded-circle border border-4 border-light shadow" 
+                             width="120" height="120" style="object-fit: cover;"
+                             onerror="this.style.display='none'; document.getElementById('avatar-placeholder').style.display='flex';">
+                    {% endif %}
+
+                    {# Placeholder con iniciales siempre listo como plan B #}
+                    <div id="avatar-placeholder" class="rounded-circle border border-4 border-light shadow mx-auto d-flex align-items-center justify-content-center bg-primary text-white" 
+                         style="width: 120px; height: 120px; font-size: 2.5rem; font-weight: bold; {% if foto_final %}display:none;{% else %}display:flex;{% endif %}">
+                        {{ u.nombre[0] | upper }}
+                    </div>
                 </div>
+
+                <h3 class="fw-bold">{{ u.nombre }} {{ u.apellidos }}</h3>
+                <span class="badge bg-primary-subtle text-primary px-3 rounded-pill mb-3">
+                    {{ u.carrera if u.carrera else u_rol | capitalize }}
+                </span>
+                <p class="text-muted small px-5">Miembro de la facultad. Puedes consultar su actividad académica y contactar para fines universitarios.</p>
             </div>
-            
-            <div class="text-center mt-4">
-                <a href="javascript:history.back()" class="text-muted text-decoration-none small">
-                    <i class="fas fa-arrow-left me-1"></i> Volver a la página anterior
-                </a>
+
+            <h5 class="mb-3 fw-bold">Interacción y Servicios</h5>
+            <div class="row g-3">
+                <div class="col-6 col-md-4">
+                    <a href="{{ url_for('bandeja_entrada', receptor_id=u.id) }}" class="card h-100 border-0 shadow-sm text-center p-4 text-decoration-none btn-modulo">
+                        <i class="bi bi-chat-dots-fill fs-1 text-success mb-2"></i>
+                        <div class="fw-bold text-dark">Mensajería</div>
+                    </a>
+                </div>
+                {# Agrega aquí los botones de Debates y Noticias que faltaban #}
             </div>
         </div>
     </div>

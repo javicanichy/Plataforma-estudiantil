@@ -1,1 +1,1 @@
-/admin/login
+<int:user_id>

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    /* Estilo para el avatar con iniciales */
+    .avatar-iniciales {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: white;
+        background: linear-gradient(135deg, #1a73e8, #0d47a1);
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        text-transform: uppercase;
+    }
+    .btn-modulo { transition: transform 0.2s; }
+    .btn-modulo:hover { transform: translateY(-5px); }
+</style>
+
+<div class="container py-5">
+    <h2 class="fw-bold mb-4 text-primary"><i class="bi bi-search me-2"></i>Directorio Universitario</h2>
+
+    <div class="card border-0 shadow-sm p-4 mb-5" style="border-radius: 15px;">
+        <form action="{{ url_for('facultad') }}" method="GET" class="row g-2">
+            <div class="col-md-10">
+                <input type="text" name="search" class="form-control form-control-lg border-0 bg-light" 
+                       placeholder="Buscar por nombre, carrera o DIP..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill">Buscar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        {% for u in usuarios_lista %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm text-center p-3 btn-modulo" style="border-radius: 15px;">
+                    <div class="card-body">
+                        
+                        {# --- LÓGICA DE FOTO E INICIALES --- #}
+                        {% if u.rol == 'profesor' and u.profesor %}
+                            {% set foto_perfil = u.profesor.archivo_foto %}
+                            {% set carpeta = 'fotos/' %}
+                        {% else %}
+                            {% set foto_perfil = u.foto_perfil %}
+                            {% set carpeta = 'perfiles/' %}
+                        {% endif %}
+
+                        {% if foto_perfil %}
+                            <img src="{{ url_for('static', filename='uploads/' + carpeta + foto_perfil) }}" 
+                                 class="rounded-circle mb-3 shadow-sm" width="80" height="80" 
+                                 style="object-fit: cover;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            
+                            <div class="avatar-iniciales shadow-sm" style="display: none;">
+                                {{ u.nombre[0] }}{{ u.apellidos[0] if u.apellidos else '' }}
+                            </div>
+                        {% else %}
+                            <div class="avatar-iniciales shadow-sm">
+                                {{ u.nombre[0] }}{{ u.apellidos[0] if u.apellidos else '' }}
+                            </div>
+                        {% endif %}
+
+                        <h5 class="fw-bold mb-1">{{ u.nombre }} {{ u.apellidos }}</h5>
+                        <p class="text-muted small mb-3">
+                            {{ u.carrera if u.carrera else 'Información no disponible' }} <br>
+                            <span class="badge bg-light text-dark border">{{ u.rol|capitalize }}</span>
+                        </p>
+                        
+                        {# --- LÓGICA DE BOTÓN DINÁMICO SEGÚN ROL --- #}
+                        {% if u.rol == 'estudiante' %}
+                            <a href="{{ url_for('ver_perfil', user_id=u.id) }}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                                Ver Perfil Estudiante
+                            </a>
+                        {% elif u.rol == 'profesor' %}
+                            <a href="{{ url_for('profesor_panel', user_id=u.id) }}" class="btn btn-outline-success btn-sm rounded-pill px-4">
+                                Ver Perfil Docente
+                            </a>
+                        {% elif u.rol == 'directivo' %}
+                             <a href="{{ url_for('perfil_directivo_publico', user_id=u.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">
+                                Ver Perfil Directivo
+                            </a>
+                        {% else %}
+                            <button class="btn btn-light btn-sm rounded-pill px-4" disabled>Perfil Privado</button>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-person-x fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No se encontraron miembros con ese nombre o criterio.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

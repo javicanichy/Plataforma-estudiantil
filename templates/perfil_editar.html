@@ -1,42 +1,109 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container my-4">
-  <h3>Editar perfil</h3>
-  <form method="POST" enctype="multipart/form-data">
-    
-    <!-- Nombre -->
-    <div class="mb-3">
-      <label>Nombre</label>
-      <input type="text" name="nombre" class="form-control" value="{{ usuario.nombre }}">
-    </div>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0 h5"><i class="fas fa-user-edit me-2"></i>Configuración del Perfil</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Nombre Completo</label>
+                                <input type="text" class="form-control bg-light" value="{{ usuario.nombre }} {{ usuario.apellidos }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-muted small fw-bold">Correo Electrónico</label>
+                                <input type="email" class="form-control bg-light" value="{{ usuario.correo_institucional }}" readonly>
+                            </div>
+                        </div>
 
-    <!-- Correo -->
-    <div class="mb-3">
-      <label>Correo</label>
-      <input type="email" name="correo" class="form-control" value="{{ usuario.correo }}">
-    </div>
+                        <hr class="my-4">
 
-    <!-- Foto de perfil -->
-    <div class="mb-3">
-      <label>Foto de perfil</label>
-      <input type="file" name="foto_perfil" class="form-control" accept="image/*">
-    </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Curso Actual</label>
+                            <select name="curso" class="form-select shadow-sm" required>
+                                <option value="" disabled>Selecciona tu curso actual</option>
+                                
+                                {# Definimos el límite según la carrera #}
+                                {% set limite = 3 %}
+                                {% if usuario.carrera == 'Medicina General' %}
+                                    {% set limite = 6 %}
+                                {% elif usuario.carrera in ['Grado II Enfermería', 'Fisioterapia'] %}
+                                    {% set limite = 4 %}
+                                {% endif %}
 
-    <!-- Foto de portada -->
-    <div class="mb-3">
-      <label>Foto de portada</label>
-      <input type="file" name="foto_portada" id="foto_portada_input" class="form-control" accept="image/*" multiple>
-  
-      <!-- Vista previa -->
-      <div id="portada-slide-preview" class="mt-2 d-flex"></div>
-    </div>
+                                {# Generamos las opciones dinámicamente #}
+                                {% set cursos = ['PRIMER CURSO', 'SEGUNDO CURSO', 'TERCER CURSO', 'CUARTO CURSO', 'QUINTO CURSO', 'SEXTO CURSO'] %}
+                                
+                                {% for i in range(limite) %}
+                                    <option value="{{ cursos[i] }}" {% if usuario.curso == cursos[i] %}selected{% endif %}>
+                                        {{ cursos[i] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-primary">
+                                <i class="fas fa-info-circle"></i> Opciones limitadas según tu plan de estudios ({{ usuario.carrera }}).
+                            </div>
+                        </div>
 
-    <!-- Botones -->
-    <div class="mt-4">
-      <button type="submit" class="btn btn-primary">Guardar cambios</button>
-      <a href="{{ url_for('ver_perfil', usuario_id=usuario.id) }}" class="btn btn-secondary">Cancelar</a>
-    </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Foto de Perfil</label>
+                            <input type="file" name="foto_perfil" class="form-control" accept="image/*">
+                        </div>
 
-  </form>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fotos de Portada (Máximo 3)</label>
+                            <input type="file" name="foto_portada" id="foto_portada_input" class="form-control" accept="image/*" multiple>
+                            <div id="portada-slide-preview" class="mt-2 d-flex gap-2"></div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded border shadow-sm">
+                            <div>
+                                <h6 class="mb-0 fw-bold">Seguridad de la cuenta</h6>
+                                <small class="text-muted">Cambia tu contraseña regularmente.</small>
+                            </div>
+                            <a href="{{ url_for('perfil_cambiar_contrasena') }}" class="btn btn-outline-danger btn-sm fw-bold">
+                                Modificar Contraseña
+                            </a>
+                        </div>
+
+                        <div class="mt-5 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-5 fw-bold shadow-sm">Guardar Cambios</button>
+                            <a href="{{ url_for('ver_perfil', user_id=usuario.id) }}" class="btn btn-light border px-4">Cancelar</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+document.getElementById('foto_portada_input').addEventListener('change', function(event) {
+    const preview = document.getElementById('portada-slide-preview');
+    preview.innerHTML = '';
+    const files = Array.from(event.target.files).slice(0, 3);
+    
+    files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '100px';
+            img.style.height = '60px';
+            img.style.objectFit = 'cover';
+            img.classList.add('rounded', 'border');
+            preview.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+    });
+});
+</script>
 {% endblock %}

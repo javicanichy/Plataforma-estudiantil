@@ -66,6 +66,8 @@
 
         <div class="text-start mt-3 p-2 bg-light rounded">
           <p class="mb-1 small"><strong><i class="bi bi-book me-2"></i>Carrera:</strong> <span class="text-muted">{{usuario.carrera}}</span></p>
+          <p class="mb-1 small"><strong><i class="bi bi-journal-text"></i>Curso:</strong> <span class="text-muted">{{usuario.curso}}</span></p>
+          <p class="mb-1 small"><strong><i class="bi bi-person"></i>Natural de:</strong> <span class="text-muted">{{usuario.natural_de}}</span></p>
           <p class="mb-0 small text-truncate"><strong><i class="bi bi-quote me-2"></i>Bio:</strong> {{ usuario.biografia if usuario.biografia else "Estudiante de la UNGE" }}</p>
         </div>
       </div>
@@ -82,6 +84,7 @@
           <hr>
           <p class="d-flex justify-content-between"><strong>País:</strong> <span>{{ usuario.pais }}</span></p>
           <p class="d-flex justify-content-between"><strong>Residencia:</strong> <span>{{ usuario.residencia }}</span></p>
+          <p class="d-flex justify-content-between"><strong>Distrito y Provincia:</strong> <span>{{ usuario.distrito_provincia }}</span></p>
           <p class="d-flex justify-content-between"><strong>Nacimiento:</strong> <span>{{ usuario.fecha_nacimiento }}</span></p>
         </div>
       </div>
@@ -109,10 +112,10 @@
     {% set items = [
       ('biblioteca_page', 'Biblioteca', 'bi-building-fill'),
       ('ver_notas', 'Mis Notas', 'bi-journal-check'),
-      ('mensajes_page', 'Mensajería', 'bi-chat-dots-fill'),
+      ('bandeja_entrada', 'Mensajería', 'bi-chat-dots-fill'),
       ('ver_expediente', 'Expediente', 'bi-file-earmark-person'),
       ('calendario_page', 'Calendario', 'bi-calendar3'),
-      ('crear_debate', 'Debates', 'bi-people-fill'),
+      ('ver_foro', 'Debates', 'bi-people-fill'),
       ('lista_noticias', 'Noticias', 'bi-newspaper'),
       ('estudios', 'Mis Estudios', 'bi-mortarboard'),
       ('facultad', 'Mi Facultad', 'bi-bank')
@@ -120,7 +123,12 @@
 
     {% for ruta, nombre, icono in items %}
     <div class="col-6 col-md-4 tarjeta">
-      <a href="{{ url_for(ruta, id=usuario.id) }}" class="btn btn-light shadow-sm w-100 py-4 d-flex flex-column align-items-center">
+      {# LÓGICA ESPECIAL PARA MENSAJERÍA #}
+      {% if ruta == 'bandeja_entrada' %}
+          <a href="{{ url_for(ruta, receptor_id=usuario.id) }}" class="btn btn-light shadow-sm w-100 py-4 d-flex flex-column align-items-center">
+      {% else %}
+          <a href="{{ url_for(ruta, user_id=usuario.id) }}" class="btn btn-light shadow-sm w-100 py-4 d-flex flex-column align-items-center">
+      {% endif %}
         <i class="bi {{ icono }} fs-3 mb-2"></i>
         <span>{{ nombre }}</span>
       </a>

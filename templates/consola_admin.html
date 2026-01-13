@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Console v2 | UNGE-FCS</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        :root { 
+            --unge-red: #800000; 
+            --unge-gold: #ffc107; 
+            --bg-main: #f4f7f6; 
+        }
+        body { background: var(--bg-main); font-family: 'Inter', sans-serif; color: #333; }
+        
+        .sidebar-tables { 
+            background: white; 
+            border-right: 1px solid #dee2e6; 
+            height: 100vh; 
+            position: sticky; 
+            top: 0; 
+            overflow-y: auto;
+        }
+        .table-btn { 
+            width: 100%; text-align: left; border: none; background: none; 
+            padding: 12px 15px; border-radius: 10px; margin-bottom: 5px; 
+            color: #495057; font-weight: 500; transition: all 0.3s ease;
+            display: flex; align-items: center; text-decoration: none;
+        }
+        .table-btn:hover { background: #f1f3f5; transform: translateX(5px); }
+        .table-btn.active { 
+            background: var(--unge-red); color: white !important; 
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.2); 
+        }
+
+        .glass-card { 
+            background: white; border-radius: 15px; border: none; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05); 
+        }
+        
+        /* SCROLL PERSONALIZADO PARA TABLAS LARGAS */
+        .table-responsive {
+            max-height: 70vh;
+            overflow-x: auto; /* Desplazamiento horizontal */
+            scrollbar-width: thin;
+            scrollbar-color: var(--unge-red) #f1f3f5;
+        }
+        .table-responsive::-webkit-scrollbar { height: 8px; }
+        .table-responsive::-webkit-scrollbar-track { background: #f1f3f5; }
+        .table-responsive::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--unge-red); }
+
+        .sticky-header { position: sticky; top: 0; background: #fff; z-index: 10; border-bottom: 2px solid #f1f3f5; }
+
+        .preview-box { 
+            height: 130px; display: flex; align-items: center; justify-content: center; 
+            overflow: hidden; border-radius: 12px; background: #f8f9fa; 
+            margin-bottom: 10px; position: relative; border: 1px solid #eee;
+        }
+        .preview-box img { width: 100%; height: 100%; object-fit: cover; }
+        .video-overlay { position: absolute; font-size: 2rem; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 2; }
+        
+        .search-container { position: relative; }
+        .search-container i { position: absolute; left: 15px; top: 12px; color: #adb5bd; }
+        .search-input { padding-left: 40px; border-radius: 12px; border: 1px solid #dee2e6; height: 45px; }
+
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 9999; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+
+<div id="loader" class="loading-overlay"><div class="spinner-border text-danger" role="status"></div></div>
+
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title" id="editTitle">Editar Registro</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formUpdate">
+                <div class="modal-body" id="editBody">
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar-tables p-3 d-none d-md-block">
+            <div class="text-center mb-4">
+                <div class="p-3 mb-2 bg-light rounded-circle d-inline-block">
+                    <i class="fas fa-shield-halved text-danger fa-2x"></i>
+                </div>
+                <h5 class="fw-bold text-dark">UNGE ADMIN</h5>
+                <p class="small text-muted">Consola de Recursos</p>
+                <hr>
+            </div>
+            <h6 class="text-uppercase text-muted fw-bold mb-3" style="font-size: 0.7rem;">Modelos de Datos</h6>
+            {% for t in tablas %}
+            <a href="?tabla={{t}}" class="table-btn {{ 'active' if t == tabla_actual else '' }}">
+                <i class="fas fa-database me-2 small"></i> {{ t | capitalize }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-10 p-4 fade-in">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold m-0"><i class="fas fa-terminal me-2 text-danger"></i> Consola Central</h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                            <li class="breadcrumb-item active">{{ tabla_actual | capitalize }}</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="search-container col-md-4">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="masterSearch" class="form-control search-input shadow-sm" placeholder="Buscar en {{ tabla_actual }}...">
+                </div>
+            </div>
+
+            <ul class="nav nav-pills mb-4 bg-white p-2 rounded-4 shadow-sm d-inline-flex" id="masterTab">
+                <li class="nav-item">
+                    <button class="nav-link active px-4 fw-bold" data-bs-toggle="tab" data-bs-target="#db-view">
+                        <i class="fas fa-table me-2"></i> Registros
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 fw-bold" data-bs-toggle="tab" data-bs-target="#file-view">
+                        <i class="fas fa-cloud-arrow-up me-2"></i> Almacenamiento
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="db-view">
+                    <div class="glass-card overflow-hidden">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 text-nowrap" id="mainDataTable">
+                                <thead class="sticky-header">
+                                    <tr class="bg-light">
+                                        {% for col in columnas %} 
+                                        <th class="py-3 px-3 text-muted small text-uppercase">{{ col }}</th> 
+                                        {% endfor %}
+                                        <th class="text-center py-3">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in registros %}
+                                    <tr>
+                                        {% for col in columnas %}
+                                        <td class="px-3 small">
+                                            {% if col == 'password_hash' %}
+                                            <span class="text-muted italic" style="font-size: 0.6rem;">[ENCRYPTED]</span>
+                                            {% elif col == 'activo' %}
+                                            <span class="badge {{ 'bg-success' if row[col] else 'bg-danger' }}">
+                                                {{ 'SÍ' if row[col] else 'NO' }}
+                                            </span>
+                                            {% else %}
+                                            {{ row[col] }}
+                                            {% endif %}
+                                        </td>
+                                        {% endfor %}
+                                        <td class="text-center">
+                                            <div class="btn-group bg-white border rounded-3 shadow-sm">
+                                                <button class="btn btn-sm btn-light border-end" onclick="editarRegistro('{{ tabla_actual }}', {{ row.id }})">
+                                                    <i class="fas fa-edit text-primary"></i>
+                                                </button>
+                                                {% if tabla_actual == 'usuarios' %}
+                                                <button class="btn btn-sm btn-light border-end" onclick="recoveryPass('{{ row.correo_institucional }}')" title="Enviar recuperación al correo personal">
+                                                    <i class="fas fa-key text-warning"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button class="btn btn-sm btn-light" onclick="eliminarRegistro('{{ tabla_actual }}', {{ row.id }})">
+                                                    <i class="fas fa-trash text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="file-view">
+                    <div class="glass-card p-4">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-4 bg-light p-3 rounded-3">
+                                <li class="breadcrumb-item">
+                                    <a href="?folder=" class="text-danger fw-bold text-decoration-none"><i class="fas fa-home"></i> Root</a>
+                                </li>
+                                {% if folder_actual %} 
+                                <li class="breadcrumb-item active">{{ folder_actual }}</li> 
+                                {% endif %}
+                            </ol>
+                        </nav>
+                        <div class="row g-3">
+                            {% for item in archivos %}
+                            <div class="col-6 col-md-3 col-lg-2 text-center">
+                                <div class="card h-100 border-0 shadow-sm p-2">
+                                    {% if item.es_dir %}
+                                        <a href="?folder={{ item.ruta_relativa }}" class="text-decoration-none text-dark py-4">
+                                            <i class="fas fa-folder fa-4x text-warning mb-2"></i>
+                                            <div class="fw-bold small">{{ item.nombre }}</div>
+                                        </a>
+                                    {% else %}
+                                        <div class="preview-box">
+                                            {% set ext = item.nombre.split('.')[-1].lower() %}
+                                            {% if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp'] %}
+                                                <img src="/static/uploads/{{ item.ruta_relativa }}" alt="preview">
+                                            {% else %}
+                                                <i class="fas fa-file-lines fa-3x text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="fw-bold small text-truncate px-2">{{ item.nombre }}</div>
+                                        <button class="btn btn-sm btn-outline-danger mt-2 border-0" onclick="eliminarArchivo('{{ item.ruta_relativa }}')"><i class="fas fa-trash-alt"></i></button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const bModal = new bootstrap.Modal(document.getElementById('modalEditar'));
+    let globalTabla = "{{ tabla_actual }}";
+    let globalId = null;
+
+    // 1. EDITAR (DINÁMICO SEGÚN TU BACKEND)
+    function editarRegistro(tabla, id) {
+        globalId = id;
+        const body = document.getElementById('editBody');
+        body.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-danger"></div></div>';
+        bModal.show();
+
+        fetch(`/admin/api/get-record/${tabla}/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                let html = "";
+                for (let [key, value] of Object.entries(data)) {
+                    const readonly = (key === 'id') ? 'readonly' : '';
+                    const bg = (key === 'id') ? 'bg-light' : '';
+                    html += `
+                        <div class="mb-3 text-start">
+                            <label class="form-label small fw-bold text-uppercase">${key.replace('_', ' ')}</label>
+                            <input type="text" name="${key}" value="${value !== null ? value : ''}" 
+                                   class="form-control ${bg}" ${readonly}>
+                        </div>`;
+                }
+                body.innerHTML = html;
+            });
+    }
+
+    // Guardar cambios
+    document.getElementById('formUpdate').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const payload = Object.fromEntries(new FormData(this).entries());
+
+        fetch(`/admin/api/update-record/${globalTabla}/${globalId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                bModal.hide();
+                Swal.fire('¡Éxito!', 'Registro actualizado', 'success').then(() => location.reload());
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        });
+    });
+
+    // 2. ELIMINAR REGISTRO (RUTA COMPLETA)
+    function eliminarRegistro(tabla, id) {
+        Swal.fire({
+            title: '¿Eliminar registro?',
+            text: `ID: ${id} será borrado permanentemente.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, borrar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/api/delete-record/${tabla}/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        Swal.fire('Borrado', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    // 3. RECUPERACIÓN (SOPORTE)
+    function recoveryPass(emailInst) {
+    if (!emailInst || emailInst === 'None') {
+        return Swal.fire('Error', 'No se detectó el correo institucional del usuario.', 'error');
+    }
+
+    Swal.fire({
+        title: 'Soporte de Cuenta',
+        text: `Se enviará un código de acceso a la cuenta: ${emailInst}. El sistema usará el correo personal vinculado.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ffc107',
+        confirmButtonText: 'Generar y enviar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch("/admin/api/soporte/generar-recuperacion", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email: emailInst })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    Swal.fire('¡Enviado!', data.message, 'success');
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+    });
+    }
+
+    // 4. BUSCADOR
+    document.getElementById('masterSearch').addEventListener('keyup', function() {
+        let val = this.value.toLowerCase();
+        document.querySelectorAll("#mainDataTable tbody tr").forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? "" : "none";
+        });
+    });
+
+</script>
+</body>
+</html>
