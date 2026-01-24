@@ -2,244 +2,207 @@
 {% block content %}
 
 <style>
-    body.libros-digitales{
-        background-color: burlywood;
+    /* Fondo con un degradado azul oscuro/cian muy suave para dar toque tecnológico */
+    body.libros-digitales-page {
+        background: linear-gradient(135deg, #e0f2f1 0%, #f3e5ab 100%);
+        min-height: 100vh;
+    }
+
+    /* Contenedor principal estilo "Centro de Datos" */
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 25px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border: 1px solid white;
+    }
+
+    /* Tarjetas de Libros Digitales */
+    .digital-card {
+        border: none;
+        background: white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .digital-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .digital-cover {
+        height: 180px;
+        object-fit: cover;
+        width: 100%;
+        border-right: 1px solid #f0f0f0;
+    }
+
+    /* Sección de Enlaces Externos */
+    .hub-link {
+        background: white;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+        border: 1px solid #eee;
+    }
+
+    .hub-link:hover {
+        background: #f8f9fa;
+        border-color: #0d6efd;
+        padding-left: 20px;
+    }
+
+    /* Iconos tecnológicos */
+    .tech-icon {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-size: 1.2rem;
     }
 </style>
 
-<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
-<div class="container-fluid bg-light border-bottom">
+<div class="container-fluid bg-white border-bottom shadow-sm mb-4">
     <div class="container py-2">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('login_page') }}" class="text-decoration-none">
-                        <i class="bi bi-house-door"></i> Inicio
-                    </a>
-                </li>
-
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
-                        <i class="bi bi-building"></i> Biblioteca
-                    </a>
-                </li>
-
-                <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bi bi-file-earmark-pdf"></i> Libros digitales
-                </li>
+                <li class="breadcrumb-item"><a href="{{ url_for('login_page') }}" class="text-decoration-none">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">Biblioteca</a></li>
+                <li class="breadcrumb-item active">Recursos Digitales</li>
             </ol>
         </nav>
     </div>
 </div>
 
-
-<div class="container my-5 libros-digitales" style="max-width: 900px;">
-
-    <!-- MIGAS DE PAN -->
-<nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb bg-transparent p-0 mb-0">
+<div class="container pb-5">
+    <div class="glass-panel">
         
-    </ol>
-</nav>
+        <div class="row align-items-center mb-5">
+            <div class="col-md-8">
+                <h1 class="fw-bold text-dark mb-2"><i class="bi bi-cloud-check-fill text-primary me-2"></i>Repositorio Digital</h1>
+                <p class="text-muted">Acceso inmediato a textos completos, bases de datos científicas y herramientas de gestión documental.</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                {% if current_user.is_authenticated and current_user.rol in ['admin', 'bibliotecario', 'profesor'] %}
+                    <a href="{{ url_for('biblioteca_editar') }}" class="btn btn-dark rounded-pill px-4 shadow">
+                        <i class="bi bi-cloud-upload me-2"></i>Subir Recurso
+                    </a>
+                {% endif %}
+            </div>
+        </div>
 
+        <div class="alert alert-primary border-0 shadow-sm rounded-4 mb-5 p-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-megaphone-fill fs-2 me-3"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Publicación de Libros</h6>
+                    <p class="small mb-0">Para incluir sus obras en esta biblioteca, contacte con el <strong>Departamento de Investigación, Posgrado y Extensión Universitaria</strong>.</p>
+                </div>
+            </div>
+        </div>
 
-    <!-- ENCABEZADO -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="bi-file-earmark-pdf"> Libros Digitales</h2>
-
-        <a href="{{ url_for('biblioteca_editar') }}"
-           class="btn btn-primary shadow-sm btn-sm">
-            Agregar nuevo libro
-        </a>
-    </div>
-
-    <p class="text-muted">
-        Bienvenidos a los libros digiatles y bases de datos. <br> <hr>
-        Si quieres publicar un libro para alimentar la biblioteca pongase <br>
-        con el departemento de Investigación Posgrado y Extensión Universitaria.
-    </p>
-
-    <!-- LISTA PROFESIONAL DE LIBROS -->
-    <div class="mt-4">
-
-        {% if libros %}
-            {% for libro in libros %}
-                <div class="card mb-3 shadow-sm border-0 rounded-3">
-                    <div class="row g-0">
-
-                        <!-- PORTADA -->
-                        <div class="col-md-3 d-flex align-items-center justify-content-center">
-                            {% if libro.portada %}
-                                <img src="{{ url_for('static', filename='uploads/portadas/' ~ libro.portada) }}"
-                                     class="img-fluid rounded-start"
-                                     style="height: 160px; object-fit: cover; width: 100%;">
-                            {% else %}
-                                <div class="bg-light d-flex align-items-center justify-content-center w-100 rounded-start"
-                                     style="height: 160px;">
-                                    <span class="text-muted">Sin portada</span>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- INFORMACIÓN DEL LIBRO -->
-                        <div class="col-md-9">
-                            <div class="card-body">
-
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h5 class="card-title mb-1">{{ libro.titulo }}</h5>
-
-                                        {% if libro.descripcion %}
-                                            <p class="text-muted mb-2">
-                                                {{ libro.descripcion[:150] }}{% if libro.descripcion|length > 150 %}...{% endif %}
-                                            </p>
-                                        {% endif %}
+        <h4 class="fw-bold mb-4"><i class="bi bi-collection-play me-2"></i>Libros y Tesis Disponibles</h4>
+        <div class="row g-4">
+            {% if libros %}
+                {% for libro in libros %}
+                <div class="col-12 col-xl-6">
+                    <div class="card digital-card shadow-sm h-100">
+                        <div class="row g-0 h-100">
+                            <div class="col-md-4 bg-light">
+                                {% if libro.portada %}
+                                    <img src="{{ url_for('static', filename='uploads/portadas/' ~ libro.portada) }}" class="digital-cover" alt="Portada">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-secondary-subtle">
+                                        <i class="bi bi-book-half fs-1 text-white"></i>
                                     </div>
-
-                                    <!-- ABRIR -->
-                                    <a href="{% if libro.tipo == 'pdf' %}
-                                                {{ url_for('static', filename='uploads/libros/' ~ libro.archivo) }}
-                                             {% else %}
-                                                {{ libro.enlace }}
-                                             {% endif %}"
-                                       target="_blank"
-                                       class="btn btn-outline-primary btn-sm">
-                                        📥 Abrir
-                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body d-flex flex-column h-100">
+                                    <h5 class="fw-bold text-dark mb-1">{{ libro.titulo }}</h5>
+                                    <p class="text-muted small mb-3">
+                                        {{ libro.descripcion[:120] }}{% if libro.descripcion|length > 120 %}...{% endif %}
+                                    </p>
+                                    
+                                    <div class="mt-auto d-flex justify-content-between align-items-center">
+                                        {% if current_user.is_authenticated and (libro.usuario_id == current_user.id or current_user.rol == 'admin') %}
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('biblioteca_editar', item_id=libro.id) }}" 
+                                                class="btn btn-sm btn-outline-warning rounded-start-pill">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form action="{{ url_for('biblioteca_eliminar', item_id=libro.id) }}" method="POST" class="d-inline">
+                                                    <button class="btn btn-sm btn-outline-danger rounded-end-pill" 
+                                                        onclick="return confirm('¿Eliminar?')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
+                                        <a href="{% if libro.tipo == 'pdf' %}{{ url_for('static', filename='uploads/libros/' ~ libro.archivo) }}{% else %}{{ libro.enlace }}{% endif %}" 
+                                            target="_blank" class="btn btn-primary btn-sm rounded-pill px-4 shadow-sm">
+                                            Leer Online <i class="bi bi-arrow-right-short"></i>
+                                        </a>
+                                    </div>
                                 </div>
-
-                                <!-- BOTONES DE ACCIÓN -->
-                                <div class="mt-3 text-end">
-
-                                    <!-- EDITAR -->
-                                    <a href="{{ url_for('biblioteca_editar', item_id=libro.id) }}"
-                                       class="btn btn-warning btn-sm">
-                                        ✏️ Editar
-                                    </a>
-
-                                    <!-- ELIMINAR -->
-                                    <form action="{{ url_for('biblioteca_eliminar', item_id=libro.id) }}" 
-                                        method="POST" 
-                                        onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');"
-                                        style="display:inline;">
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            🗑️ Eliminar
-                                        </button>
-                                    </form>
-
-
-                                </div>
-
                             </div>
                         </div>
-
                     </div>
                 </div>
-            {% endfor %}
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No hay recursos digitales disponibles.</p>
+                </div>
+            {% endif %}
+        </div>
 
-        {% else %}
-            <p class="text-muted text-center mt-3">
-                No hay libros digitales disponibles.
-            </p>
-        {% endif %}
+        <div class="row mt-5 pt-4">
+            <div class="col-md-6 mb-4">
+                <h5 class="fw-bold mb-4"><i class="bi bi-journal-richtext text-primary me-2"></i>Bases de Datos Científicas</h5>
+                <div class="pe-md-3">
+                    {% for nombre, link, color, icon in [
+                        ('PubMed', 'https://pubmed.ncbi.nlm.nih.gov/', 'bg-primary-subtle text-primary', 'bi-hospital'),
+                        ('Medline', 'https://www.medline.com/', 'bg-success-subtle text-success', 'bi-journal-medical'),
+                        ('Scopus (Elsevier)', 'https://www.scopus.com/', 'bg-warning-subtle text-warning', 'bi-database'),
+                        ('Google Académico', 'https://scholar.google.com/', 'bg-secondary-subtle text-secondary', 'bi-google')
+                    ] %}
+                    <a href="{{ link }}" target="_blank" class="text-decoration-none text-dark">
+                        <div class="hub-link d-flex align-items-center shadow-sm">
+                            <div class="tech-icon {{ color }} me-3"><i class="bi {{ icon }}"></i></div>
+                            <span class="fw-bold">{{ nombre }}</span>
+                            <i class="bi bi-box-arrow-up-right ms-auto text-muted"></i>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <h5 class="fw-bold mb-4"><i class="bi bi-tools text-danger me-2"></i>Herramientas de Documentación</h5>
+                <div class="ps-md-3">
+                    {% for nombre, link, icon in [
+                        ('PDF a Word', 'https://www.ilovepdf.com/es/pdf_a_word', 'bi-file-earmark-word text-primary'),
+                        ('Comprimir PDF', 'https://www.ilovepdf.com/es/comprimir_pdf', 'bi-file-earmark-zip text-success'),
+                        ('I Love PDF (Todos los formatos)', 'https://www.ilovepdf.com/es', 'bi-file-earmark-pdf text-danger')
+                    ] %}
+                    <a href="{{ link }}" target="_blank" class="text-decoration-none text-dark">
+                        <div class="hub-link d-flex align-items-center shadow-sm">
+                            <div class="tech-icon bg-light me-3"><i class="bi {{ icon }}"></i></div>
+                            <span class="fw-bold">{{ nombre }}</span>
+                            <i class="bi bi-link-45deg ms-auto text-muted"></i>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
     </div>
-
-    <!-- BASES DE DATOS INTERNACIONALES -->
-<div class="mt-5">
-    <h5 class="mb-3">
-        <i class="bi bi-journal-richtext me-2"></i>
-        Encuentre estudios, artículos y bibliografías para sus investigaciones
-    </h5>
-
-    <ul class="list-unstyled">
-        <li class="mb-2">
-            <a href="https://pubmed.ncbi.nlm.nih.gov/" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-hospital text-primary"></i>
-                PubMed
-            </a>
-        </li>
-
-        <li class="mb-2">
-            <a href="https://www.medline.com/" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-journal-medical text-success"></i>
-                Medline
-            </a>
-        </li>
-
-        <li class="mb-2">
-            <a href="https://www.scopus.com/" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-database text-warning"></i>
-                Scopus (Elsevier)
-            </a>
-        </li>
-
-        <li class="mb-2">
-            <a href="https://www.cochranelibrary.com/" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-shield-check text-danger"></i>
-                Cochrane Library (Evidencia)
-            </a>
-        </li>
-
-        <li class="mb-2">
-            <a href="https://lilacs.bvsalud.org/es/" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-globe-americas text-info"></i>
-                LILACS (Latinoamérica)
-            </a>
-        </li>
-
-        <li>
-            <a href="https://scholar.google.com/" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-google text-secondary"></i>
-                Google Académico
-            </a>
-        </li>
-    </ul>
-</div>
-
-
-
-       <!-- UTILIDADES -->
-    <div class="mt-5">
-        <h5 class="mb-3">
-        <i class="bi bi-tools me-2"></i>
-        Herramientas de manejo de documentos
-    </h5>
-
-    <ul class="list-unstyled">
-        <li class="mb-2">
-            <a href="https://www.ilovepdf.com/es/pdf_a_word" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-file-earmark-word text-primary"></i>
-                Convertir PDF a Word
-            </a>
-        </li>
-
-        <li class="mb-2">
-            <a href="https://www.ilovepdf.com/es/comprimir_pdf" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-file-earmark-zip text-success"></i>
-                Comprimir PDF
-            </a>
-        </li>
-
-        <li>
-            <a href="https://www.ilovepdf.com/es" target="_blank"
-               class="text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-file-earmark-pdf text-danger"></i>
-                Todos los formatos de conversión PDF
-            </a>
-        </li>
-    </ul>
-</div>
-
-
 </div>
 
 {% endblock %}

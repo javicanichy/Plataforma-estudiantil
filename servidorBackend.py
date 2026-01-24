@@ -11,6 +11,8 @@ from io import BytesIO
 from docx import Document
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 from fpdf import FPDF
 from dateutil import parser
 
@@ -116,13 +118,14 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 #------ CONFIGURACION DE CORREOS--------#
 # MANEJAR CORREOS ELECTRONICOS. BUZON DE AYUDA
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'        # servidor SMTP, puedes cambiarlo según tu correo
-app.config['MAIL_PORT'] = 587                       # puerto TLS
-app.config['MAIL_USE_TLS'] = True                   # usar TLS
-app.config['MAIL_USE_SSL'] = False                  # no usar SSL porque usamos TLS
-app.config['MAIL_USERNAME'] = 'tucorreo@gmail.com'  # tu correo
-app.config['MAIL_PASSWORD'] = 'tu_contraseña_app'   # contraseña de aplicación o normal (Gmail necesita app password)
-app.config['MAIL_DEFAULT_SENDER'] = 'tucorreo@gmail.com'  # remitente por defecto
+# CONFIGURACIÓN DEFINITIVA CON GMAIL
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'               # Servidor de Google (Cambiado)
+app.config['MAIL_PORT'] = 587                              # Puerto TLS para Gmail
+app.config['MAIL_USE_TLS'] = True                          # Cifrado obligatorio
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = 'secretaria.cienciasdelasalud.gq@gmail.com'
+app.config['MAIL_PASSWORD'] = 'ilexlirgtipvykbv'           # Tu clave de Gmail (sin espacios)
+app.config['MAIL_DEFAULT_SENDER'] = ('UNGE Facultad Ciencias de la Salud', 'secretaria.cienciasdelasalud.gq@gmail.com')
 
 # Inicializar Flask-Mail
 mail = Mail(app)
@@ -261,10 +264,6 @@ def requiere_login(f):
     return decorated_function
 
 # 2. Decorador para verificar el ROL
-from functools import wraps
-from flask import flash, redirect, url_for
-from flask_login import current_user
-
 def requiere_rol(roles_permitidos):
     # Si nos pasan un solo string (un solo rol), lo convertimos en lista para que la lógica funcione igual
     if isinstance(roles_permitidos, str):
@@ -307,6 +306,68 @@ CARRERAS_INFO = {
 # ==========================================================
 # RUTAS PÚBLICAS
 # ==========================================================
+
+# Correo automatico acuse buzon
+def enviar_buzon_cliente(nombre, email_destino, mensaje_original, dominio):
+    msg = MIMEMultipart('alternative')
+    msg['From'] = f"Buzón de consultas <{CORREO_MATRICULAS_USER}>"
+    msg['To'] = email_destino
+    msg['Subject'] = "Hemos recibido tu consulta - FCS"
+
+    html_content = f"""
+    <html>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <tr>
+                <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
+                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 15px 40px; text-align: center; background-color: #1a237e;">
+                    <h2 style="color: #ffffff; margin: 0; font-size: 18px; font-weight: 300; letter-spacing: 1px;">BUZONN DE AYUDA</h2>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 40px 40px 20px 40px;">
+                    <p style="font-size: 16px; color: #2c3e50; margin-bottom: 20px;">Hola, <strong>{nombre}</strong>.</p>
+                    <p style="font-size: 14px; color: #546e7a; line-height: 1.6; margin-bottom: 25px;">
+                        Confirmamos que hemos recibido tu mensaje en nuestro sistema. Un responsable de la administración revisará tu consulta y te responderá a la brevedad posible.
+                    </p>
+                    <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border-left: 4px solid #1a237e; margin-bottom: 30px;">
+                        <p style="margin: 0 0 10px 0; font-size: 12px; color: #1a237e; font-weight: bold; text-transform: uppercase;">Tu mensaje enviado:</p>
+                        <p style="font-size: 13px; color: #455a64; font-style: italic; margin: 0;">"{mensaje_original}"</p>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
+                    <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
+                        <strong>Buzón de consultas - Facultad de Ciencias de la Salud</strong><br>
+                        Campus de Bata, Guinea Ecuatorial<br>
+                        Este es un mensaje automático, por favor no responda a este correo.
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    # ... lógica de envío smtplib igual a la que ya usas ...
+    msg.attach(MIMEText(html_content, 'html'))
+
+    try:
+        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Error al enviar código de activación: {e}")
+        return False
+
+# Inicio / buzon
 @app.route('/', methods=['GET', 'POST'])
 def inicio():
     form = BuzonAyudaForm()
@@ -373,6 +434,22 @@ def inicio():
 
             db.session.add(nueva_consulta)
             db.session.commit()
+
+            # ... después de db.session.commit() ...
+            try:
+                # Definimos el dominio (puedes usar request.host_url para que sea dinámico)
+                dominio = request.host_url.rstrip('/') 
+
+                # Llamamos a la función con los datos del formulario/objeto
+                enviar_buzon_cliente(
+                    nombre=form.nombre.data,
+                    email_destino=form.correo.data,
+                    mensaje_original=form.mensaje.data,
+                    dominio=dominio
+                    )
+            except Exception as e:
+                print(f"Error enviando acuse: {e}")
+    
             return redirect(url_for('inicio', _anchor='buzon'))
 
         except Exception as e:
@@ -382,6 +459,7 @@ def inicio():
             
     return render_template('index.html', form=form, noticias=Noticia.query.all())
 
+# -----------------------------------------------
 @app.route('/ver-documento/<filename>')
 def ver_documento(filename):
     folder = os.path.join(app.root_path, 'static', 'uploads', 'matriculas_docs')
@@ -390,22 +468,220 @@ def ver_documento(filename):
     if not os.path.exists(os.path.join(folder, filename)):
         return "Archivo no encontrado", 404
 
+    # 2. DETECCIÓN DINÁMICA DEL TIPO DE ARCHIVO (MIME)
+    # mimetypes.guess_type devuelve algo como ('application/pdf', None)
+    mime_type, _ = mimetypes.guess_type(file_path)
+    
+    # Si no logra adivinarlo, por seguridad usamos binario genérico
+    if not mime_type:
+        mime_type = 'application/octet-stream'
+
+    # 3. Preparar la respuesta
     response = make_response(send_from_directory(folder, filename))
     
-    # Estos encabezados son los que convencen a Chrome de mostrarlo
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline'
-    # Esta línea elimina restricciones de seguridad para el visor
+    # 4. CONFIGURACIÓN DINÁMICA
+    response.headers['Content-Type'] = mime_type
+    
+    # 'inline' intenta mostrarlo en el navegador (útil para PDFs e imágenes)
+    # Si es un Word (.docx), el navegador lo descargará automáticamente aunque diga inline
+    response.headers['Content-Disposition'] = f'inline; filename="{filename}"'
+    
+    # Seguridad y visualización
     response.headers['X-Frame-Options'] = 'ALLOWALL' 
     
     return response
 
 @app.route('/admin/buzon-general')
-# @login_required  <-- Descomenta esto si usas LoginManager
+@login_required
+@requiere_rol(['admin', 'administrador'])
 def buzon_general():
-    # Filtramos solo las que son de tipo 'general'
+    # Obtenemos las consultas generales ordenadas por fecha
     consultas = Buzon.query.filter_by(tipo_consulta='general').order_by(Buzon.fecha.desc()).all()
     return render_template('buzon.html', consultas=consultas)
+
+# Buzon privado (solo los loqueados)
+@app.route('/contacto/buzon-para-personal-de-la-institucion', methods=['GET', 'POST'])
+@login_required
+def buzon_privado():
+    form = BuzonAyudaForm()
+    
+    if form.validate_on_submit():
+        # Forzamos los datos del usuario logueado por seguridad
+        nombre_oficial = f"{current_user.nombre} {current_user.apellidos}"
+        correo_personal = form.correo.data
+        mensaje_texto = form.mensaje.data
+        
+        # Validación extra: asegurar que el mensaje lleva el nombre
+        prefijo = f"{current_user.correo_institucional} dice: "
+        if not mensaje_texto.startswith(prefijo):
+            mensaje_texto = prefijo + mensaje_texto
+
+        archivo = form.archivo.data
+        ruta_archivo = None
+
+        if archivo:
+            filename = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{archivo.filename}")
+            folder = os.path.join(app.root_path, 'static', 'uploads', 'matriculas_docs')
+            if not os.path.exists(folder): os.makedirs(folder)
+            archivo.save(os.path.join(folder, filename))
+            ruta_archivo = filename
+
+        try:
+            nueva_consulta = Buzon(
+                tipo_consulta='general', # Forzado a general
+                nombre=nombre_oficial,   # Nombre real de la cuenta
+                correo=correo_personal,  # Correo personal introducido
+                mensaje=mensaje_texto,
+                archivo=ruta_archivo,
+                fecha=datetime.now()
+            )
+            db.session.add(nueva_consulta)
+            db.session.commit()
+
+            # Enviar el email de acuse
+            dominio = request.host_url.rstrip('/')
+            enviar_buzon_cliente(nombre_oficial, correo_personal, mensaje_texto, dominio)
+
+            flash("Tu consulta institucional ha sido enviada.", "success")
+            return redirect(url_for('buzon_privado'))
+        except Exception as e:
+            db.session.rollback()
+            flash("Error al procesar la solicitud.", "danger")
+
+    return render_template('buzon_privado.html', form=form)
+
+# CORREOS DEL BUZON GENERAL
+
+def responder_buzon_cliente(consulta, texto_respuesta, ruta_adjunto, dominio):
+    """
+    Envía la respuesta del administrador al cliente usando el diseño 
+    institucional de la UNGE y permitiendo adjuntos.
+    """
+    msg = MIMEMultipart('mixed') # Usamos 'mixed' para soportar adjuntos correctamente
+    msg['From'] = f"Buzón de consultas <{CORREO_MATRICULAS_USER}>"
+    msg['To'] = consulta.correo
+    msg['Subject'] = f"Respuesta a su consulta #{consulta.id} - UNGE"
+
+    # Cuerpo del correo en HTML (Adaptado del diseño de activación)
+    html_content = f"""
+    <html>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            
+            <tr>
+                <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
+                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td style="padding: 20px 40px; text-align: center; background-color: #1a237e;">
+                    <h2 style="color: #ffffff; margin: 0; font-size: 18px; font-weight: 300; letter-spacing: 1px; text-transform: uppercase;">Respuesta a su Consulta</h2>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 40px 40px 20px 40px;">
+                    <p style="font-size: 18px; color: #2c3e50; margin-bottom: 25px;">Estimado/a <strong>{consulta.nombre}</strong>,</p>
+                    
+                    <div style="font-size: 15px; color: #455a64; line-height: 1.8; margin-bottom: 25px; white-space: pre-line;">
+                        {texto_respuesta}
+                    </div>
+
+                    <div style="background-color: #f8f9fa; border-radius: 10px; padding: 20px; border-left: 4px solid #ff6f00; margin-bottom: 30px;">
+                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #90a4ae; font-weight: bold; text-transform: uppercase;">Referencia de su consulta original:</p>
+                        <p style="margin: 0; font-size: 13px; color: #546e7a; font-style: italic;">"{consulta.mensaje[:100]}..."</p>
+                    </div>
+
+                    <p style="font-size: 14px; color: #2c3e50; font-weight: bold; margin-bottom: 5px;">Atentamente,</p>
+                    <p style="font-size: 14px; color: #1a237e; margin: 0;">Administración Académica - UNGE</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
+                    <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
+                        <strong>Buzón de consultas - Facultad de Ciencias de la Salud</strong><br>
+                        Campus de Bata, Guinea Ecuatorial<br>
+                        Puede responder a ese correo, si lo ve necesario.
+                    </p>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    # Adjuntamos el HTML al mensaje
+    msg.attach(MIMEText(html_content, 'html'))
+
+    # PROCESO DE ARCHIVO ADJUNTO (Si existe)
+    if ruta_adjunto and os.path.exists(ruta_adjunto):
+        try:
+            with open(ruta_adjunto, "rb") as attachment:
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(attachment.read())
+            
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f"attachment; filename={os.path.basename(ruta_adjunto)}",
+            )
+            msg.attach(part)
+        except Exception as e:
+            print(f"Error al procesar el archivo adjunto: {e}")
+
+    # ENVÍO MEDIANTE SERVIDOR SMTP
+    try:
+        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
+        # server.starttls() # Descomenta si tu servidor requiere TLS
+        server.login(CORREO_MATRICULAS_USER, CORREO_MATRICULAS_PASS)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Error crítico en el envío del buzón: {e}")
+        return False
+
+# Para responer al buzon
+@app.route('/admin/responder-consulta/<int:id>', methods=['POST'])
+@login_required
+def responder_consulta(id):
+    consulta = Buzon.query.get_or_404(id)
+    texto_respuesta = request.form.get('respuesta')
+    archivo = request.files.get('adjunto_admin')
+    
+    ruta_adjunto_absoluta = None
+    
+    if archivo and archivo.filename != '':
+        # Guardamos físicamente el archivo
+        ruta_relativa = guardar_archivo(archivo, 'respuestas_admin')
+        # Convertimos a ruta absoluta para que smtplib lo encuentre
+        ruta_adjunto_absoluta = os.path.join(STATIC_DIR, ruta_relativa)
+
+    dominio = request.host_url.rstrip('/')
+    
+    # Enviamos el correo con el diseño institucional
+    exito = responder_buzon_cliente(
+        consulta=consulta,
+        texto_respuesta=texto_respuesta,
+        ruta_adjunto=ruta_adjunto_absoluta, 
+        dominio=dominio
+    )
+
+    if exito:
+        # CAMBIO CLAVE: Marcamos como leída en la base de datos
+        consulta.leido = True
+        db.session.commit()
+        flash(f"Respuesta enviada con éxito a {consulta.correo}", "success")
+    else:
+        flash("Hubo un error al enviar el correo.", "danger")
+
+    return redirect(url_for('buzon_general'))
+#---------------------------------------------------------------------
 
 @app.route('/login')
 def login_page():
@@ -420,9 +696,71 @@ def noticias_page():
     noticias = Noticia.query.order_by(Noticia.fecha.desc()).all()
     return render_template("lista_noticia.html", noticias=noticias)
 
-@app.route('/contacto')
-def contacto_page():
-    return render_template('contacto.html')
+@app.route('/contacto', methods=['GET', 'POST'])
+def contacto():
+    form = BuzonAyudaForm()
+    
+    if request.method == 'POST':
+        # Forzamos los valores internos para que Flask-WTF no dé error de validación
+        form.tipo_consulta.data = 'general'
+        form.dip.data = 'Invitado sin dip'
+        
+        if form.validate_on_submit():
+            # Identificador para el prefijo del mensaje
+            identificador = current_user.correo_institucional if current_user.is_authenticated else "Invitado"
+            
+            mensaje_texto = form.mensaje.data
+            prefijo = f"{identificador} dice: "
+            
+            if not mensaje_texto.startswith(prefijo):
+                mensaje_texto = prefijo + mensaje_texto
+
+            # Manejo de archivo
+            archivo = form.archivo.data
+            ruta_archivo = None
+            if archivo:
+                filename = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{archivo.filename}")
+                folder = os.path.join(app.root_path, 'static', 'uploads', 'matriculas_docs')
+                if not os.path.exists(folder): os.makedirs(folder)
+                archivo.save(os.path.join(folder, filename))
+                ruta_archivo = filename
+
+            try:
+                nueva_consulta = Buzon(
+                    tipo_consulta='general', # Valor directo
+                    nombre=form.nombre.data,
+                    correo=form.correo.data,
+                    mensaje=mensaje_texto,
+                    archivo=ruta_archivo,
+                    fecha=datetime.now()
+                )
+                db.session.add(nueva_consulta)
+                db.session.commit()
+
+                # 2. LLAMADA A TU FUNCIÓN (Notificación por Correo)
+                # Usamos el correo del admin o de la institución como destino
+                email_institucion = "admin@unge.gq" # O el correo que desees
+                dominio_url = request.host_url # Obtiene el dominio actual (ej: http://127.0.0.1:5000/)
+
+                enviar_buzon_cliente(
+                    nombre=form.nombre.data,
+                    email_destino=email_institucion,
+                    mensaje_original=form.mensaje.data,
+                    dominio=dominio_url
+                )
+                
+                flash("Tu mensaje ha sido enviado correctamente.", "success")
+                return redirect(url_for('contacto'))
+            except Exception as e:
+                db.session.rollback()
+                print(f"Error DB: {e}") # Para depuración
+                flash("Error al guardar en la base de datos.", "danger")
+        else:
+            # Si falla la validación, imprimimos los errores en consola para ver qué falta
+            print(f"Errores del formulario: {form.errors}")
+            flash("Por favor, rellena todos los campos obligatorios.", "warning")
+
+    return render_template('contacto.html', form=form)
 
 
 @app.route('/requisitos')
@@ -439,6 +777,7 @@ def calendario_page():
 
 @app.route('/perfil')
 @login_required
+@requiere_rol(['estudiante'])
 def perfil_page():
     return redirect(url_for('ver_perfil', usuario_id=current_user.id))
 
@@ -494,6 +833,14 @@ def api_login():
             'mensaje': 'Correo institucional no registrado o incorrecto'
         }), 404
 
+    # --- AGREGAR ESTO ---
+    if usuario.activar_desactivar == 'desactivar':
+        return jsonify({
+            'ok': False,
+            'mensaje': 'Su cuenta ha sido desactivada por la administración. Contacte con soporte TIC.'
+        }), 403
+    # --------------------
+
     # 1. VERIFICACIÓN DE CUENTA ACTIVA (Control Disciplinario)
     if not getattr(usuario, 'activo', True): # Si 'activo' es False, bloqueamos
         return jsonify({
@@ -508,7 +855,7 @@ def api_login():
         db.session.commit()
         return jsonify({
             'ok': False,
-            'mensaje': 'Su periodo de acceso ha expirado. Debe renovar su cuenta con el directivo.'
+            'mensaje': 'Su periodo de acceso ha expirado. Debe renovar su cuenta, ponte en contado con el administrador.'
         }), 403
 
     # --- NUEVA VALIDACIÓN DE ROL ---
@@ -564,7 +911,6 @@ def usuario_sesion():
 
 # 1. Obtener eventos (Para que aparezcan al cargar el calendario)
 @app.route('/api/eventos', methods=['GET'])
-@login_required
 def get_eventos():
     try:
         eventos = Evento.query.all()
@@ -684,7 +1030,7 @@ def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
     carrera_alumno = solicitud.carrera
 
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Secretaría Académica UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Seccción TIC <{CORREO_MATRICULAS_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "¡Solicitud Admitida! - Código de Activación de Cuenta"
 
@@ -700,7 +1046,7 @@ def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
                     <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Facultad de Ciencias de la Salud</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
 
@@ -741,7 +1087,7 @@ def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Secretaría Académica - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
                         Este es un mensaje automático, por favor no responda a este correo.
                     </p>
@@ -764,6 +1110,7 @@ def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
         return False
 
 
+
 # NO ENVIAR CODIGO DE ESTUDIANTE SI COMPROBANTE DE MATRICULA NO ESTÁ APROBADO
 def enviar_rechazo_solicitud(solicitud, motivo, dominio):
     """
@@ -775,7 +1122,7 @@ def enviar_rechazo_solicitud(solicitud, motivo, dominio):
     carrera_alumno = solicitud.carrera
 
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Secretaría Académica UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC <{CORREO_MATRICULAS_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "Acción Requerida: Revisión de su Solicitud de Matrícula"
 
@@ -788,7 +1135,7 @@ def enviar_rechazo_solicitud(solicitud, motivo, dominio):
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
                     <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Facultad de Ciencias de la Salud</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
 
@@ -824,7 +1171,7 @@ def enviar_rechazo_solicitud(solicitud, motivo, dominio):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Secretaría Académica - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
                         Este es un mensaje automático, por favor no responda a este correo.
                     </p>
@@ -1278,6 +1625,7 @@ def save_cover_image(foto):
 
 # Ver perfil
 @app.route('/perfil/<int:user_id>')
+@login_required
 def ver_perfil(user_id):
     usuario = Usuario.query.get_or_404(user_id)
     if not usuario:
@@ -1667,6 +2015,10 @@ def biblioteca_digitales():
 @requiere_login
 def biblioteca_eliminar(item_id):
     item = Biblioteca.query.get_or_404(item_id)
+    # Verificamos si el usuario es el dueño o es un administrador
+    if item.usuario_id != current_user.id and current_user.rol != 'admin':
+        flash('No tienes permiso para eliminar este recurso.', 'danger')
+        return redirect(url_for('biblioteca_digitales'))
     db.session.delete(item)
     db.session.commit()
     return redirect(url_for('biblioteca_digitales'))
@@ -1675,7 +2027,8 @@ def biblioteca_eliminar(item_id):
 # CREAR o EDITAR LIBRO/TFG
 @app.route('/biblioteca/editar', methods=['GET', 'POST'])
 @app.route('/biblioteca/editar/<int:item_id>', methods=['GET', 'POST'])
-@requiere_login
+@login_required
+@requiere_rol(['admin', 'bibliotecario'])
 def biblioteca_editar(item_id=None):
 
     item = Biblioteca.query.get(item_id) if item_id else None
@@ -1749,7 +2102,7 @@ def biblioteca_editar(item_id=None):
                 enlace=enlace,
                 tipo_libro=form.tipo_libro.data,
                 publico=bool(form.publico.data),
-                usuario_id=session['usuario_id'],
+                usuario_id=current_user.id,
                 portada=portada_filename,
                 titulacion=form.titulacion.data if form.tipo_libro.data == "tfg" else None
             )
@@ -1769,7 +2122,8 @@ def biblioteca_editar(item_id=None):
 
 # Agregar libro físico
 @app.route('/biblioteca/fisicos/agregar', methods=['GET', 'POST'])
-@requiere_login
+@login_required
+@requiere_rol(['admin', 'bibliotecario'])
 def agregar_libro_fisico():
     form = LibroFisicoForm()
     
@@ -1795,7 +2149,7 @@ def agregar_libro_fisico():
             tipo='fisico',          # Obligatorio para la DB
             tipo_libro='fisico',    # Marca que es libro físico
             portada=portada_filename, # Nombre de archivo
-            usuario_id=session['usuario_id'],
+            usuario_id=current_user.id,
             publico=True             # Opcional, por defecto público
         )
 
@@ -1809,8 +2163,11 @@ def agregar_libro_fisico():
 
 # Eliminar libro físico
 @app.route('/biblioteca/fisicos/eliminar/<int:item_id>', methods=['POST'])
-@requiere_login
+@login_required
 def eliminar_libro_fisico(item_id):
+    if current_user.rol != 'admin':
+        flash('Acceso denegado: Solo el personal administrativo puede eliminar libros físicos.', 'danger')
+        return redirect(url_for('biblioteca_fisicos'))
     libro = Biblioteca.query.get_or_404(item_id)
     # Opcional: eliminar archivo de portada del disco
     if libro.portada:
@@ -1825,7 +2182,7 @@ def eliminar_libro_fisico(item_id):
 # Editar libro fisico
 # Editar libro físico
 @app.route('/biblioteca/fisicos/editar/<int:item_id>', methods=['GET', 'POST'])
-@requiere_login
+@login_required
 def editar_libro_fisico(item_id):
     libro = Biblioteca.query.get_or_404(item_id)
     form = LibroFisicoForm(obj=libro)  # Carga los datos actuales en el formulario
@@ -2222,52 +2579,50 @@ def exportar_matriculas():
 # ========================================================
 
 # Estructura de un mensaje si la matricula es aceptada. GMAIL/OUTLOOK
+
 def enviar_confirmacion_matricula(solicitud, dominio):
     """
-    Envía un correo de admisión con diseño institucional.
-    Usa el objeto 'solicitud' para obtener los datos reales de la BD.
+    Envía un correo de admisión usando Flask-Mail y Outlook.
     """
-    # Extraemos los datos del objeto solicitud
+    # 1. Preparación de datos
     email_destino = solicitud.email
     nombre_alumno = f"{solicitud.nombre} {solicitud.apellidos}"
     id_solicitud = solicitud.id
     dni_alumno = solicitud.dni_numero
     carrera_alumno = solicitud.carrera
+    tipo_estudiante = solicitud.tipo_estudiante
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"Secretaría Académica UNGE <{CORREO_MATRICULAS_USER}>"
-    msg['To'] = email_destino
-    msg['Subject'] = f"¡FELICIDADES! Has sido admitido en la UNGE - Ref: {id_solicitud}"
+    # 2. Creación del objeto Message de Flask-Mail
+    # No hace falta configurar servidor/puerto aquí, ya lo toma del app.config
+    msg = Message(
+        subject=f"¡FELICIDADES! Has sido admitido en la UNGE - Ref: {id_solicitud}",
+        recipients=[email_destino],
+        # El sender debe ser el de Secretaría configurado en app.config
+    )
 
-    # Construcción del HTML con un bloque de mensaje elegante
-    html_content = f"""
+    # 3. Construcción del HTML (Tu diseño elegante se mantiene igual)
+    msg.html = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
                     <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Facultad de Ciencias de la Salud</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
-
             <tr>
                 <td style="padding: 20px 40px; text-align: center; background-color: #1a237e;">
                     <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 300;">¡ADMISIÓN CONFIRMADA!</h2>
                 </td>
             </tr>
-
             <tr>
                 <td style="padding: 40px 40px 20px 40px;">
                     <p style="font-size: 18px; color: #2c3e50; margin-bottom: 25px;">Estimado/a <strong>{nombre_alumno}</strong>,</p>
-                    
                     <p style="font-size: 15px; color: #546e7a; line-height: 1.6; margin-bottom: 25px;">
-                        Es un placer para nosotros informarle que, tras la revisión exhaustiva de su expediente académico y documentación presentada, 
-                        ha sido formalmente <strong>ACEPTADO</strong> para cursar estudios en nuestra institución.
+                        Es un placer para nosotros informarle que ha sido formalmente <strong>ACEPTADO</strong> para cursar estudios en nuestra institución.
                     </p>
-
                     <div style="background-color: #f8fafb; border-radius: 10px; padding: 25px; border-left: 5px solid #ff6f00; margin-bottom: 30px;">
                         <table width="100%" style="font-size: 14px; color: #37474f;">
                             <tr>
@@ -2276,7 +2631,7 @@ def enviar_confirmacion_matricula(solicitud, dominio):
                             </tr>
                             <tr>
                                 <td style="padding-bottom: 10px;"><strong>TIPO DE MATRÍCULA:</strong></td>
-                                <td style="padding-bottom: 10px; text-align: right; color: #ff6f00;">{solicitud.tipo_estudiante}</td>
+                                <td style="padding-bottom: 10px; text-align: right; color: #ff6f00;">{tipo_estudiante}</td>
                             </tr>
                             <tr>
                                 <td style="padding-bottom: 10px;"><strong>DOCUMENTO IDENTIDAD:</strong></td>
@@ -2288,26 +2643,19 @@ def enviar_confirmacion_matricula(solicitud, dominio):
                             </tr>
                         </table>
                     </div>
-
-                    <p style="font-size: 14px; color: #455a64; margin-bottom: 30px; text-align: center;">
-                        Para completar su proceso de matriculación, debe descargar su <strong>Resguardo de Admisión</strong> y presentarlo en la secretaría Edi. II de la Facultad para el pago de tasas.
-                    </p>
-
                     <div style="text-align: center; margin: 20px 0 40px 0;">
                         <a href="{dominio}/descargar-admision/{id_solicitud}" 
-                           style="background-color: #ff6f00; color: #ffffff; padding: 18px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block; box-shadow: 0 4px 6px rgba(255,111,0,0.2);">
-                           OBTENER MI RESGUARDO DE ADMISIÓN
+                           style="background-color: #ff6f00; color: #ffffff; padding: 18px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block;">
+                            OBTENER MI RESGUARDO DE ADMISIÓN
                         </a>
                     </div>
                 </td>
             </tr>
-
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
-                    <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
+                    <p style="margin: 0; color: #78909c; font-size: 12px;">
                         <strong>Secretaría Académica - Facultad de Ciencias de la Salud</strong><br>
-                        Campus de Bata, Guinea Ecuatorial<br>
-                        Este es un mensaje automático, por favor no responda a este correo.
+                        Este es un mensaje automático, por favor no responda.
                     </p>
                 </td>
             </tr>
@@ -2316,50 +2664,51 @@ def enviar_confirmacion_matricula(solicitud, dominio):
     </html>
     """
     
-    msg.attach(MIMEText(html_content, 'html'))
-
+    # 4. Envío real con Flask-Mail
     try:
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
-        server.send_message(msg)
-        server.quit()
+        mail.send(msg)
         return True
     except Exception as e:
-        print(f"Error al enviar correo: {e}")
+        # Si falla aquí usando Outlook, revisa la "Actividad Reciente" en la web de Outlook
+        print(f"Error al enviar correo vía Outlook: {e}")
         return False
 
 # --------------------------------------------------------------------------
 # Mensaje automatico que se recibe tras solicitar matricula
 def enviar_acuse_recibo(solicitud, dominio):
     """
-    Envía un correo de confirmación de recepción con el diseño institucional.
-    Usa el objeto 'solicitud' para mantener la coherencia con enviar_confirmacion_matricula.
+    Envía un correo de confirmación de recepción profesional.
+    Logo incrustado (CID) y transparente para evitar repeticiones al final.
     """
+    # 1. Preparación de datos
     email_destino = solicitud.email
     nombre_alumno = f"{solicitud.nombre} {solicitud.apellidos}"
     id_solicitud = solicitud.id
     carrera_alumno = solicitud.carrera
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"Secretaría Académica UNGE <{CORREO_MATRICULAS_USER}>"
-    msg['To'] = email_destino
-    msg['Subject'] = f"Solicitud de Matrícula Recibida - Ref: {id_solicitud}"
+    # 2. Creación del objeto Message
+    msg = Message(
+        subject=f"Solicitud de Matrícula Recibida - Ref: {id_solicitud}",
+        recipients=[email_destino]
+    )
 
-    html_content = f"""
+    # 3. Diseño del contenido HTML
+    msg.html = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="cid:logo_fcs" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Facultad de Ciencias de la Salud</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
 
             <tr>
                 <td style="padding: 20px 40px; text-align: center; background-color: #1a237e;">
-                    <h2 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 300; letter-spacing: 1px;">SOLICITUD RECIBIDA</h2>
+                    <h2 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 300; letter-spacing: 1px;">MATRÍCULA RECIBIDA</h2>
                 </td>
             </tr>
 
@@ -2368,7 +2717,7 @@ def enviar_acuse_recibo(solicitud, dominio):
                     <p style="font-size: 18px; color: #2c3e50; margin-bottom: 25px;">Estimado/a <strong>{nombre_alumno}</strong>,</p>
                     
                     <p style="font-size: 15px; color: #546e7a; line-height: 1.6; margin-bottom: 25px;">
-                        Le confirmamos que hemos recibido correctamente sus datos y documentos para la inscripción en la carrera de <strong>{carrera_alumno}</strong>. 
+                        Le confirmamos que hemos recibido correctamente sus datos para la inscripción en la carrera de <strong>{carrera_alumno}</strong>. 
                         Su solicitud ha entrado en fase de revisión por parte de la Secretaría Académica.
                     </p>
 
@@ -2383,19 +2732,19 @@ def enviar_acuse_recibo(solicitud, dominio):
                                 <td style="padding-bottom: 10px; text-align: right; color: #ff6f00; font-weight: bold;">En Revisión</td>
                             </tr>
                             <tr>
-                                <td><strong>CARRERA SOLICITADA:</strong></td>
-                                <td style="text-align: right; color: #1a237e;">{carrera_alumno}</td>
+                                <td style="padding-bottom: 10px;"><strong>CARRERA SOLICITADA:</strong></td>
+                                <td style="padding-bottom: 10px; text-align: right; color: #1a237e;">{carrera_alumno}</td>
                             </tr>
                         </table>
                     </div>
 
                     <p style="font-size: 14px; color: #455a64; margin-bottom: 30px; line-height: 1.6;">
                         <strong>¿Qué sigue ahora?</strong><br>
-                        Nuestro equipo verificará que toda la documentación cargada sea legible y válida. Una vez finalizada la revisión, recibirá un nuevo correo electrónico indicando si su solicitud ha sido <strong>admitida</strong> o si requiere alguna corrección.
+                        Nuestro equipo verificará que toda la documentación cargada sea legible y válida. Recibirá un nuevo correo electrónico indicando si su solicitud ha sido <strong>admitida</strong> o si requiere alguna corrección.
                     </p>
 
                     <p style="font-size: 13px; color: #78909c; text-align: center; font-style: italic;">
-                        No es necesario que realice ninguna otra acción por el momento.
+                        No es necesario realizar ninguna otra acción por el momento.
                     </p>
                 </td>
             </tr>
@@ -2405,7 +2754,7 @@ def enviar_acuse_recibo(solicitud, dominio):
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
                         <strong>Secretaría Académica - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
-                        Este es un mensaje automático, por favor no responda a este correo.
+                        Este es un mensaje automático, por favor no responda.
                     </p>
                 </td>
             </tr>
@@ -2413,17 +2762,29 @@ def enviar_acuse_recibo(solicitud, dominio):
     </body>
     </html>
     """
-    
-    msg.attach(MIMEText(html_content, 'html'))
 
+    # 4. Lógica de imagen incrustada (Optimizado para PNG Transparente)
+    # 4. Lógica de imagen incrustada "invisible" como adjunto
     try:
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
-        server.send_message(msg)
-        server.quit()
+        with app.open_resource("static/img/logo_unge.png") as fp:
+            msg.attach(
+                filename=None,           # Al no tener nombre, muchos clientes no lo listan abajo
+                content_type="image/png", 
+                data=fp.read(), 
+                disposition="inline", 
+                headers={
+                    "Content-ID": "<logo_fcs>",
+                    "Content-Disposition": "inline" # Reforzamos la instrucción aquí
+                }
+            )
+        
+        mail.send(msg)
+        print(f"✅ Acuse enviado a {email_destino} - Logo forzado como inline")
         return True
     except Exception as e:
-        print(f"Error al enviar acuse de recibo: {e}")
+        print(f"❌ Error: {e}")
         return False
+
 
 # -----------------------------------------------------------------
 # GENERAR EN DOCUMENTOS DESCARGABLES LA INFORMACION DE LOS USUARIOS
@@ -2497,21 +2858,24 @@ def generar_pdf_admision(solicitud):
 
 #-------------------------------------------------------------------
 # FUNCION PARA LA DOCUMENTACION INCOMPLETA. MATRICULA-SECRETARIA
+
 def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
     """
     Envía un correo informando que la documentación es incorrecta.
-    Permite incluir una nota del administrador explicando el error.
+    Mantiene el diseño HTML original y usa Flask-Mail para Outlook.
     """
     email_destino = solicitud.email
     nombre_alumno = f"{solicitud.nombre} {solicitud.apellidos}"
     id_solicitud = solicitud.id
 
-    msg = MIMEMultipart('alternative')
-    msg['From'] = f"Secretaría Académica UNGE <{CORREO_MATRICULAS_USER}>"
-    msg['To'] = email_destino
-    msg['Subject'] = f"ACCIÓN REQUERIDA: Documentación Incompleta - Ref: {id_solicitud}"
+    # Creamos el objeto mensaje de Flask-Mail
+    msg = Message(
+        subject=f"ACCIÓN REQUERIDA: Documentación Incompleta - Ref: {id_solicitud}",
+        recipients=[email_destino]
+    )
 
-    html_content = f"""
+    # Pegamos tu HTML original exactamente igual
+    msg.html = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
@@ -2520,7 +2884,7 @@ def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
                     <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Facultad de Ciencias de la Salud</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
 
@@ -2554,7 +2918,7 @@ def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="{dominio}/solicitar-matricula" 
                            style="background-color: #1a237e; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; display: inline-block;">
-                            VOLVER AL FORMULARIO DE MATRÍCULA
+                             VOLVER AL FORMULARIO DE MATRÍCULA
                         </a>
                     </div>
                 </td>
@@ -2563,7 +2927,7 @@ def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Secretaría Académica - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Secretaría Académica Edificio II - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
                         Si tiene dudas, por favor contacte con nosotros directamente.
                     </p>
@@ -2573,16 +2937,13 @@ def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
     </body>
     </html>
     """
-    
-    msg.attach(MIMEText(html_content, 'html'))
 
     try:
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
-        server.send_message(msg)
-        server.quit()
+        # Usamos el objeto 'mail' inicializado en la app para enviar por Outlook
+        mail.send(msg)
         return True
     except Exception as e:
-        print(f"Error al enviar aviso de revisión: {e}")
+        print(f"Error al enviar aviso de revisión vía Outlook: {e}")
         return False
 # ----------------------------------------------------------------
 
@@ -2722,10 +3083,6 @@ def importar_notas():
 # ==========================================================
 # PANEL OFICIAL PARA PROFESORES
 # ==========================================================
-# Un estudiante no puede entrar
-@app.errorhandler(403)
-def access_denied(error):
-    return render_template('errors/403.html'), 403
 
 
 
@@ -3341,7 +3698,7 @@ def admin_profesor_rechazar(id):
 # Mensaje automático tras hacer el registro (Estructura Original Mantenida)
 def enviar_correo_recepcion_profesor(profesor, dominio):
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Recursos Humanos UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
     # Usamos el correo personal que el aspirante acaba de registrar
     msg['To'] = profesor.correo_personal
     msg['Subject'] = f"Solicitud de Registro Recibida - Ref: {profesor.id}"
@@ -3352,13 +3709,14 @@ def enviar_correo_recepcion_profesor(profesor, dominio):
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
+                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #1a237e; font-weight: bold;">Departamento de Recursos Humanos</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
             <tr>
                 <td style="padding: 20px 40px; text-align: center; background-color: #ff6f00;">
-                    <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 300;">SOLICITUD EN REVISIÓN</h2>
+                    <h2 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 300;">SOLICITUD RECIBIDA</h2>
                 </td>
             </tr>
             <tr>
@@ -3381,8 +3739,12 @@ def enviar_correo_recepcion_profesor(profesor, dominio):
                 </td>
             </tr>
             <tr>
-                <td style="background-color: #eceff1; padding: 30px; text-align: center;">
-                    <p style="margin: 0; color: #78909c; font-size: 12px;"><strong>UNGE - Gestión de Profesorado</strong><br>Este es un mensaje automático.</p>
+                <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
+                    <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
+                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
+                        Campus de Bata, Guinea Ecuatorial<br>
+                        Este es un mensaje automático, por favor no responda a este correo.
+                    </p>
                 </td>
             </tr>
         </table>
@@ -3404,7 +3766,7 @@ def enviar_correo_recepcion_profesor(profesor, dominio):
 # Correo de activacion de la cuenta (Estructura Original Mantenida)
 def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Soporte Técnico UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
     # IMPORTANTE: Se envía al correo personal para que pueda verlo y activar
     msg['To'] = aspirante.correo_personal
     msg['Subject'] = "¡ALTA CONFIRMADA! Active su Cuenta de Docente"
@@ -3418,8 +3780,9 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
+                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #28a745; font-weight: bold;">Validación de Identidad Docente</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
             <tr>
@@ -3448,8 +3811,12 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
                 </td>
             </tr>
             <tr>
-                <td style="background-color: #eceff1; padding: 30px; text-align: center;">
-                    <p style="margin: 0; color: #78909c; font-size: 11px;">Este código es de un solo uso. Si no reconoce esta solicitud, contacte con soporte técnico.</p>
+                <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
+                    <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
+                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
+                        Campus de Bata, Guinea Ecuatorial<br>
+                        Este es un mensaje automático, por favor no responda a este correo.
+                    </p>
                 </td>
             </tr>
         </table>
@@ -3470,7 +3837,7 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
 # REGISTRO RECHAZADO
 def enviar_rechazo_profesor(usuario, motivo, dominio):
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Recursos Humanos UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
     msg['To'] = usuario.correo
     msg['Subject'] = "IMPORTANTE: Solicitud de Registro Denegada"
 
@@ -3484,8 +3851,9 @@ def enviar_rechazo_profesor(usuario, motivo, dominio):
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <h1 style="margin: 0; font-size: 14px; color: #b71c1c; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #b71c1c; font-weight: bold;">Departamento de Recursos Humanos</p>
+                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
             <tr>
@@ -3517,8 +3885,12 @@ def enviar_rechazo_profesor(usuario, motivo, dominio):
                 </td>
             </tr>
             <tr>
-                <td style="background-color: #eceff1; padding: 30px; text-align: center;">
-                    <p style="margin: 0; color: #78909c; font-size: 11px;">UNGE - Sistema de Gestión de Credenciales</p>
+                <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
+                    <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
+                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
+                        Campus de Bata, Guinea Ecuatorial<br>
+                        Este es un mensaje automático, por favor no responda a este correo.
+                    </p>
                 </td>
             </tr>
         </table>
@@ -3951,18 +4323,55 @@ def eliminar_carpeta(id):
 # ==========================================================
 # PANEL PARA DIRECTIVOS
 # ==========================================================
+# Reportar error
+@app.errorhandler(403)
+def error_403(e):
+    return render_template('acceso_denegado.html'), 403
 
 # PANEL ADMINISTRATIVO
 @app.route('/decano/panel')
 @requiere_login
-@requiere_rol('directivo') # Aquí usamos el rol directivo que definiste antes
+@requiere_rol('directivo') 
 def directivo_panel():
-    # Datos del decano para mostrar en las credenciales
-    datos_decano = Profesor.query.filter_by(usuario_id=current_user.id).first()
+    # 1. Buscamos el registro del directivo asociado al usuario actual
+    info_directivo = Directivo.query.filter_by(usuario_id=current_user.id).first()
 
-    # Contador de usuarios
+    # 2. Si no existe registro o el cargo no es el de Decano, denegamos acceso
+    if not info_directivo or info_directivo.cargo != 'Ilmo. Decano':
+        # Puedes redirigir a otra página o lanzar un error 403 (Prohibido)
+        abort(403) 
+
+    # 3. Si pasa la validación, cargamos sus datos de profesor para la credencial
+    datos_profesor = Profesor.query.filter_by(usuario_id=current_user.id).first()
     usuarios_total = Usuario.query.count()
-    return render_template('directivo_panel.html', d=datos_decano, usuarios_count=usuarios_total)
+
+    return render_template('directivo_panel.html', 
+                           d=datos_profesor, 
+                           directivo=info_directivo, 
+                           usuarios_count=usuarios_total)
+
+# PANEL DE VICEDECANATO
+@app.route('/vicedecanato/panel')
+@requiere_login
+@requiere_rol('directivo')
+def vicedecanato_panel():
+    # 1. Validamos que el cargo sea específicamente de Vicedecana
+    info_directivo = Directivo.query.filter_by(usuario_id=current_user.id).first()
+
+    if not info_directivo or info_directivo.cargo != 'Ilma. Vicedecana' and info_directivo.cargo != 'Ilmo. Vicedecano':
+        # Si intenta entrar el Decano u otro directivo, se le deniega el acceso
+        return abort(403)
+
+    # 2. Obtenemos sus datos profesionales de la tabla Profesor
+    datos_profesor = Profesor.query.filter_by(usuario_id=current_user.id).first()
+
+    # 3. Datos adicionales para el panel (puedes añadir más según necesites)
+    usuarios_total = Usuario.query.count()
+    
+    return render_template('directivo_panel.html', 
+                           d=datos_profesor, 
+                           directivo=info_directivo, 
+                           usuarios_count=usuarios_total)
 
 # VISTA DEL DIRECTIVO PANEL ADMINISTRAVIO
 @app.route('/panel/directivo/<int:directivo_id>')
@@ -4208,16 +4617,32 @@ def panel_admin():
     if current_user.rol not in ['admin', 'administrador']:
         return "Acceso denegado", 403
 
-    # Recolección de datos reales para el Dashboard
+    # 1. Definir el umbral de tiempo para considerar a alguien "Online" (5 minutos)
+    ahora = datetime.now()
+    hace_5_minutos = ahora - timedelta(minutes=5)
+
+    # DEBUG: Esto saldrá en tu terminal negra
+    print(f"Buscando conexiones después de: {hace_5_minutos}")
+    todos = Usuario.query.all()
+    for u in todos:
+        print(f"Usuario: {u.nombre} - Última: {u.ultima_conexion}")
+
+    # 2. Recolección de datos reales para las tarjetas (Stats)
     total_est = Usuario.query.filter_by(rol='estudiante').count()
     total_prof = Usuario.query.filter_by(rol='profesor').count()
     total_direc = Usuario.query.filter_by(rol='directivo').count()
     total_admin = Usuario.query.filter_by(rol='admin').count()
-    pendientes = 12  # Esto vendrá de tu tabla de inscripciones luego
-    buzon = 5       # Esto vendrá de tu tabla de mensajes/dudas
     
-    # Obtenemos los últimos 5 usuarios registrados para la tabla
-    ultimos = Usuario.query.order_by(Usuario.fecha_creacion.desc()).limit(5).all()
+    # 3. Conteo de usuarios conectados (basado en tu nueva columna)
+    online_count = Usuario.query.filter(Usuario.ultima_conexion >= hace_5_minutos).count()
+    
+    # 4. Datos estáticos para futuras implementaciones
+    pendientes = 12  # Inscripciones
+    buzon = 5       # Mensajes/Dudas
+    
+    # 5. Obtenemos TODOS los usuarios ordenados por los más recientes
+    # Quitamos el .limit() para que el buscador de JS pueda filtrar sobre toda la lista
+    usuarios_completos = Usuario.query.order_by(Usuario.fecha_creacion.desc()).all()
 
     return render_template('admin_panel.html', 
                            total_estudiantes=total_est,
@@ -4226,11 +4651,76 @@ def panel_admin():
                            total_administradores=total_admin,
                            solicitudes_pendientes=pendientes,
                            dudas_buzon=buzon,
-                           ultimos_usuarios=ultimos)
+                           usuarios_online=online_count, # Enviamos el conteo real
+                           ultimos_usuarios=usuarios_completos)
 
+# Actualizar sesion siempre en la db
+@app.before_request
+def update_last_seen():
+    if current_user.is_authenticated:
+        current_user.ultima_conexion = datetime.now()
+        db.session.commit() # ¡Esto es vital para que se guarde!
+
+# RUTA ADICIONAL: Para que el botón de Pausar/Activar funcione
+@app.route('/admin/toggle-status/<int:user_id>', methods=['POST'])
+@login_required
+@requiere_rol("admin")
+def toggle_status(user_id):
+    user = Usuario.query.get_or_404(user_id)
+    
+    if user.id == current_user.id:
+        return jsonify({"status": "error", "message": "No puedes pausar tu propia cuenta"}), 400
+    
+    try:
+        # Si cualquiera de los dos indica que está activo, lo desactivamos (Prioridad a la seguridad)
+        if user.activo == True or user.activar_desactivar == 'activar':
+            user.activo = False
+            user.activar_desactivar = 'desactivar'
+            estado_msg = "pausada"
+        else:
+            # Para activar, ambos deben estar en modo positivo
+            user.activo = True
+            user.activar_desactivar = 'activar'
+            estado_msg = "activada"
+            
+        db.session.commit()
+        return jsonify({
+            "status": "success", 
+            "message": f"La cuenta de {user.nombre} ahora está {estado_msg} en ambos registros."
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": "Error al actualizar base de datos"}), 500
+
+# Eliminar cuenta de forma definitiva
+@app.route('/admin/eliminar-usuario/<int:user_id>', methods=['DELETE'])
+@login_required
+@requiere_rol("admin")
+def eliminar_usuario(user_id):
+    # 1. Buscar al usuario
+    user = Usuario.query.get_or_404(user_id)
+    
+    # 2. Seguridad: No permitir que el admin se elimine a sí mismo
+    if user.id == current_user.id:
+        return jsonify({"message": "Acción no permitida"}), 400
+
+    try:
+        # Asumiendo que tu modelo de notificación se llama 'Notificacion'
+        Notificacion.query.filter_by(usuario_id=user_id).delete()
+        # 3. Eliminar de la base de datos
+        db.session.delete(user)
+        db.session.commit()
+        
+        # Devolvemos éxito (res.ok será true en el JS)
+        return jsonify({"message": "Usuario eliminado"}), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al eliminar: {str(e)}")
+        # Devolvemos error (res.ok será false en el JS)
+        return jsonify({"message": "Error de integridad: El usuario tiene datos vinculados"}), 500
 
 # SU RUTA PARA HACER LOGIN
-
 @app.route('/admin/login', methods=['GET', 'POST'])
 def login_admin():
 
@@ -4765,9 +5255,9 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
         url_btn = "mailto:soporte@unge.gq"
 
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Control Disciplinario UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
     msg['To'] = email_destino
-    msg['Subject'] = f"{titulo_banner} - Sistema Académico UNGE"
+    msg['Subject'] = f"{titulo_banner} - Sistema Académico FCS"
 
     html_content = f"""
     <html>
@@ -4776,9 +5266,9 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="90" style="display: block; margin-bottom: 15px;">
+                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Control Disciplinario y Académico</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
 
@@ -4813,9 +5303,9 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Vicerrectorado de Asuntos Académicos - UNGE</strong><br>
+                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
-                        <span style="font-size: 10px;">Este es un mensaje institucional generado automáticamente por el sistema de gestión.</span>
+                        Puede responder a ese correo, si lo ve necesario.
                     </p>
                 </td>
             </tr>
@@ -5121,6 +5611,37 @@ def delete_file():
     return jsonify({"status": "success", "message": "Archivo eliminado"})
 
 
+# Borrar archivo físico del servidor
+
+@app.route('/admin/api/eliminar-archivo-fisico', methods=['POST'])
+@login_required
+# @requiere_rol('admin') # Descomenta si usas este decorador
+def eliminar_archivo_fisico():
+    data = request.get_json()
+    ruta_relativa = data.get('ruta')
+    
+    if not ruta_relativa:
+        return jsonify({"status": "error", "message": "No se especificó la ruta"}), 400
+
+    # Construimos la ruta absoluta apuntando a tu carpeta static/uploads
+    # 'app.root_path' obtiene la ruta de tu proyecto automáticamente
+    base_path = os.path.join(app.root_path, 'static', 'uploads')
+    ruta_final = os.path.abspath(os.path.join(base_path, ruta_relativa))
+
+    # SEGURIDAD: Verificar que el archivo realmente esté dentro de static/uploads
+    # (Evita que alguien intente borrar archivos del sistema operativo usando ../../)
+    if not ruta_final.startswith(base_path):
+        return jsonify({"status": "error", "message": "Acceso denegado a esta ruta"}), 403
+
+    try:
+        if os.path.exists(ruta_final):
+            os.remove(ruta_final) # <--- Aquí ocurre la magia
+            return jsonify({"status": "success", "message": f"Archivo '{ruta_relativa}' eliminado."})
+        else:
+            return jsonify({"status": "error", "message": "El archivo no existe en el servidor."}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": f"Error al borrar: {str(e)}"}), 500
+
 # Devolver JSON para modificarlos (opcional)
 @app.route('/admin/api/get-record/<tabla>/<int:id>')
 def get_record(tabla, id):
@@ -5137,110 +5658,48 @@ def get_record(tabla, id):
     
     return jsonify(datos)
 
+
+# Modificar columnas de la db
 @app.route('/admin/api/update-record/<tabla>/<int:id>', methods=['POST'])
+@requiere_login
+@requiere_rol('admin') # Por seguridad, asegúrate de que solo admins editen
 def update_record(tabla, id):
     data = request.json
     model = next((m for m in db.Model.__subclasses__() if m.__tablename__ == tabla), None)
-    registro = model.query.get(id)
+    
+    if not model:
+        return jsonify({"status": "error", "message": "Tabla no encontrada"}), 404
+
+    # Usamos session.get (estilo moderno) en lugar de query.get
+    registro = db.session.get(model, id)
+    
+    if not registro:
+        return jsonify({"status": "error", "message": "Registro no encontrado"}), 404
     
     for key, value in data.items():
         if hasattr(registro, key):
+            # --- LIMPIEZA DE DATOS ---
+            
+            # 1. Corregir Booleanos enviados como texto (tu error actual)
+            if isinstance(value, str):
+                if value.lower() == 'true':
+                    value = True
+                elif value.lower() == 'false':
+                    value = False
+                # 2. Convertir strings vacíos a None (evita errores en fechas/números)
+                elif value.strip() == '':
+                    value = None
+            
             setattr(registro, key, value)
     
-    db.session.commit()
-    return jsonify({"status": "success"})
-
-#--------------------------------------------------\\
-# Cambiar contrasena
-@app.route('/admin/api/soporte/generar-recuperacion', methods=['POST'])
-@login_required
-def generar_recuperacion_soporte():
-    data = request.json
-    email_inst = data.get('email')
-    
-    # Buscamos al usuario por correo_institucional (asumiendo que tu modelo se llama Usuario)
-    usuario = Usuario.query.filter_by(correo_institucional=email_inst).first()
-    
-    if not usuario:
-        return jsonify({"status": "error", "message": "Usuario no encontrado"}), 404
-
-        # Verificamos si tiene el correo personal (llamado 'correo')
-    if not usuario.correo or "@" not in usuario.correo:
-        return jsonify({
-            "status": "error", 
-            "message": "El usuario no tiene un correo personal válido registrado para recibir el código."
-        }), 400
-
-    # Lógica: Generar un código temporal o resetear contraseña
-    nuevo_codigo = secrets.token_hex(4).upper() # Ejemplo: A1B2C3D4
-    
-    # Aquí puedes:
-    # 1. Guardar el código en la base de datos
-    # 2. Enviar un correo real al usuario
-    # 3. O simplemente devolverlo para que el Admin se lo de por teléfono
-    
-    return jsonify({
-        "status": "success", 
-        "message": f"Código generado: {nuevo_codigo}. Se ha enviado a {usuario.correo}."
-    })
-
-@app.route('/admin/api/delete-record/<tabla>/<int:id>', methods=['POST'])
-@login_required
-def delete_record_full(tabla, id):
-    # Buscar el modelo dinámicamente
-    model = next((m for m in db.Model.__subclasses__() if m.__tablename__ == tabla), None)
-    if not model:
-        return jsonify({"status": "error", "message": "Tabla no encontrada"}), 404
-    
-    registro = model.query.get(id)
-    if registro:
-        db.session.delete(registro)
-        db.session.commit()
-        return jsonify({"status": "success", "message": "Registro eliminado permanentemente"})
-    return jsonify({"status": "error", "message": "No se encontró el registro"}), 404
-# --------------------------------------------------
-# Recuperar cuentas con correos automaticos
-# --------------------------------------------------
-# Ruta para generar recuperación desde la consola
-# --------------------------------------------------
-@app.route('/amin/api/soporte/generar-recuperacion', methods=['POST'])
-def generar_recuperacion():
-    print(">>> PETICIÓN RECIBIDA") 
-    
     try:
-        data = request.get_json()
-        email = data.get('email')
-        print(f">>> Buscando en DB el correo personal: {email}")
-
-        # CAMBIO AQUÍ: Usamos 'correo' en lugar de 'correo_institucional'
-        usuario = Usuario.query.filter_by(correo=email).first()
-
-        if not usuario:
-            print(">>> Usuario no encontrado con ese correo personal")
-            return jsonify({"status": "error", "message": "Correo no registrado"}), 404
-
-        codigo = secrets.token_hex(3).upper() 
-        
-        # Guardar en DB
-        usuario.recovery_code = codigo
-        usuario.recovery_expire = datetime.utcnow() + timedelta(minutes=30)
         db.session.commit()
-
-        dominio = request.host_url.rstrip('/')
-        # Pasamos el usuario a la función de envío
-        exito = enviar_recuperacion_consola(usuario, codigo, dominio)
-
-        if exito:
-            return jsonify({"status": "success", "message": "Código enviado a MailHog"})
-        else:
-            return jsonify({"status": "error", "message": "Fallo en conexión SMTP"}), 500
-
+        return jsonify({"status": "success", "message": "Registro actualizado correctamente"})
     except Exception as e:
-        print(f">>> ERROR: {e}")
+        db.session.rollback()
+        print(f"Error al actualizar: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
-#------------------------------------------------------------------
+#--------------------------------------------------\\
 # Enviar correo de recuperacion
 def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
     """
@@ -5251,7 +5710,7 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
     nombre_usuario = f"{usuario.nombre} {usuario.apellidos}"
     
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Soporte IT UNGE <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Buzón de consultas <{CORREO_MATRICULAS_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "Restablecimiento de Acceso - Consola Administrativa"
 
@@ -5267,7 +5726,7 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
                     <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
-                    <p style="margin: 5px 0 0 0; font-size: 16px; color: #ff6f00; font-weight: bold;">Centro de Soporte Técnico</p>
+                    <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
 
@@ -5307,9 +5766,9 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Soporte IT - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Buzón de consultas - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
-                        Este es un mensaje automático del Sistema de Gestión UNGE.
+                        Puede responder a ese correo, si lo ve necesario.
                     </p>
                 </td>
             </tr>
@@ -5329,6 +5788,69 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
     except Exception as e:
         print(f"Error al enviar recuperación de cuenta: {e}")
         return False
+
+# Cambiar contrasena
+@app.route('/admin/api/soporte/generar-recuperacion', methods=['POST'])
+@login_required
+@requiere_rol('admin')
+def generar_recuperacion_unica():
+    print(">>> INICIANDO SOPORTE DE RECUPERACIÓN") 
+    try:
+        data = request.get_json()
+        # El JS envía 'email', que es el correo institucional del usuario
+        email_inst = data.get('email') 
+        
+        # 1. Buscamos al usuario por su correo institucional (el que viene de la tabla)
+        usuario = Usuario.query.filter_by(correo_institucional=email_inst).first()
+
+        if not usuario:
+            print(f">>> Error: {email_inst} no existe en la DB")
+            return jsonify({"status": "error", "message": "Usuario no encontrado"}), 404
+
+        # 2. Verificamos que tenga un correo personal para recibir el código
+        if not usuario.correo or "@" not in usuario.correo:
+            return jsonify({
+                "status": "error", 
+                "message": f"El usuario {usuario.nombre} no tiene un correo personal configurado para recibir el código."
+            }), 400
+
+        # 3. Generar código y guardar en DB
+        codigo = secrets.token_hex(3).upper() 
+        usuario.recovery_code = codigo
+        usuario.recovery_expire = datetime.utcnow() + timedelta(minutes=30)
+        db.session.commit()
+
+        # 4. LLAMADA CRÍTICA A LA FUNCIÓN DE CORREO
+        dominio = request.host_url.rstrip('/')
+        exito = enviar_recuperacion_consola(usuario, codigo, dominio)
+
+        if exito:
+            print(f">>> CORREO ENVIADO A: {usuario.correo}")
+            return jsonify({"status": "success", "message": f"Código enviado con éxito a {usuario.correo}"})
+        else:
+            print(">>> ERROR: Falló el servidor SMTP (MailHog)")
+            return jsonify({"status": "error", "message": "El servidor de correo no responde."}), 500
+
+    except Exception as e:
+        db.session.rollback()
+        print(f">>> ERROR CRÍTICO: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/admin/api/delete-record/<tabla>/<int:id>', methods=['POST'])
+@login_required
+def delete_record_full(tabla, id):
+    # Buscar el modelo dinámicamente
+    model = next((m for m in db.Model.__subclasses__() if m.__tablename__ == tabla), None)
+    if not model:
+        return jsonify({"status": "error", "message": "Tabla no encontrada"}), 404
+    
+    registro = model.query.get(id)
+    if registro:
+        db.session.delete(registro)
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Registro eliminado permanentemente"})
+    return jsonify({"status": "error", "message": "No se encontró el registro"}), 404
+# --------------------------------------------------
 
 
 # _------------------------------------------
@@ -5430,6 +5952,171 @@ def get_stats():
         "disco_info": f"{libre_gb} GB libres",
         "entorno": "Producción" if os.name != 'nt' else "Local/Desarrollo"
     })
+#---------------------------------------------------------------
+# MENSAJE GLOBAL A LOS USUARIOS
+
+@app.route('/admin/api/enviar-anuncio-global', methods=['POST'])
+@login_required
+def enviar_anuncio_global():
+    # Seguridad: Solo admins
+    if current_user.rol != 'admin':
+        return jsonify({"status": "error", "message": "Acceso denegado"}), 403
+
+    data = request.get_json()
+    roles = data.get('roles', [])
+    mensaje_texto = data.get('mensaje')
+
+    if not roles or not mensaje_texto:
+        return jsonify({"status": "error", "message": "Datos incompletos"}), 400
+
+    try:
+        # Filtrar usuarios por los roles seleccionados
+        destinatarios = Usuario.query.filter(Usuario.rol.in_(roles)).all()
+        
+        if not destinatarios:
+            return jsonify({"status": "error", "message": "No hay usuarios en esos grupos"}), 404
+
+        for receptor in destinatarios:
+            # 1. Crear el Mensaje en la DB
+            nuevo_msg = Mensaje(
+                emisor_id=current_user.id,
+                receptor_id=receptor.id,
+                contenido=f"📢 AVISO OFICIAL: {mensaje_texto}",
+                enviado=True,
+                recibido=True,
+                leido=False,
+                fecha=datetime.utcnow()
+            )
+            db.session.add(nuevo_msg)
+            db.session.flush() # Genera el ID para la notificación
+
+            # 2. Crear la Notificación vinculada
+            nueva_notif = Notificacion(
+                usuario_id=receptor.id,
+                tipo='mensaje',
+                mensaje=f"Nuevo anuncio de {current_user.nombre}",
+                leida=False,
+                item_id=nuevo_msg.id
+            )
+            db.session.add(nueva_notif)
+        
+        db.session.commit()
+        return jsonify({"status": "success", "message": f"Difusión enviada a {len(destinatarios)} personas."})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# -----------------------------------------------------------------
+# EDITAR PERFIL
+
+@app.route('/admin/editar-perfil', methods=['POST'])
+@login_required
+def editar_perfil_admin():
+    if current_user.rol != 'admin':
+        return jsonify({"status": "error", "message": "No autorizado"}), 403
+
+    # Obtener datos del formulario
+    nombre = request.form.get('nombre')
+    apellidos = request.form.get('apellidos')
+    telefono = request.form.get('telefono')
+    
+    # Campos de seguridad
+    password_actual = request.form.get('password_actual')
+    password_nueva = request.form.get('password_hash') # 'password_hash' es el name en el JS definitivo
+    
+    foto = request.files.get('foto_perfil')
+
+    try:
+        # 1. Validación Crítica de Contraseña
+        if password_nueva and password_nueva.strip() != "":
+            # Verificar si se proporcionó la contraseña actual
+            if not password_actual:
+                return jsonify({"status": "error", "message": "Debe introducir su contraseña actual para realizar cambios de seguridad"}), 400
+            
+            # Verificar si la contraseña actual es correcta
+            if not check_password_hash(current_user.password_hash, password_actual):
+                return jsonify({"status": "error", "message": "La contraseña actual es incorrecta"}), 400
+            
+            # Si todo está bien, hashear la nueva
+            current_user.password_hash = generate_password_hash(password_nueva)
+
+        # 2. Actualizar datos básicos
+        current_user.nombre = nombre
+        current_user.apellidos = apellidos
+        current_user.telefono = telefono
+
+        # 3. Manejo de la Foto de Perfil
+        if foto and foto.filename != '':
+            ext = os.path.splitext(foto.filename)[1].lower()
+            # Validar extensión básica
+            if ext not in ['.jpg', '.jpeg', '.png', '.gif']:
+                return jsonify({"status": "error", "message": "Formato de imagen no permitido"}), 400
+
+            nombre_foto = secure_filename(f"admin_{current_user.id}_{int(datetime.now().timestamp())}{ext}")
+            
+            # Ruta absoluta: static/uploads/perfiles/
+            path_destino = os.path.join(app.config['UPLOAD_FOLDER'], 'perfiles')
+            
+            if not os.path.exists(path_destino):
+                os.makedirs(path_destino)
+                
+            foto.save(os.path.join(path_destino, nombre_foto))
+            
+            # Guardamos la ruta relativa para la DB: 'perfiles/nombre_foto'
+            current_user.foto_perfil = nombre_foto
+
+        db.session.commit()
+        return jsonify({"status": "success", "message": "Perfil actualizado correctamente"})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al editar perfil admin: {str(e)}") # Log para el desarrollador
+        return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
+# ------------------------------------------------------------------------------------------
+
+# OPCIONES DE FOOTER (BASE.HTML)
+@app.route('/condiciones-de-uso')
+def condiciones_uso():
+    return render_template('condiciones_uso.html')
+
+@app.route('/creditos-desarrollo')
+def desarrolladores():
+    return render_template('desarrolladores.html')
+
+# OPCIONES DEL HEADER SUPERIOR
+@app.route('/facultad/representante')
+def representante_estudiantes():
+    return render_template('representante_estudiantes.html')
+
+@app.route('/facultad/consejo-estudiantil')
+def consejo_estudiantil():
+    return render_template('consejo_estudiantil.html')
+
+@app.route('/facultad/historia')
+def historia():
+    return render_template('historia.html')
+
+@app.route('/facultad/acerca-de')
+def acerca_de():
+    return render_template('acerca_de.html')
+
+# VER QUIEN ESTA EN LINEA
+
+@app.route('/comunidad/en-linea')
+def usuarios_en_linea():
+    # Definimos el umbral de "en línea" (5 minutos)
+    hace_5_minutos = datetime.now() - timedelta(minutes=5)
+    
+    # Obtenemos los usuarios activos
+    usuarios_activos = Usuario.query.filter(Usuario.ultima_conexion >= hace_5_minutos).all()
+    
+    # Conteo para el resumen
+    online_count = len(usuarios_activos)
+    
+    return render_template('usuarios_online.html', 
+                           usuarios=usuarios_activos, 
+                           count=online_count)
 
 # ==========================================================
 # CONFIGURACIÓN DE FLASK-LOGIN (PROFESIONAL)
@@ -5447,9 +6134,6 @@ def load_user(user_id):
     # Flask-Login usará esta función para cargar al usuario en 'current_user'
     print(f"DEBUG: Cargando usuario ID {user_id}") # Esto saldrá en tu terminal
     return Usuario.query.get(int(user_id))
-
-
-
 
 
 

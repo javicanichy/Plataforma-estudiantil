@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Quiénes Somos - Facultad de Ciencias de la Salud{% endblock %}
+
+{% block content %}
+<div class="py-5 bg-light border-bottom">
+    <div class="container py-5 text-center">
+        <h6 class="text-primary fw-bold text-uppercase tracking-widest mb-3">Nuestra Esencia</h6>
+        <h1 class="display-4 fw-bold mb-4">La Fuerza que Impulsiona la Salud en Guinea Ecuatorial</h1>
+        <p class="lead text-muted mx-auto mb-5" style="max-width: 800px;">
+            Con la salud en nuestras manos y el futuro en nuestro corazón, formamos a los líderes que transformarán el bienestar de nuestra nación.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <span class="badge rounded-pill bg-primary px-3 py-2">Excelencia Académica</span>
+            <span class="badge rounded-pill bg-success px-3 py-2">Compromiso Social</span>
+            <span class="badge rounded-pill bg-info px-3 py-2">Innovación Médica</span>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5 align-items-center">
+        <div class="col-lg-6">
+            <h2 class="fw-bold mb-4">Nuestro Propósito</h2>
+            <p class="fs-5 text-muted">
+                Formar profesionales de la salud con el compromiso y excelencia necesarios para una **Guinea Ecuatorial Mejor**. Entendemos que la educación no es solo teoría, sino una herramienta para salvar vidas.
+            </p>
+            <blockquote class="blockquote border-start border-primary border-4 ps-4 my-4">
+                <p class="mb-0 fw-bold text-dark">"Porque La Salud es Vida, y La Vida es Salud."</p>
+            </blockquote>
+            <p class="text-muted">
+                Nuestros programas están diseñados para responder a los desafíos sanitarios locales con estándares internacionales, preparando a enfermeros, médicos y técnicos para la vanguardia del servicio público.
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <div class="position-relative">
+                <img src="{{ url_for('static', filename='img/quienes_somos.jpeg') }}" class="img-fluid rounded-4 shadow-lg" alt="Estudiantes de Salud">
+                <div class="position-absolute bottom-0 start-0 bg-white p-4 m-4 rounded-4 shadow-sm d-none d-md-block" style="max-width: 250px;">
+                    <h5 class="fw-bold text-primary mb-1">Ciencias de la Salud</h5>
+                    <p class="small text-muted mb-0">La clave para una Guinea Ecuatorial Saludable.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-primary py-5 text-white">
+    <div class="container text-center py-4">
+        <i class="bi bi-stars fs-1 mb-3"></i>
+        <h2 class="display-6 fw-bold mb-4">Tenemos un Sueño</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <p class="lead italic">
+                    "Soñamos con un sistema de salud donde cada ciudadano, en cada rincón de Guinea Ecuatorial, reciba atención de calidad brindada por manos expertas y corazones compasivos. Trabajamos cada día para que ese sueño se convierta en la realidad de nuestra facultad."
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5 mb-5">
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="p-4 h-100 bg-white border-0 shadow-sm rounded-4">
+                <div class="bg-primary-soft text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-mortarboard fs-2"></i>
+                </div>
+                <h4 class="fw-bold">Formación</h4>
+                <p class="text-muted small">Excelencia académica basada en la práctica clínica real y la investigación constante.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 h-100 bg-white border-0 shadow-sm rounded-4">
+                <div class="bg-success-soft text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-heart-fill"></i>
+                </div>
+                <h4 class="fw-bold">Vocación</h4>
+                <p class="text-muted small">Inculcamos el amor por el prójimo y la ética profesional como pilares del servicio.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 h-100 bg-white border-0 shadow-sm rounded-4">
+                <div class="bg-info-soft text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-geo-alt fs-2"></i>
+                </div>
+                <h4 class="fw-bold">Alcance</h4>
+                <p class="text-muted small">Desde Bata para todo el territorio nacional, impactando la salud pública de nuestras comunidades.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-info-soft { background-color: rgba(13, 202, 240, 0.1); }
+    .tracking-widest { letter-spacing: 0.15em; }
+    .italic { font-style: italic; }
+</style>
+{% endblock %}

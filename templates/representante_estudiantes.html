@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Representación Estudiantil - UNGE{% endblock %}
+
+{% block content %}
+<div class="bg-primary text-white py-5 mb-5 shadow">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold">Voz Estudiantil</h1>
+        <p class="lead">Nuestra misión es garantizar que cada estudiante sea escuchado y respetado.</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row g-5 align-items-center">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <img src="{{ url_for('static', filename='img/mufasa.jpeg') }}" class="card-img-top" alt="Representante" style="height: 350px; object-fit: cover;">
+                <div class="card-body text-center p-4">
+                    <h3 class="fw-bold mb-0">Santiago Marcos Mba Bindang</h3>
+                    <p class="text-primary fw-bold mb-3">Representante de la Facultad</p>
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <a href="mailto:mbabindangsantiagomarcos@gmail.com" class="btn btn-outline-primary rounded-pill">
+                            <i class="bi bi-envelope-fill me-2"></i>Enviar Correo
+                        </a>
+                        <a href="https://wa.me/240222601190" target="_blank" class="btn btn-success rounded-pill">
+                            <i class="bi bi-whatsapp me-2"></i>WhatsApp Directo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-4 text-dark">¿Cuál es mi función?</h2>
+            <p class="text-muted mb-5">El representante estudiantil actúa como el puente vital entre el alumnado y los órganos de gobierno de la Universidad Nacional de Guinea Ecuatorial.</p>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary-soft p-3 rounded-3 me-3 text-primary">
+                            <i class="bi bi-people-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Representación en Juntas</h5>
+                            <p class="small text-muted">Asisto a las reuniones con el decanato y la administración para defender los derechos e intereses académicos del alumnado.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-success-soft p-3 rounded-3 me-3 text-success">
+                            <i class="bi bi-megaphone-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Comunicación de Acuerdos</h5>
+                            <p class="small text-muted">Transmito de forma transparente las resoluciones, cambios de fechas de exámenes y nuevos acuerdos alcanzados.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-warning-soft p-3 rounded-3 me-3 text-warning">
+                            <i class="bi bi-lightbulb-fill fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Gestión de Sugerencias</h5>
+                            <p class="small text-muted">Recojo vuestras propuestas para mejorar las instalaciones y la calidad educativa, llevándolas directamente a la mesa de debate.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <div class="bg-info-soft p-3 rounded-3 me-3 text-info">
+                            <i class="bi bi-shield-check fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold">Mediación de Conflictos</h5>
+                            <p class="small text-muted">Intervengo de forma neutral en problemas entre alumnos y profesores para encontrar soluciones justas y rápidas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 p-4 bg-light rounded-4 border-start border-primary border-5">
+                <h5 class="fw-bold italic italic">"Mi compromiso es con vosotros. No dudéis en acercaros a la oficina de representación para cualquier duda."</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+    .bg-info-soft { background-color: rgba(13, 202, 240, 0.1); }
+    
+    .card img {
+        transition: transform 0.5s ease;
+    }
+    .card:hover img {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}

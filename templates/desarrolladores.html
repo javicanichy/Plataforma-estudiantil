@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipo de Desarrollo - UNGE</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+        }
+        .badge-tech {
+            font-weight: 500;
+            background-color: rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        /* Botón de volver flotante */
+        .btn-back {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        .tech-section {
+            background: linear-gradient(145deg, #1a1d20, #212529);
+        }
+    </style>
+</head>
+<body>
+
+<a href="/" class="btn btn-white shadow-sm rounded-pill btn-back border">
+    <i class="bi bi-arrow-left me-1"></i> Inicio
+</a>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <img src="{{ url_for('static', filename='img/logo_unge.jpeg') }}" width="70" alt="Logo UNGE" class="mb-3 rounded shadow-sm">
+        <h2 class="fw-bold text-primary">Equipo de Desarrollo</h2>
+        <p class="text-muted">Innovación y tecnología al servicio de la educación</p>
+        <div class="mx-auto" style="width: 80px; height: 4px; background-color: #0dbd2a; border-radius: 2px;"></div>
+    </div>
+
+    <div class="row justify-content-center g-4 mb-5">
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                <div class="mb-3">
+                    <img src="{{ url_for('static', filename='img/javi.jpeg') }}" class="rounded-circle shadow-sm border border-3 border-primary p-1" style="width: 150px; height: 150px; object-fit: cover;" alt="Desarrollador">
+                </div>
+                <h5 class="fw-bold mb-1">Isaias Nkogo</h5>
+                <p class="text-primary small fw-bold mb-3">Full Stack Developer & Analista</p>
+                <p class="text-muted small">Responsable del diseño de arquitectura y lógica de base de datos.</p>
+                <a href="mailto:javitapia.skiny@yahoo.com" class="btn btn-outline-primary btn-sm rounded-pill mt-auto">
+                    <i class="bi bi-envelope-fill me-2"></i>Contactar
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-5 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm text-center p-4 rounded-4">
+                <div class="mb-3">
+                    <img src="{{ url_for('static', filename='img/dev2.jpg') }}" class="rounded-circle shadow-sm border border-3 border-success p-1" style="width: 150px; height: 150px; object-fit: cover;" alt="Desarrollador">
+                </div>
+                <h5 class="fw-bold mb-1">Nombre Apellido</h5>
+                <p class="text-success small fw-bold mb-3">Frontend & UI Designer</p>
+                <p class="text-muted small">Encargado de la experiencia de usuario y diseño de interfaces responsivas.</p>
+                <a href="mailto:correo@unge.gq" class="btn btn-outline-success btn-sm rounded-pill mt-auto">
+                    <i class="bi bi-envelope-fill me-2"></i>Contactar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="tech-section text-white p-4 p-md-5 rounded-4 shadow-lg">
+                <h4 class="mb-4 text-warning fw-bold"><i class="bi bi-code-square me-2"></i> Especificaciones Técnicas</h4>
+                
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase fw-bold text-info mb-3 small">Stack Tecnológico</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge badge-tech px-3 py-2">Python 3.9.3</span>
+                            <span class="badge badge-tech px-3 py-2">Flask (Microframework)</span>
+                            <span class="badge badge-tech px-3 py-2">SQLAlchemy (ORM)</span>
+                            <span class="badge badge-tech px-3 py-2">PostgreSQL</span>
+                            <span class="badge badge-tech px-3 py-2">Jinja2 Engine</span>
+                            <span class="badge badge-tech px-3 py-2">Bootstrap 5.3</span>
+                            <span class="badge badge-tech px-3 py-2">JavaScript (ES6+)</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h6 class="text-uppercase fw-bold text-info mb-3 small">Mecanismos y Seguridad</h6>
+                        <ul class="small opacity-75 list-unstyled">
+                            <li class="mb-2"><i class="bi bi-shield-lock me-2 text-success"></i><strong>Autenticación:</strong> Flask-Login y gestión de sesiones.</li>
+                            <li class="mb-2"><i class="bi bi-key me-2 text-success"></i><strong>Cifrado:</strong> Hashing PBKDF2 con Werkzeug Security.</li>
+                            <li class="mb-2"><i class="bi bi-patch-check me-2 text-success"></i><strong>Seguridad:</strong> Protección CSRF y saneamiento de inputs.</li>
+                            <li class="mb-2"><i class="bi bi-hdd-network me-2 text-success"></i><strong>Arquitectura:</strong> Patrón MVC (Modelo-Vista-Controlador).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="my-4 opacity-25">
+
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-uppercase fw-bold text-info mb-3 small">Filosofía de Desarrollo</h6>
+                        <p class="small opacity-75 mb-0">
+                            Este sistema ha sido desarrollado bajo principios de <strong>Mobile-First</strong> y <strong>Clean Code</strong>. Se ha priorizado la eficiencia en las consultas relacionales y la seguridad del usuario, garantizando una plataforma robusta para la comunidad universitaria de la UNGE.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-5 text-muted small">
+        <p>&copy; 2026 Universidad Nacional de Guinea Ecuatorial | Lab de Innovación Digital</p>
+    </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

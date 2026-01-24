@@ -33,8 +33,9 @@
                             Presentación
                         </a>
                         <ul class="dropdown-menu border-0 shadow-sm contenedor-transparente">
-                            <li><a class="dropdown-item" href="/presentacion/historia">Historia</a></li>
-                            <li><a class="dropdown-item" href="/presentacion/quienes-somos">Quiénes somos</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('historia')}}">Historia</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('acerca_de')}}">Quiénes somos</a></li>
+                            <li><a class="dropdown-item" href="https://ungecampus.com" target="_blank">Unge campus virtual</a></li>
                         </ul>
                     </div>
 
@@ -44,18 +45,18 @@
                             Consejo estudiantil
                         </a>
                         <ul class="dropdown-menu border-0 shadow-sm contenedor-transparente">
-                            <li><a class="dropdown-item" href="/consejo/representante">Representante</a></li>
-                            <li><a class="dropdown-item" href="/consejo/comites">Comités</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('representante_estudiantes')}}">Representante</a></li>
+                            <li><a class="dropdown-item" href="{{url_for('consejo_estudiantil')}}">Comités</a></li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- ICONOS -->
                 <div class="d-flex align-items-center gap-3 mt-3 mt-md-0 border-md-0 pt-3 pt-md-0">
-                    <a href="#" class="fs-5"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="fs-5"><i class="bi bi-x"></i></a>
-                    <a href="#" class="fs-5"><i class="bi bi-youtube"></i></a>
-                    <a href="#" class="fs-5"><i class="bi bi-instagram"></i></a>
+                    <a href="https://www.facebook.com/p/Universidad-Nacional-de-Guinea-Ecuatorial-UNGE-100064204200573/?checkpoint_src=any" target="_blank" class="fs-5"><i class="bi bi-facebook"></i></a>
+                    <a href="https://x.com/OnlineUnge" target="_blank" class="fs-5"><i class="bi bi-x"></i></a>
+                    <a href="https://www.youtube.com/@ungeonline5409" target="_blank" class="fs-5"><i class="bi bi-youtube"></i></a>
+                    <a href="https://www.instagram.com/u.n.g.e_fcs?igsh=Mmt0dHFudW05MnB6" target="_blank" class="fs-5"><i class="bi bi-instagram"></i></a>
                 </div>
 
             </div>
@@ -122,78 +123,116 @@
 <main class="container container-narrow my-5">
   
   <!-- Servicios disponibles -->
-  <section id="servicios" class="mb-5">
-    <h3 class="mb-3">Servicios disponibles</h3>
-    <div class="row g-3">
-      <div class="col-md-4">
-        <article class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">📅 Calendario Académico</h5>
-            <p class="card-text">Consulta fechas importantes, exámenes y plazos administrativos.</p>
-            <a href="/calendario" class="stretched-link">Ver calendario</a>
-          </div>
-        </article>
-      </div>
+    <section id="servicios" class="py-5">
+    <div class="container">
+        <div class="text-start mb-4">
+            <h3 class="fw-bold text-dark">Servicios Disponibles</h3>
+            <div style="width: 50px; height: 4px; background-color: #0dbd2a; border-radius: 2px;"></div>
+        </div>
 
-      <div class="col-md-4">
-        <article class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">📚 Biblioteca</h5>
-            <p class="card-text">Accede al catálogo de recursos y materiales bibliográficos.</p>
-            <a href="{{ url_for('biblioteca_page') }}" class="stretched-link">Ir a biblioteca</a>
-          </div>
-        </article>
-      </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-servicio border-bottom border-4 border-primary">
+                    <div class="card-body p-4">
+                        <div class="icon-shape bg-primary-soft text-primary mb-3">
+                            <i class="bi bi-calendar3 fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold">Calendario Académico</h5>
+                        <p class="text-muted small">Consulta fechas importantes, exámenes y plazos administrativos.</p>
+                        <a href="/calendario" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
 
-      <div class="col-md-4">
-        <article class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">📊 Resultados Selectividad</h5>
-            <p class="card-text">Consulta los resultados de las pruebas de selectividad.</p>
-            <a href="/selectividad" class="stretched-link">Ver resultados</a>
-          </div>
-        </article>
-      </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-servicio border-bottom border-4 border-success">
+                    <div class="card-body p-4">
+                        <div class="icon-shape bg-success-soft text-success mb-3">
+                            <i class="bi bi-book fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold">Biblioteca</h5>
+                        <p class="text-muted small">Accede al catálogo de recursos y materiales bibliográficos.</p>
+                        <a href="{{ url_for('biblioteca_page') }}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
 
-      <div class="col-md-4">
-        <article class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">📝 Requisitos Matrícula</h5>
-            <p class="card-text">Conoce los requisitos necesarios para matricularte.</p>
-            <a href="/solicitar-matricula" class="stretched-link">Más información</a>
-          </div>
-        </article>
-      </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-servicio border-bottom border-4 border-warning">
+                    <div class="card-body p-4">
+                        <div class="icon-shape bg-warning-soft text-warning mb-3">
+                            <i class="bi bi-bar-chart-line fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold">Resultados Selectividad</h5>
+                        <p class="text-muted small">Consulta los resultados de las pruebas de acceso a la universidad.</p>
+                        <a href="/selectividad" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
 
-      <div class="col-md-4">
-        <article class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">👨‍🏫 Directorio de Profesores</h5>
-            <p class="card-text">Encuentra profesores por departamento y horario de atención.</p>
-            <a href="{{url_for('directorio_profesores')}}" class="stretched-link">Buscar profesores</a>
-          </div>
-        </article>
-      </div>
+            <div class="col-md-4">
+                {% if current_user.is_authenticated %}
+                <div class="card h-100 border-0 shadow card-servicio bg-primary text-white">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="icon-shape bg-white-soft text-white mb-3">
+                            <i class="bi bi-person-badge fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold">ESTAS EN LINEA</h5>
+                        <p class="small opacity-75">Hola, {{ current_user.nombre }}. Eres un {{ current_user.rol }} verificado.</p>
+                        <div class="mt-auto">
+                            <a href="{{ url_for('usuarios_en_linea') }}" class="btn btn-light btn-sm rounded-pill w-100 fw-bold">Ver Perfil</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card h-100 border-0 shadow-sm card-servicio border-bottom border-4 border-info text-info">
+                    <div class="card-body p-4">
+                        <div class="icon-shape bg-info-soft text-info mb-3">
+                            <i class="bi bi-pencil-square fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold text-dark">Requisitos Matrícula</h5>
+                        <p class="text-muted small">Conoce los documentos necesarios para formar parte de la institución.</p>
+                        <a href="/solicitar-matricula" class="stretched-link"></a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
 
-      <div class="col-md-4">
-        <article class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">🎓 Directorio de Estudiantes</h5>
-            <p class="card-text">Encuentra estudiante por titulación, cursos y otros criterios.</p>
-            <a href="{{url_for('directorio_estudiantes')}}" class="stretched-link">Buscar estudiante</a>
-          </div>
-        </article>
-      </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-servicio border-bottom border-4 border-secondary">
+                    <div class="card-body p-4">
+                        <div class="icon-shape bg-secondary-soft text-secondary mb-3">
+                            <i class="bi bi-person-workspace fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold">Directorio Profesores</h5>
+                        <p class="text-muted small">Encuentra profesores por departamento y horario de atención.</p>
+                        <a href="{{url_for('directorio_profesores')}}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-servicio border-bottom border-4 border-danger">
+                    <div class="card-body p-4">
+                        <div class="icon-shape bg-danger-soft text-danger mb-3">
+                            <i class="bi bi-people fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold">Directorio Estudiantes</h5>
+                        <p class="text-muted small">Busca compañeros por titulación, cursos y otros criterios.</p>
+                        <a href="{{url_for('directorio_estudiantes')}}" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </section>
+</section>
 
   <!--NOTICIAS EN EL INICIO-->
-  <section id="noticias" class="mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <section id="noticias" class="mb-5">
+    <div class="text-start mb-4">
         <h3 class="fw-bold mb-0">Últimas noticias</h3>
-        <a href="{{ url_for('lista_noticias') }}" class="text-decoration-none fw-bold text-success">
-            Ver todo <i class="bi bi-arrow-right"></i>
-        </a>
+        <div style="width: 50px; height: 4px; background-color: #0dbd2a; border-radius: 2px; margin-top: 5px;"></div>
     </div>
 
     <div class="row g-3">
@@ -215,7 +254,7 @@
                              alt="{{ noticia.titulo }}" class="media-content">
                     {% endif %}
                 {% else %}
-                    <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                    <div class="bg-light d-flex align-items-center justify-content-center h-100" style="min-height: 200px;">
                         <i class="bi bi-newspaper fs-1 text-muted opacity-25"></i>
                     </div>
                 {% endif %}
@@ -232,20 +271,37 @@
         {% endfor %}
     </div>
 
-    <div class="text-center mt-4 d-md-none">
-        <a href="{{ url_for('lista_noticias') }}" class="btn btn-success rounded-pill px-4">Leer todas las noticias</a>
+    <div class="d-flex justify-content-center mt-5">
+        <a href="{{ url_for('lista_noticias') }}" class="btn btn-success rounded-pill px-5 py-2 shadow-sm fw-bold">
+            <i class="bi bi-card-text me-2"></i>Leer todas las noticias
+        </a>
     </div>
 </section>
 
 
   <!--EVENTOS EN EL INICIO-->
   <!-- Calendario de eventos -->
-  <section id="calendario" class="mb-5">
-    <h3 class="mb-3">Próximos eventos</h3>
-    <ul id="calendario-list" class="list-group">
-      <li class="list-group-item text-center text-muted">Cargando calendario...</li>
-    </ul>
-  </section>
+    <section id="eventos-inicio" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-start mb-4">
+            <h2 class="fw-bold">Próximos Eventos</h2>
+            <div class="mx-auto" style="width: 60px; height: 4px; background-color: #0dbd2a; border-radius: 2px;"></div>
+        </div>
+
+        <div id="eventos-container" class="row g-4 justify-content-center">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Cargando últimos eventos...</p>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="{{ url_for('calendario_page') }}" class="btn btn-primary btn-lg rounded-pill px-5 shadow hover-lift">
+                <i class="bi bi-calendar-range me-2"></i>Ver Calendario Completo
+            </a>
+        </div>
+    </div>
+</section>
 
   {% if not logueado %}
   <!-- Buzón de contacto (SIEMPRE visible sin login) -->
@@ -302,9 +358,9 @@
             </div>
 
             <div class="mb-4 p-3 bg-light border rounded">
-                <label class="form-label fw-bold"><i class="bi bi-paperclip"></i> Adjuntar documento:</label>
-                {{ form.archivo(class="form-control", accept=".pdf") }}
-                <small class="text-secondary d-block mt-1">Solo archivos PDF.</small>
+                <label class="form-label fw-bold"><i class="bi bi-paperclip"></i> Adjuntar archivo:</label>
+                {{ form.archivo(class="form-control", accept=".docx, .pdf, image/*") }}
+                <small class="text-secondary d-block mt-1">Solo extenciones docx, pdf, image</small>
             </div>
 
             {{ form.submit(class="btn btn-primary px-4") }}
@@ -391,6 +447,77 @@ function gestionarCamposBuzon() {
         divDip.classList.add('d-none');
     }
 }
+</script>
+
+<script>
+  // Cargar eventos del inicio al mes actual al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('eventos-container');
+
+    function cargarEventosInicio() {
+        fetch('/api/eventos')
+            .then(response => response.json())
+            .then(data => {
+                // 1. Limpiar contenedor
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-center text-muted">No hay eventos recientes.</div>';
+                    return;
+                }
+
+                // 2. Ordenar por ID o fecha (asumiendo que los últimos IDs son los más nuevos)
+                // y tomar solo los últimos 9
+                const ultimosEventos = data.reverse().slice(0, 9);
+
+                // 3. Crear tarjetas dinámicas
+                ultimosEventos.forEach(evento => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 col-sm-6';
+                    
+                    // Lógica de color según tu 'tipo'
+                    const colorMap = {
+                        'importante': '#dc3545',
+                        'general': '#0d6efd',
+                        'divertido': '#ffc107'
+                    };
+                    const color = colorMap[evento.tipo] || '#0dbd2a';
+
+                    col.innerHTML = `
+                        <div class="card h-100 border-0 shadow-sm hover-up" style="border-top: 4px solid ${color} !important;">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge" style="background-color: ${color}22; color: ${color}; border: 1px solid ${color}">
+                                        ${evento.tipo.toUpperCase()}
+                                    </span>
+                                    <small class="text-muted fw-bold">
+                                        <i class="bi bi-calendar3"></i> ${formatearFechaSimple(evento.start)}
+                                    </small>
+                                </div>
+                                <h6 class="card-title fw-bold text-dark">${evento.title}</h6>
+                                <p class="card-text text-muted small mb-0 text-truncate-2">
+                                    ${evento.description || 'Sin descripción adicional.'}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(col);
+                });
+            })
+            .catch(err => {
+                console.error("Error cargando eventos:", err);
+                container.innerHTML = '<p class="text-danger text-center">Error al conectar con la agenda.</p>';
+            });
+    }
+
+    // Utilidad para formatear la fecha
+    function formatearFechaSimple(fechaStr) {
+        const d = new Date(fechaStr);
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+    }
+
+    cargarEventosInicio();
+});
 </script>
 {% endblock %}
 

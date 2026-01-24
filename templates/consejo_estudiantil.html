@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Consejo Estudiantil - UNGE{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-primary">Consejo Estudiantil</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 800px;">
+            El órgano máximo de representación, orden y apoyo estudiantil de nuestra facultad. 
+            Trabajamos en una estructura de escala para asegurar que tu voz llegue al lugar correcto.
+        </p>
+    </div>
+
+    <section class="mb-5">
+        <h3 class="text-center fw-bold mb-4"><i class="bi bi-diagram-3 me-2"></i>Estructura de Gobierno</h3>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item list-group-item-action p-4 border-start border-primary border-4">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1 fw-bold"><span class="badge bg-primary me-2">1</span> Presidente y Vicepresidente</h5>
+                        </div>
+                        <p class="mb-1 text-muted">Liderazgo máximo y representación oficial ante la Universidad. El Vicepresidente asiste y reemplaza al Presidente en su ausencia.</p>
+                    </div>
+                    <div class="list-group-item list-group-item-action p-4 border-start border-info border-4">
+                        <h5 class="mb-1 fw-bold"><span class="badge bg-info me-2">2</span> Secretarios</h5>
+                        <p class="mb-1 text-muted">Gestores de la información: llevan actas de reuniones, organizan la agenda y mantienen informada a la comunidad.</p>
+                    </div>
+                    <div class="list-group-item list-group-item-action p-4 border-start border-warning border-4">
+                        <h5 class="mb-1 fw-bold"><span class="badge bg-warning text-dark me-2">3</span> Delegados de Grupo/Facultad</h5>
+                        <p class="mb-1 text-muted">El primer contacto. Representan a sus grupos específicos, recogen sugerencias y comunican información directa del comité.</p>
+                    </div>
+                    <div class="list-group-item list-group-item-action p-4 border-start border-success border-4">
+                        <h5 class="mb-1 fw-bold"><span class="badge bg-success me-2">4</span> Representante de Estudiantes</h5>
+                        <p class="mb-1 text-muted">Nexo directo en reuniones con la administración universitaria para escalar acuerdos y decisiones finales.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="my-5 opacity-25">
+
+    <section class="mb-5">
+        <h3 class="text-center fw-bold mb-5">Comités de Acción Especializada</h3>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-top">
+                    <div class="card-body">
+                        <div class="icon-box bg-primary text-white mb-3"><i class="bi bi-mortarboard"></i></div>
+                        <h5 class="fw-bold">Comité Científico</h5>
+                        <ul class="small text-muted ps-3">
+                            <li>Organiza conferencias y talleres.</li>
+                            <li>Promueve la investigación estudiantil.</li>
+                            <li>Apoya proyectos académicos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-top">
+                    <div class="card-body">
+                        <div class="icon-box bg-secondary text-white mb-3"><i class="bi bi-box-seam"></i></div>
+                        <h5 class="fw-bold">Comité de Logística</h5>
+                        <ul class="small text-muted ps-3">
+                            <li>Gestión de recursos y materiales.</li>
+                            <li>Organización física de eventos.</li>
+                            <li>Coordinación operativa.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-top">
+                    <div class="card-body border-bottom border-danger border-3">
+                        <div class="icon-box bg-danger text-white mb-3"><i class="bi bi-heart-pulse"></i></div>
+                        <h5 class="fw-bold">Ayuda y Socorro</h5>
+                        <ul class="small text-muted ps-3">
+                            <li>Apoyo personal y social.</li>
+                            <li>Campañas de ayuda y donaciones.</li>
+                            <li>Vínculo con organizaciones externas.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm hover-top">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box bg-success text-white me-3"><i class="bi bi-trophy"></i></div>
+                            <h5 class="fw-bold mb-0">Deportes</h5>
+                        </div>
+                        <p class="small text-muted">Fomentamos el bienestar físico mediante torneos, ligas universitarias y el apoyo constante a nuestros equipos deportivos.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm hover-top">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box bg-dark text-white me-3"><i class="bi bi-palette"></i></div>
+                            <h5 class="fw-bold mb-0">Comité Cultural</h5>
+                        </div>
+                        <p class="small text-muted">Promovemos la diversidad y el arte. Organismos eventos culturales y apoyamos a los grupos de expresión de la facultad.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="bg-light p-5 rounded-4 text-center">
+        <h4 class="fw-bold">¿Tienes una preocupación o proyecto?</h4>
+        <p class="text-muted">Habla primero con tu <strong>Delegado</strong>. Él es tu puerta de entrada al Consejo.</p>
+        <a href="{{ url_for('contacto') }}" class="btn btn-primary px-4 py-2 rounded-pill mt-2">Contactar al Consejo</a>
+    </div>
+
+    <section class="mb-5">
+    <h3 class="text-center fw-bold mb-5"><i class="bi bi-person-badge me-2"></i>Liderazgo de los Comités</h3>
+    
+    <div class="row g-4">
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-primary text-white fw-bold py-3">Comité Científico</div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-sm-6 border-end p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/juan_obiang.jpg') }}" class="rounded-circle mb-2 border border-2 border-primary" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Juan Obiang</h6>
+                            <p class="text-primary x-small fw-bold mb-1">PRESIDENTE/A</p>
+                            <p class="text-muted x-small mb-1">Ing. Informática</p>
+                        </div>
+                        <div class="col-sm-6 p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/maria_nchama.jpg') }}" class="rounded-circle mb-2 border border-2 border-primary" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">María Nchama</h6>
+                            <p class="text-primary x-small fw-bold mb-1">SECRETARIO/A</p>
+                            <p class="text-muted x-small mb-1">Ing. Informática</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-secondary text-white fw-bold py-3">Comité de Logística</div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-sm-6 border-end p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/antonio_logistica.jpg') }}" class="rounded-circle mb-2 border border-2 border-secondary" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Antonio Ndong</h6>
+                            <p class="text-secondary x-small fw-bold mb-1">PRESIDENTE/A</p>
+                            <p class="text-muted x-small mb-1">Administración de Empresas</p>
+                        </div>
+                        <div class="col-sm-6 p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/elena_m.png') }}" class="rounded-circle mb-2 border border-2 border-secondary" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Elena Mangue</h6>
+                            <p class="text-secondary x-small fw-bold mb-1">SECRETARIO/A</p>
+                            <p class="text-muted x-small mb-1">Administración de Empresas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white fw-bold py-3">Comité de Ayuda / Socorro</div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-sm-6 border-end p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/isabel_b.jpg') }}" class="rounded-circle mb-2 border border-2 border-danger" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Isabel Bakale</h6>
+                            <p class="text-danger x-small fw-bold mb-1">PRESIDENTE/A</p>
+                            <p class="text-muted x-small mb-1">Enfermería</p>
+                        </div>
+                        <div class="col-sm-6 p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/pedro_o.jpg') }}" class="rounded-circle mb-2 border border-2 border-danger" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Pedro Obama</h6>
+                            <p class="text-danger x-small fw-bold mb-1">SECRETARIO/A</p>
+                            <p class="text-muted x-small mb-1">Enfermería</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-success text-white fw-bold py-3">Comité de Deportes</div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-sm-6 border-end p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/foto_isaias.jpeg') }}" class="rounded-circle mb-2 border border-2 border-success" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Isaías Nkogo</h6>
+                            <p class="text-success x-small fw-bold mb-1">PRESIDENTE/A</p>
+                            <p class="text-muted x-small mb-1">Grado II Enfermería</p>
+                        </div>
+                        <div class="col-sm-6 p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/foto_clemente.jpeg') }}" class="rounded-circle mb-2 border border-2 border-success" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Clemente Alfonso Oló</h6>
+                            <p class="text-success x-small fw-bold mb-1">SECRETARIO/A</p>
+                            <p class="text-muted x-small mb-1">Grado II Enfermería</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white fw-bold py-3">Comité Cultural</div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <div class="col-sm-6 border-end p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/felipe_cultural.jpg') }}" class="rounded-circle mb-2 border border-2 border-dark" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Felipe Ondó</h6>
+                            <p class="text-dark x-small fw-bold mb-1">PRESIDENTE/A</p>
+                            <p class="text-muted x-small mb-1">Humanidades</p>
+                        </div>
+                        <div class="col-sm-6 p-3 text-center">
+                            <img src="{{ url_for('static', filename='img/comites/carmen_b.jpg') }}" class="rounded-circle mb-2 border border-2 border-dark" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Carmen Bindang</h6>
+                            <p class="text-dark x-small fw-bold mb-1">SECRETARIO/A</p>
+                            <p class="text-muted x-small mb-1">Humanidades</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<style>
+    .x-small { font-size: 0.75rem; }
+</style>
+</div>
+
+
+
+<style>
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.5rem;
+    }
+    .hover-top {
+        transition: all 0.3s ease;
+    }
+    .hover-top:hover {
+        transform: translateY(-5px);
+    }
+    .list-group-item-action:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}

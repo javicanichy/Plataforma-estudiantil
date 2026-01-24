@@ -32,10 +32,10 @@
 
         <div class="msg-header d-flex justify-content-between align-items-start">
             <div class="d-flex">
-                {% if msg.emisor.rol == 'estudiante' %}
+                {% if msg.emisor.rol in ['estudiante', 'admin', 'directivo', 'administrador'] %}
                     {% set archivo_autor = msg.emisor.foto_perfil or 'default.jpg' %}
                     {% set carpeta_autor = 'uploads/perfiles/' %}
-                {% elif msg.emisor.rol in ['profesor', 'directivo'] %}
+                {% elif msg.emisor.rol == 'profesor' %}
                     {% set archivo_autor = msg.emisor.profesor.archivo_foto if (msg.emisor.profesor and msg.emisor.profesor.archivo_foto) else 'default.jpg' %}
                     {% set carpeta_autor = 'uploads/fotos/' %}
                 {% else %}

@@ -2,203 +2,226 @@
 {% block content %}
 
 <style>
-/* Fondo suave tipo biblioteca */
-body.libros-digitales {
-    background-color: burlywood;
-}
-
-/* Tarjeta del formulario */
-.biblioteca-editar {
-    border-radius: 14px;
-    border: none;
-}
-
-/* Título */
-.biblioteca-editar h3 {
-    font-weight: 600;
-    font-size: 1.4rem;
-}
-
-/* Inputs más compactos */
-.biblioteca-editar .form-control,
-.biblioteca-editar .form-select {
-    font-size: 0.95rem;
-    padding: 0.45rem 0.65rem;
-}
-
-/* Labels */
-.biblioteca-editar label {
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-/* Botones */
-.biblioteca-editar .btn {
-    padding: 0.45rem 1rem;
-    font-size: 0.9rem;
-}
-
-/* Imagen portada */
-.portada-preview {
-    width: 110px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
-
-/* Responsive */
-@media (max-width: 576px) {
-    .biblioteca-editar {
-        margin: 0 10px;
+    body.libros-digitales {
+        background: linear-gradient(135deg, #f3e5ab 0%, #e0c097 100%);
+        min-height: 100vh;
     }
-}
 
+    .form-container-card {
+        border: none;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
 
+    .card-header-custom {
+        background: #1a237e;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        border: none;
+    }
+
+    /* Animación de entrada para campos dinámicos */
+    .fade-field {
+        display: none;
+        animation: fadeIn 0.4s forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .preview-box {
+        border: 2px dashed #ddd;
+        border-radius: 12px;
+        padding: 10px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+
+    .img-preview-fixed {
+        width: 100px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .form-label { font-weight: 600; color: #444; font-size: 0.9rem; }
 </style>
 
-<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
-<div class="container-fluid bg-light border-bottom">
+<div class="container-fluid bg-white border-bottom shadow-sm">
     <div class="container py-2">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 small">
-              <li class="breadcrumb-item">
-            <a href="{{ url_for('login_page') }}" class="text-decoration-none">
-                <i class="bi bi-house-door"></i> Inicio
-            </a>
-        </li>
-
-        <li class="breadcrumb-item">
-            <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
-                <i class="bi bi-building"></i> Biblioteca
-            </a>
-        </li>
-
-        <li class="breadcrumb-item">
-            <a href="{{ url_for('biblioteca_fisicos') }}" class="text-decoration-none">
-                <i class="bi bi-file-earmark-pdf""></i> Libros digitales
-            </a>
-
-        <li class="breadcrumb-item active" aria-current="page">
-            <i class="bi bi-pencil-square"></i> {{ item and 'Editar libro' or 'Añadir libro' }}
+                <li class="breadcrumb-item"><a href="{{ url_for('inicio') }}" class="text-decoration-none text-primary">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">Biblioteca</a></li>
+                <li class="breadcrumb-item active">{{ item and 'Editar Recurso' or 'Nuevo Recurso' }}</li>
             </ol>
         </nav>
     </div>
 </div>
 
-<!--FORMULARIO-->
+<div class="container py-5">
+    <div class="card form-container-card mx-auto" style="max-width: 700px;">
+        <div class="card-header-custom">
+            <h3 class="mb-0"><i class="bi {{ item and 'bi-pencil-square' or 'bi-cloud-plus' }} me-2"></i>{{ item and 'Gestionar Recurso' or 'Subir Nuevo Recurso' }}</h3>
+        </div>
+        
+        <div class="card-body p-4 p-md-5">
+            <form method="POST" enctype="multipart/form-data" id="main-biblioteca-form">
+                {{ form.hidden_tag() }}
 
-<div class="page-biblioteca py-5">
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        {{ form.titulo.label(class="form-label") }}
+                        {{ form.titulo(class="form-control form-control-lg", placeholder="Ej: Anatomía de Gray") }}
+                    </div>
+                    <div class="col-12">
+                        {{ form.descripcion.label(class="form-label") }}
+                        {{ form.descripcion(class="form-control", rows="3", placeholder="Breve resumen del contenido...") }}
+                    </div>
+                </div>
 
-  <div class="container">
-    <div class="card shadow-sm mx-auto biblioteca-editar" style="max-width: 620px;">
-      <div class="card-body">
+                <div class="row g-3 mb-4 p-3 bg-light rounded-3">
+                    <div class="col-md-6">
+                        {{ form.tipo_libro.label(class="form-label") }}
+                        {{ form.tipo_libro(class="form-select", id="select-tipo-libro") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.tipo.label(class="form-label") }}
+                        {{ form.tipo(class="form-select", id="select-formato") }}
+                    </div>
+                    
+                    <div class="col-12 fade-field" id="wrapper-titulacion">
+                        {{ form.titulacion.label(class="form-label text-primary") }}
+                        {{ form.titulacion(class="form-select border-primary") }}
+                    </div>
+                </div>
 
-        <h3 class="text-center mb-4">
-          {{ item and 'Editar libro' or 'Añadir libro' }}
-        </h3>
+                <div class="row mb-4">
+                    <div class="col-12 fade-field" id="wrapper-pdf">
+                        {{ form.archivo_pdf.label(class="form-label") }}
+                        {{ form.archivo_pdf(class="form-control") }}
+                        {% if item and item.archivo %}
+                            <div class="mt-2 p-2 bg-success-subtle rounded small">
+                                <i class="bi bi-file-earmark-pdf"></i> Archivo actual: <a href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}" target="_blank">Ver documento</a>
+                            </div>
+                        {% endif %}
+                    </div>
 
-        <form method="POST" enctype="multipart/form-data">
-          {{ form.hidden_tag() }}
+                    <div class="col-12 fade-field" id="wrapper-link">
+                        {{ form.enlace.label(class="form-label") }}
+                        {{ form.enlace(class="form-control", placeholder="https://biblioteca-externa.com/recurso") }}
+                    </div>
+                </div>
 
-          <!-- TÍTULO -->
-          <div class="mb-3">
-            {{ form.titulo.label(class="form-label") }}
-            {{ form.titulo(class="form-control", placeholder="Título del libro") }}
-          </div>
+                <div class="row mb-4 align-items-center">
+                    <div class="col-sm-8">
+                        {{ form.portada.label(class="form-label") }}
+                        {{ form.portada(class="form-control", id="input-portada") }}
+                    </div>
+                    <div class="col-sm-4 text-center">
+                        <div class="preview-box">
+                            <img id="preview-img" 
+                                 src="{{ url_for('static', filename='uploads/portadas/' ~ item.portada) if item and item.portada else url_for('static', filename='img/default_cover.png') }}" 
+                                 class="img-preview-fixed" alt="Previsualización" acept="image/*">
+                            <div class="small text-muted mt-1">Portada</div>
+                        </div>
+                    </div>
+                </div>
 
-          <!-- DESCRIPCIÓN -->
-          <div class="mb-3">
-            {{ form.descripcion.label(class="form-label") }}
-            {{ form.descripcion(class="form-control", rows="3", placeholder="Descripción breve del recurso") }}
-          </div>
+                <div class="form-check form-switch mb-4">
+                    {{ form.publico(class="form-check-input", role="switch") }}
+                    <label class="form-check-label fw-bold" for="publico">Publicar inmediatamente</label>
+                </div>
 
-          <!-- TIPO -->
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.tipo.label(class="form-label") }}
-              {{ form.tipo(class="form-select", id="tipo-select") }}
-            </div>
-
-            <div class="col-md-6 mb-3">
-              {{ form.tipo_libro.label(class="form-label") }}
-              {{ form.tipo_libro(class="form-select", id="tipo_libro") }}
-            </div>
-          </div>
-
-          <!-- TITULACIÓN -->
-          <div id="campo_titulacion" class="mb-3" style="display:none;">
-            {{ form.titulacion.label(class="form-label") }}
-            {{ form.titulacion(class="form-select") }}
-          </div>
-
-          <!-- PDF -->
-          <div id="pdf-block" class="mb-3"
-               style="{% if item and item.tipo=='link' %}display:none{% endif %}">
-            {{ form.archivo_pdf.label(class="form-label") }}
-            {{ form.archivo_pdf(class="form-control") }}
-
-            {% if item and item.archivo %}
-              <small class="text-muted">
-                Archivo actual:
-                <a target="_blank" href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}">
-                  Ver PDF
-                </a>
-              </small>
-            {% endif %}
-          </div>
-
-          <!-- LINK -->
-          <div id="link-block" class="mb-3"
-               style="{% if not item or item.tipo=='pdf' %}display:none{% endif %}">
-            {{ form.enlace.label(class="form-label") }}
-            {{ form.enlace(class="form-control", placeholder="https://...") }}
-          </div>
-
-          <!-- PORTADA -->
-          <div class="mb-3">
-            {{ form.portada.label(class="form-label") }}
-            {{ form.portada(class="form-control") }}
-
-            {% if item and item.portada %}
-              <div class="mt-2">
-                <img src="{{ url_for('static', filename='uploads/libros_portadas/' ~ item.portada) }}"
-                     class="portada-preview"
-                     alt="Portada actual">
-              </div>
-            {% endif %}
-          </div>
-
-          <!-- PUBLICO -->
-          <div class="form-check mb-4">
-            {{ form.publico(class="form-check-input", id="publico") }}
-            <label class="form-check-label" for="publico">
-              Visible para los usuarios
-            </label>
-          </div>
-
-          <!-- BOTONES -->
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              {{ form.submit(class="btn btn-primary") }}
-              <a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-outline-secondary">
-                Cancelar
-              </a>
-            </div>
-
-            {% if item %}
-              <form method="POST"
-                    action="{{ url_for('biblioteca_eliminar', item_id=item.id) }}"
-                    onsubmit="return confirm('¿Deseas eliminar este libro?');">
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                  Eliminar
-                </button>
-              </form>
-            {% endif %}
-          </div>
-
-        </form>
-      </div>
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-between mt-5 pt-3 border-top">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 shadow-sm">
+                            <i class="bi bi-check-circle me-2"></i>Guardar Cambios
+                        </button>
+                        <a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-light btn-lg">Cancelar</a>
+                    </div>
+                    
+                    {% if item %}
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="confirmarEliminar()">
+                        <i class="bi bi-trash me-1"></i>Eliminar Recurso
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
+
+{% if item %}
+<form id="delete-form" action="{{ url_for('biblioteca_eliminar', item_id=item.id) }}" method="POST" style="display:none;"></form>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectTipoLibro = document.getElementById('select-tipo-libro');
+    const selectFormato = document.getElementById('select-formato');
+    const inputPortada = document.getElementById('input-portada');
+    const previewImg = document.getElementById('preview-img');
+
+    const wrapperTitulacion = document.getElementById('wrapper-titulacion');
+    const wrapperPdf = document.getElementById('wrapper-pdf');
+    const wrapperLink = document.getElementById('wrapper-link');
+
+    // 1. Lógica para campos de TFG vs Otros
+    function toggleTitulacion() {
+        if (selectTipoLibro.value === 'tfg') {
+            wrapperTitulacion.style.display = 'block';
+        } else {
+            wrapperTitulacion.style.display = 'none';
+        }
+    }
+
+    // 2. Lógica para Formato (PDF vs Enlace)
+    function toggleFormato() {
+        const value = selectFormato.value;
+        if (value === 'pdf') {
+            wrapperPdf.style.display = 'block';
+            wrapperLink.style.display = 'none';
+        } else if (value === 'link') {
+            wrapperPdf.style.display = 'none';
+            wrapperLink.style.display = 'block';
+        }
+    }
+
+    // 3. Previsualización de Imagen en tiempo real
+    inputPortada.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Event Listeners
+    selectTipoLibro.addEventListener('change', toggleTitulacion);
+    selectFormato.addEventListener('change', toggleFormato);
+
+    // Inicialización al cargar la página
+    toggleTitulacion();
+    toggleFormato();
+});
+
+// Función de eliminación con SweetAlert o Confirmación Profesional
+function confirmarEliminar() {
+    if (confirm('¿Está seguro de que desea eliminar este recurso permanentemente? Esta acción no se puede deshacer.')) {
+        document.getElementById('delete-form').submit();
+    }
+}
+</script>
 
 {% endblock %}

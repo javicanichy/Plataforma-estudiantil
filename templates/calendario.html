@@ -137,7 +137,7 @@
                 </div>
             </div>
 
-            {% if session['rol'] in ['admin', 'directivo'] %}
+            {% if current_user.rol in ['admin', 'directivo'] %}
             <div class="alert alert-success border-0 rounded-4 small shadow-sm animate__animated animate__fadeIn">
                 <i class="bi bi-shield-check me-2"></i> 
                 <strong>Modo Editor:</strong> Selecciona un rango de días para crear un evento.

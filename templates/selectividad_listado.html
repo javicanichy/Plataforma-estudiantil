@@ -6,8 +6,8 @@
             <h1 class="fw-bold text-dark mb-0">Selectividad</h1>
             <p class="text-muted mb-0">Portal de noticias y resultados oficiales</p>
         </div>
-        
-        {% if session.get('rol') in ['administrador', 'admin', 'directivo'] %}
+
+        {% if current_user.rol in ['administrador', 'admin', 'directivo'] %}
             <a href="{{ url_for('subir_selectividad') }}" class="btn btn-success shadow-sm px-4 rounded-pill">
                 <i class="bi bi-plus-circle me-1"></i> Publicar Noticia
             </a>

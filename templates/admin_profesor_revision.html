@@ -1,15 +1,32 @@
-{% extends "base.html" %}
+{% extends "base_admin.html" %}
+
+{% block title %}Revisión de Profesores - UNGE{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Mantenemos tus estilos visuales y añadimos consistencia */
+    .professor-row:hover {
+        background-color: rgba(13, 110, 253, 0.02);
+    }
+    .badge-dept {
+        font-size: 0.8rem;
+    }
+    .table-responsive {
+        border-radius: 0 0 10px 10px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid py-4">
     <div class="row mb-4 align-items-end">
         <div class="col-md-8">
-            <h2 class="text-primary"><i class="fas fa-user-check me-2"></i>Revisión de Solicitudes: Profesores</h2>
+            <h2 class="text-primary fw-bold"><i class="fas fa-user-check me-2"></i>Revisión de Solicitudes: Profesores</h2>
             <p class="text-muted">Valide la documentación de los docentes para generar sus cuentas institucionales.</p>
         </div>
         <div class="col-md-4 text-md-end">
             <div class="bg-primary text-white p-3 rounded shadow-sm d-inline-block">
-                <span class="small d-block text-uppercase">Resultados en pantalla</span>
+                <span class="small d-block text-uppercase opacity-75">Resultados en pantalla</span>
                 <span class="h3 fw-bold" id="user-count">{{ solicitudes|length }}</span>
             </div>
         </div>
@@ -20,14 +37,14 @@
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="small fw-bold text-muted">Buscar por Nombre o DIP</label>
-                    <div class="input-group">
+                    <div class="input-group shadow-sm">
                         <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" id="filterName" class="form-control border-start-0" placeholder="Ej: Juan Pérez...">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <label class="small fw-bold text-muted">Departamento</label>
-                    <select id="filterDept" class="form-select">
+                    <select id="filterDept" class="form-select shadow-sm">
                         <option value="">Todos los departamentos</option>
                         {% set depts = [] %}
                         {% for s in solicitudes %}
@@ -40,14 +57,14 @@
                 </div>
                 <div class="col-md-3">
                     <label class="small fw-bold text-muted">Sexo</label>
-                    <select id="filterSex" class="form-select">
+                    <select id="filterSex" class="form-select shadow-sm">
                         <option value="">Todos</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Femenino">Femenino</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                    <button class="btn btn-outline-secondary w-100 shadow-sm" onclick="resetFilters()">
                         <i class="fas fa-sync-alt me-1"></i> Limpiar
                     </button>
                 </div>
@@ -55,13 +72,13 @@
         </div>
     </div>
 
-    <div class="card shadow-lg border-0 overflow-hidden">
+    <div class="card shadow border-0 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0" id="professorsTable">
                     <thead class="bg-dark text-white">
                         <tr>
-                            <th class="ps-3">ID</th>
+                            <th class="ps-3 py-3">ID</th>
                             <th>Foto</th>
                             <th>Nombre Completo</th>
                             <th>DIP / Teléfono</th>
@@ -81,60 +98,62 @@
                             <td class="ps-3 text-muted fw-bold">#{{ solicitud.id }}</td>
                             <td>
                                 <img src="{{ url_for('static', filename='uploads/fotos/' + solicitud.archivo_foto) }}" 
-                                     alt="Foto" class="rounded-circle border" width="45" height="45" style="object-fit: cover;">
+                                     alt="Foto" class="rounded-circle border shadow-sm" width="48" height="48" style="object-fit: cover;">
                             </td>
                             <td>
-                                <div class="fw-bold">{{ solicitud.nombre_aspirante }} {{ solicitud.apellidos_aspirante }}</div>
-                                <div class="small text-muted">{{ solicitud.correo_personal }}</div>
+                                <div class="fw-bold text-dark">{{ solicitud.nombre_aspirante }} {{ solicitud.apellidos_aspirante }}</div>
+                                <div class="small text-muted"><i class="far fa-envelope me-1"></i>{{ solicitud.correo_personal }}</div>
                             </td>
                             <td>
-                                <div><i class="fas fa-id-card me-1 text-secondary"></i> {{ solicitud.dip_aspirante }}</div>
-                                <div class="small"><i class="fas fa-phone me-1 text-secondary"></i> {{ solicitud.telefono_aspirante }}</div>
+                                <div class="small fw-bold text-secondary"><i class="fas fa-id-card me-1"></i> {{ solicitud.dip_aspirante }}</div>
+                                <div class="small text-muted"><i class="fas fa-phone me-1"></i> {{ solicitud.telefono_aspirante }}</div>
                             </td>
                             <td>
-                                <span class="badge bg-info-subtle text-info border border-info">{{ solicitud.departamento }}</span>
-                                <div class="small mt-1 text-muted">{{ solicitud.especialidad }}</div>
+                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-3">{{ solicitud.departamento }}</span>
+                                <div class="small mt-1 text-muted italic">{{ solicitud.especialidad }}</div>
                             </td>
                             <td>
                                 <a href="{{ url_for('static', filename='uploads/dips/' + solicitud.archivo_dip) }}" 
-                                   target="_blank" class="btn btn-sm btn-light border">
-                                    <i class="fas fa-file-pdf text-danger me-1"></i> Ver DIP
+                                   target="_blank" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-file-pdf me-1"></i> Ver DIP
                                 </a>
                             </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     {% if solicitud.usuario_id %}
-                                        <button type="button" class="btn btn-secondary btn-sm px-3 disabled" disabled>
+                                        <button type="button" class="btn btn-light btn-sm px-3 border text-success fw-bold disabled">
                                             <i class="fas fa-user-check me-1"></i> Admitido
                                         </button>
                                     {% else %}
                                         <form id="form-val-{{ solicitud.id }}" action="{{ url_for('admin_profesor_validar', id=solicitud.id) }}" method="POST" style="display:none;"></form>
-                                            <button type="button" onclick="validateOneClick('{{ solicitud.id }}')" class="btn btn-success btn-sm px-3" id="btn-val-{{ solicitud.id }}">
-                                                <i class="fas fa-check me-1"></i> Validar
-                                            </button>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalRechazo{{ solicitud.id }}">
-                                                <i class="fas fa-times"></i>
-                                            </button>
+                                        
+                                        <button type="button" onclick="validateOneClick('{{ solicitud.id }}')" class="btn btn-success btn-sm px-3 shadow-sm" id="btn-val-{{ solicitud.id }}">
+                                            <i class="fas fa-check me-1"></i> Validar
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#modalRechazo{{ solicitud.id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     {% endif %}
                                 </div>
                             </td>
                         </tr>
 
-                        <div class="modal fade" id="modalRechazo{{ solicitud.id }}" tabindex="-1">
+                        <div class="modal fade" id="modalRechazo{{ solicitud.id }}" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content border-0 shadow">
                                     <div class="modal-header bg-danger text-white">
-                                        <h5 class="modal-title">Rechazar a {{ solicitud.nombre_aspirante }}</h5>
+                                        <h5 class="modal-title h6 fw-bold">Rechazar Solicitud</h5>
                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                     </div>
                                     <form action="{{ url_for('admin_profesor_rechazar', id=solicitud.id) }}" method="POST">
-                                        <div class="modal-body">
-                                            <label class="form-label fw-bold">Motivo del rechazo:</label>
-                                            <textarea name="motivo_rechazo" class="form-control" rows="4" placeholder="Ej: Documentos borrosos..." required></textarea>
+                                        <div class="modal-body p-4">
+                                            <p class="small text-muted mb-3">Está a punto de rechazar a <strong>{{ solicitud.nombre_aspirante }}</strong>. Por favor, especifique el motivo para notificarle.</p>
+                                            <label class="form-label fw-bold small text-uppercase">Motivo del rechazo:</label>
+                                            <textarea name="motivo_rechazo" class="form-control" rows="4" placeholder="Ej: Documentos borrosos o incompletos..." required></textarea>
                                         </div>
-                                        <div class="modal-footer bg-light">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                                            <button type="submit" class="btn btn-danger">Confirmar Rechazo</button>
+                                        <div class="modal-footer bg-light border-0">
+                                            <button type="button" class="btn btn-link text-secondary text-decoration-none" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-danger px-4 rounded-pill shadow-sm">Confirmar Rechazo</button>
                                         </div>
                                     </form>
                                 </div>
@@ -142,9 +161,11 @@
                         </div>
                         {% else %}
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
-                                <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
-                                <p>No hay solicitudes pendientes.</p>
+                            <td colspan="7" class="text-center py-5 text-muted bg-white">
+                                <div class="py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3 text-light"></i>
+                                    <p class="fw-bold">No hay solicitudes pendientes de profesores.</p>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -154,9 +175,12 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-// --- Lógica de Filtros ---
+// --- TU LÓGICA ORIGINAL PRESERVADA ---
+
 const filterName = document.getElementById('filterName');
 const filterDept = document.getElementById('filterDept');
 const filterSex = document.getElementById('filterSex');
@@ -184,6 +208,7 @@ function applyFilters() {
     userCount.innerText = visibleCount;
 }
 
+// Event Listeners
 filterName.addEventListener('input', applyFilters);
 filterDept.addEventListener('change', applyFilters);
 filterSex.addEventListener('change', applyFilters);
@@ -203,7 +228,7 @@ function validateOneClick(id) {
     // Feedback visual
     btn.classList.replace('btn-success', 'btn-secondary');
     btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Admitido`;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Admitiendo...`;
     
     // Ejecutar el envío del formulario vinculado
     setTimeout(() => {

@@ -361,5 +361,45 @@
     });
 
 </script>
+
+<script>
+    // 5. ELIMINAR ARCHIVO FÍSICO
+function eliminarArchivo(rutaRelativa) {
+    Swal.fire({
+        title: '¿Eliminar archivo?',
+        text: `El archivo "${rutaRelativa}" se borrará permanentemente del servidor.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar permanentemente',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostramos un pequeño loader
+            document.getElementById('loader').style.display = 'flex';
+
+            fetch('/admin/api/eliminar-archivo-fisico', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ruta: rutaRelativa })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loader').style.display = 'none';
+                if(data.status === 'success') {
+                    Swal.fire('Eliminado', data.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                document.getElementById('loader').style.display = 'none';
+                Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+            });
+        }
+    });
+}
+</script>
+
 </body>
 </html>

@@ -1,136 +1,167 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <style>
-  body.libros-fisicos{
-    background-color: burlywood;
-  }
+    /* Fondo con tono cálido tipo papel/madera clara */
+    body.libros-fisicos-page {
+        background-color: #f3e5ab; /* Un burlywood más suave y cremoso */
+        background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+    }
+
+    .container-fisicos {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    /* Tarjetas de libros */
+    .libro-item {
+        background: white !important;
+        border: none !important;
+        border-radius: 15px !important;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        border-left: 6px solid #8b4513 !important; /* Color madera */
+    }
+
+    .libro-item:hover {
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .portada-libro {
+        width: 120px;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+        transition: transform 0.3s;
+    }
+
+    .libro-item:hover .portada-libro {
+        transform: rotate(-3deg);
+    }
+
+    /* Estilo para los requisitos */
+    .requisitos-card {
+        background: #fff3cd;
+        border: 1px dashed #856404;
+        border-radius: 12px;
+        padding: 15px;
+    }
+
+    .badge-requisito {
+        background-color: #8b4513;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        display: inline-block;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
 </style>
 
-<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
-<div class="container-fluid bg-light border-bottom">
+<div class="container-fluid bg-white border-bottom shadow-sm">
     <div class="container py-2">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('login_page') }}" class="text-decoration-none">
-                      <i class="bi bi-house-door"></i> Inicio
-                    </a>
-                </li>
-
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
-                      <i class="bi bi-building"></i> Biblioteca
-                    </a>
-                </li>
-
-                <li class="breadcrumb-item active" aria-current="page">
-                    <i class="bi bi-journal-bookmark"></i> Libros en físico
+                <li class="breadcrumb-item"><a href="{{ url_for('login_page') }}" class="text-decoration-none"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">Biblioteca</a></li>
+                <li class="breadcrumb-item active">Libros en físico</li>
             </ol>
         </nav>
     </div>
 </div>
 
-
-    
-<div class="container my-4 libros-fisicos">
-
-  
-  <!-- ENCABEZADO -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="bi-journal-bookmark">Libros en físico</h2>
-
-      <a href="{{ url_for('agregar_libro_fisico') }}"
-         class="btn btn-primary shadow-sm btn-sm">
-          Agregar nuevo libro
-      </a>
-  </div>
-
-  <p class="text-muted">
-    Para solicitar un prestamos de libro, debes cumplir con los Requisitos de acceso.
-    <br>
-    Requisitos de acceso:
-  </p>
-  <ul>
-    <li>DIP válido</li>
-    <li>Usuario activo</li>
-    <li>Bata puesta</li>
-  </ul>
-
-  <div class="alert alert-info">
-    Aquí se mostrarán los libros en físico disponibles en la biblioteca.
-  </div>
-
-  <!-- LISTA DE LIBROS FÍSICOS -->
-  <div class="list-group mt-3">
-
-    {% for libro in libros_fisicos %}
-      <div class="list-group-item">
-
-        <div class="d-flex justify-content-between">
-
-          <!-- FOTO + INFORMACIÓN -->
-          <div class="d-flex">
-
-            <!-- PORTADA -->
-            {% if libro.portada %}
-              <img src="{{ url_for('static', filename='uploads/libros/' ~ libro.portada) }}"
-                   alt="Portada"
-                   class="me-3"
-                   style="width: 110px; height: 150px; object-fit: cover; border-radius: 6px;">
-            {% else %}
-              <img src="{{ url_for('static', filename='img/no-image.png') }}"
-                   alt="Sin portada"
-                   class="me-3"
-                   style="width: 110px; height: 150px; object-fit: cover; border-radius: 6px;">
-            {% endif %}
-
-            <!-- TITULO + DESCRIPCIÓN -->
-            <div>
-              <strong class="fs-5">{{ libro.titulo }}</strong>
-              <p class="mb-1">{{ libro.descripcion }}</p>
+<div class="container my-5">
+    <div class="container-fisicos">
+        
+        <div class="row align-items-center mb-4">
+            <div class="col-md-7">
+                <h2 class="fw-bold text-dark"><i class="bi bi-journal-bookmark-fill text-warning me-2"></i>Catálogo de Libros Físicos</h2>
+                <p class="text-muted">Consulta la disponibilidad de títulos impresos en nuestras sedes Edi. I y Edi. II.</p>
             </div>
-
-          </div>
-
-          <!-- BOTONES -->
-          <div class="d-flex align-items-center justify-content-end gap-2 flex-wrap">
-
-            <!-- SOLICITAR PRÉSTAMO -->
-            <a href="{{ url_for('solicitar_prestamo', id=libro.id) }}"
-              class="btn btn-sm btn-info d-inline-flex align-items-center">
-              📄 Solicitar préstamo
-            </a>
-
-            <!-- EDITAR -->
-              <a href="{{ url_for('editar_libro_fisico', item_id=libro.id) }}"
-                class="btn btn-sm btn-warning d-inline-flex align-items-center">
-                ✏️ Editar
-              </a>
-
-            <!-- ELIMINAR -->
-            <form action="{{ url_for('eliminar_libro_fisico', item_id=libro.id) }}"
-              method="POST"
-              onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');"
-              class="m-0">
-              <button type="submit" class="btn btn-sm btn-danger">
-                🗑️ Eliminar
-              </button>
-            </form>
-
-          </div>
-
+            <div class="col-md-5 text-md-end">
+                {% if current_user.is_authenticated and (current_user.rol == 'admin' or current_user.rol == 'bibliotecario') %}
+                    <a href="{{ url_for('agregar_libro_fisico') }}" class="btn btn-primary rounded-pill px-4 shadow">
+                        <i class="bi bi-plus-circle me-2"></i>Registrar nuevo ejemplar
+                    </a>
+                {% endif %}
+            </div>
         </div>
 
-      </div>
+        <div class="requisitos-card mb-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle-fill me-2"></i>Requisitos obligatorios para préstamo:</h6>
+            <div class="d-flex flex-wrap">
+                <span class="badge-requisito"><i class="bi bi-card-checklist me-2"></i>DIP Válido</span>
+                <span class="badge-requisito"><i class="bi bi-person-check me-2"></i>Usuario Activo</span>
+                <span class="badge-requisito"><i class="bi bi-shield-check me-2"></i>Uso de Bata Obligatorio</span>
+            </div>
+        </div>
 
-    {% else %}
-      <p class="text-muted">No hay libros físicos disponibles por el momento.</p>
-    {% endfor %}
+        <div class="alert alert-light border shadow-sm mb-4">
+            <i class="bi bi-collection me-2 text-primary"></i>
+            Mostrando <strong>{{ libros_fisicos|length }}</strong> libros disponibles actualmente.
+        </div>
 
-  </div>
+        <div class="list-group border-0">
+            {% for libro in libros_fisicos %}
+            <div class="list-group-item libro-item p-4 shadow-sm">
+                <div class="row align-items-center">
+                    
+                    <div class="col-auto">
+                        {% if libro.portada %}
+                            <img src="{{ url_for('static', filename='uploads/libros/' ~ libro.portada) }}" class="portada-libro" alt="Portada">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='img/no-image.png') }}" class="portada-libro" alt="Sin portada">
+                        {% endif %}
+                    </div>
 
+                    <div class="col">
+                        <h4 class="fw-bold text-dark mb-2">{{ libro.titulo }}</h4>
+                        <p class="text-muted small mb-3" style="max-width: 600px;">
+                            {{ libro.descripcion if libro.descripcion else 'Sin descripción disponible para este ejemplar.' }}
+                        </p>
+                        
+                        <span class="badge bg-success-subtle text-success border border-success mb-3 px-3 rounded-pill">
+                            <i class="bi bi-check2-circle me-1"></i> Disponible para Sala
+                        </span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('solicitar_prestamo', id=libro.id) }}" class="btn btn-info btn-sm rounded-pill text-white fw-bold shadow-sm">
+                                <i class="bi bi-file-earmark-text me-1"></i> Solicitar préstamo
+                            </a>
+                            
+                            {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('editar_libro_fisico', item_id=libro.id) }}" 
+                                        class="btn btn-outline-warning btn-sm flex-fill rounded-pill">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form action="{{ url_for('eliminar_libro_fisico', item_id=libro.id) }}" 
+                                        method="POST" class="flex-fill" 
+                                        onsubmit="return confirm('¿Seguro que deseas eliminar este libro?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-book text-muted opacity-25" style="font-size: 5rem;"></i>
+                <p class="text-muted fs-5 mt-3">No hay libros físicos registrados en el catálogo.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
-
 {% endblock %}

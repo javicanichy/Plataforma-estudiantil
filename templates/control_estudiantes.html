@@ -1,4 +1,6 @@
-{% extends "base.html" %}
+{# Herencia dinámica basada en el rol con Flask-Login #}
+{% extends "base_admin.html" if current_user.rol == 'admin' else "base.html" %}
+
 {% block content %}
 <div class="container-fluid py-5 px-4" style="background-color: #f4f7f6; min-height: 100vh;">
     <div class="card border-0 shadow-sm rounded-0 overflow-hidden">
@@ -50,7 +52,7 @@
                             <th>DIP</th>
                             <th>Titulación</th>
                             <th class="text-center">Estado</th>
-                            <th>Vence en</th>
+                            <th>Vence</th>
                             <th class="text-end pe-3">Acción</th>
                         </tr>
                     </thead>
@@ -104,6 +106,7 @@
                             </td>
                         </tr>
 
+                        {# Modal de Confirmación #}
                         <div class="modal fade" id="modal{{ est.id }}" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content rounded-0 border-dark shadow-lg">

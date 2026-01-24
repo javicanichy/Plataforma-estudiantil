@@ -1,3 +1,4 @@
+from email.policy import default
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Nullable
 from sqlalchemy.sql import func
@@ -61,24 +62,27 @@ class Usuario(db.Model, UserMixin):
 
     # Datos para control de cuentas
     activo = db.Column(db.Boolean, default=True)
+    activar_desactivar = db.Column(db.String(20), nullable=True) # 'activar' o 'desactivar'
     fecha_expiracion = db.Column(db.DateTime, nullable=True)
     motivo_suspension = db.Column(db.String(255), nullable=True)
+    ultima_conexion = db.Column(db.DateTime, default=datetime.now) # Para sabr cuanta gente esta conectada
+
     # ... otros campos ...
     recovery_code = db.Column(db.String(10), nullable=True)
     recovery_expire = db.Column(db.DateTime, nullable=True)
 
     
     # Relaciones con las demas tablas
-    notificaciones = db.relationship("Notificacion", backref="usuario", lazy=True)
+    notificaciones = db.relationship("Notificacion", backref="usuario", lazy=True, cascade="all, delete-orphan")
 
 
     # Relaciones 1 a 1 (Perfiles específicos)
     # uselist=False asegura que un usuario solo tenga un perfil de estudiante o profesor
-    estudiante = db.relationship('Estudiante', backref='usuario', uselist=False)
-    profesor = db.relationship('Profesor', backref='usuario', uselist=False)
-    directivo = db.relationship('Directivo', backref='usuario', uselist=False)
-    administrador = db.relationship('Administrador', backref='usuario', uselist=False)
-    secretaria = db.relationship('Secretaria', backref='usuario', uselist=False)
+    estudiante = db.relationship('Estudiante', backref='usuario', uselist=False, cascade="all, delete-orphan")
+    profesor = db.relationship('Profesor', backref='usuario', uselist=False, cascade="all, delete-orphan")
+    directivo = db.relationship('Directivo', backref='usuario', uselist=False, cascade="all, delete-orphan")
+    administrador = db.relationship('Administrador', backref='usuario', uselist=False, cascade="all, delete-orphan")
+    secretaria = db.relationship('Secretaria', backref='usuario', uselist=False, cascade="all, delete-orphan")
 
 # Método para cifrar la clave al registrarse
     def set_password(self, password):
@@ -93,7 +97,7 @@ class Usuario(db.Model, UserMixin):
 class Estudiante(db.Model):
     __tablename__ = 'estudiantes'
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'))
     matricula = db.Column(db.String(50))
     carrera = db.Column(db.String(100), nullable=True)
     tutor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='SET NULL'), nullable=True)
@@ -112,7 +116,7 @@ class Profesor(db.Model):
     __tablename__ = 'profesores'
     id = db.Column(db.Integer, primary_key=True)
     
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=True)
     
     # Datos Personales (los que ya tenías)
     nombre_aspirante = db.Column(db.String(100))
@@ -190,7 +194,7 @@ class Mensaje(db.Model):
 class Nota(db.Model):
     __tablename__ = 'notas'
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
     asignatura_id = db.Column(db.Integer, db.ForeignKey('asignaturas.id'), nullable=False)
     
     # 'Práctica', 'Seminario' o 'Evaluación'
@@ -223,7 +227,7 @@ class Asignatura(db.Model):
     profesor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='SET NULL'))
 
     # AÑADE ESTA LÍNEA CRÍTICA:
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True) 
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=True) 
     
     # Relación (opcional pero recomendada)
     notas = db.relationship('Nota', backref='asignatura_rel', cascade="all, delete-orphan")
@@ -370,7 +374,7 @@ class Comentario(db.Model):
 class Notificacion(db.Model):
     __tablename__ = 'notificaciones'
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)
     tipo = db.Column(db.String(50)) # 'debate', 'evento', 'noticia'
     mensaje = db.Column(db.String(255))
     leida = db.Column(db.Boolean, default=False) # IMPORTANTE para el contador
@@ -385,7 +389,7 @@ class Notificacion(db.Model):
 class Administrador(db.Model):
     __tablename__ = "administradores"
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), unique=True, nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), unique=True, nullable=False)
     cargo = db.Column(db.String(100), nullable=True)
     permisos_especiales = db.Column(db.String(200), nullable=True)
 
@@ -403,7 +407,7 @@ class Biblioteca(db.Model):
     archivo = db.Column(db.String(255), nullable=True)  # nombre de archivo en /static/uploads/libros
     enlace = db.Column(db.String(1000), nullable=True)  # si tipo == 'link'
     publico = db.Column(db.Boolean, default=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)  # quien lo subió
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=False)  # quien lo subió
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     tipo_libro = db.Column(db.String(10), nullable=False)  # 'libro' o 'tfg' pero en PDF
     portada = db.Column(db.String(300), nullable=True)
@@ -427,6 +431,7 @@ class Buzon(db.Model):
     mensaje = db.Column(db.Text, nullable=True)
     archivo = db.Column(db.String(255), nullable=True) # Guarda la ruta
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    leido = db.Column(db.Boolean, default=False)
 
 
 # ============================================================
@@ -564,7 +569,7 @@ class Secretaria(db.Model):
     __tablename__ = 'secretarias'
     id = db.Column(db.Integer, primary_key=True)
     
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id', ondelete='CASCADE'), nullable=True)
     
     # Datos Personales (los que ya tenías)
     nombre_secretaria = db.Column(db.String(100), nullable=False)

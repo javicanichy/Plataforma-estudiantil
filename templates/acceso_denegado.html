@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Acceso Denegado - 403{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="text-center p-4 shadow-lg rounded-4 bg-white" style="max-width: 450px; border-top: 5px solid #dc3545;">
+        
+        <div class="mb-3">
+            <i class="bi bi-shield-lock-fill text-danger" style="font-size: 3.5rem;"></i>
+        </div>
+        
+        <h1 class="h1 fw-bold text-dark">403</h1>
+        <h4 class="fw-bold mb-3">Acceso Restringido</h4>
+        
+        <p class="text-muted mb-4" style="font-size: 0.95rem;">
+            Lo sentimos, <strong>{{ current_user.nombre if current_user.is_authenticated else 'Usuario' }}</strong>. 
+            No tienes los permisos necesarios para acceder a esta unidad administrativa.
+        </p>
+
+        <hr class="my-3">
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('inicio') }}" class="btn btn-primary btn-sm px-4 rounded-pill">
+                <i class="bi bi-house-door me-2"></i>Inicio
+            </a>
+            <button onclick="history.back()" class="btn btn-outline-secondary btn-sm px-4 rounded-pill">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </button>
+        </div>
+
+        <p class="mt-4 small text-muted" style="font-size: 0.8rem;">
+            Si crees que es un error, contacta con la <strong>Sección TIC</strong>.
+        </p>
+    </div>
+</div>
+{% endblock %}

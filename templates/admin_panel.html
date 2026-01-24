@@ -21,7 +21,7 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar con estilo Premium */
+        /* Sidebar con Scroll y estilo Premium */
         .sidebar {
             width: var(--sidebar-width);
             height: 100vh;
@@ -31,6 +31,18 @@
             transition: all 0.3s;
             z-index: 1000;
             border-right: 1px solid rgba(255,255,255,0.05);
+            /* Cambio solicitado: Scroll habilitado */
+            overflow-y: auto;
+            padding-bottom: 80px; /* Espacio para el botón salir */
+        }
+
+        /* Estilo para la barra de desplazamiento (Scrollbar) */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
         }
 
         .sidebar-header {
@@ -57,14 +69,12 @@
             transform: translateX(5px);
         }
 
-        /* Main Content Area */
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 2.5rem;
             min-height: 100vh;
         }
 
-        /* Cards Estilizadas */
         .stat-card {
             border: none;
             border-radius: 16px;
@@ -74,6 +84,15 @@
         .stat-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+        }
+
+        /* Estilo para la Foto de Perfil */
+        .avatar-profile {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid var(--unge-red);
         }
 
         .avatar-initials {
@@ -111,6 +130,43 @@
             .sidebar.active { margin-left: 0; }
         }
     </style>
+
+    <!-- Modo transparencia si estado == 'desactivado'-->
+     <style>
+    /* Clase para la fila cuando el usuario está desactivado */
+    .row-pausada {
+        background-color: rgba(248, 249, 250, 0.7) !important; /* Gris muy tenue */
+        transition: all 0.4s ease;
+    }
+
+    /* Bajamos la opacidad de los textos y fotos */
+    .row-pausada td {
+        opacity: 0.45; 
+        filter: grayscale(90%); /* Elimina casi todo el color */
+    }
+
+    /* IMPORTANTE: Mantenemos la última columna (Gestión) con opacidad completa */
+    /* Esto es para que los botones de Activar/Eliminar se vean claros y sea fácil usarlos */
+    .row-pausada td:last-child {
+        opacity: 1 !important;
+        filter: none !important;
+    }
+
+    /* Si pasas el ratón por encima, la fila se aclara un poco para facilitar la lectura */
+    .row-pausada:hover {
+        background-color: #f1f3f5 !important;
+    }
+    
+    .row-pausada:hover td {
+        opacity: 0.7;
+    }
+
+    /* Estilo extra para el badge de estado dentro de la fila pausada */
+    .row-pausada .badge {
+        letter-spacing: 0.5px;
+        font-weight: 800;
+    }
+</style>
 </head>
 <body>
 
@@ -120,38 +176,35 @@
                 <i class="fas fa-shield-alt text-danger fa-2x"></i>
             </div>
             <h5 class="fw-bold m-0 tracking-tight">CENTRO DE CONTROL</h5>
-            <span class="badge bg-danger-subtle text-danger mt-2">UNGE ADMIN</span>
+            <span class="badge bg-danger-subtle text-danger mt-2">FACULTAD CIENCIAS DE LA SALUD</span>
         </div>
         
         <div class="mt-2">
             <a href="{{ url_for('panel_admin') }}" class="nav-link active">
                 <i class="fas fa-chart-line"></i> Dashboard
             </a>
-            <a href="{{url_for('panel_admin_solicitudes')}}" class="nav-link">
+            <a href="{{url_for('panel_admin_solicitudes')}}" class="nav-link" target="_blank">
                 <i class="fas fa-users"></i> Estudiantes
             </a>
-            <a href="{{url_for('admin_profesor_revision')}}" class="nav-link">
+            <a href="{{url_for('admin_profesor_revision')}}" class="nav-link" target="_blank">
                 <i class="fas fa-chalkboard-teacher"></i> Profesores
             </a>
-            <a href="{{url_for('ver_matriculas')}}" class="nav-link">
+            <a href="{{url_for('ver_matriculas')}}" class="nav-link" target="_blank">
                 <i class="fas fa-file-signature"></i> Matrículas
             </a>
-            <a href="{{url_for('panel_control_disciplinario')}}" class="nav-link">
-                <i class="fas fa-user-checkgit "></i> Activar cuentas
+            <a href="{{url_for('panel_control_disciplinario')}}" class="nav-link" target="_blank">
+                <i class="fas fa-user-check"></i> Activar cuentas
             </a>
-            <a href="{{url_for('buzon_general')}}" class="nav-link">
+            <a href="{{url_for('buzon_general')}}" class="nav-link" target="_blank">
                 <i class="fas fa-envelope-open-text"></i> Buzón General
             </a>
             <hr class="mx-4 opacity-10">
-            <a href="#" class="nav-link">
-                <i class="fas fa-user-lock"></i> Seguridad
-            </a>
-            <a href="#" class="nav-link">
-                <i class="fas fa-database"></i> Logs del Sistema
+            <a href="{{url_for('consola_maestra')}}" class="nav-link" target="_blank">
+                <i class="fas fa-database"></i> Terminal del Sistema
             </a>
         </div>
 
-        <div class="position-absolute bottom-0 w-100 p-4">
+        <div class="p-4">
             <a href="{{ url_for('logout') }}" onclick="return confirm('¿Finalizar sesión administrativa?');" class="btn btn-danger w-100 rounded-pill fw-bold py-2 shadow-sm">
                 <i class="fas fa-power-off me-2"></i> Salir
             </a>
@@ -162,14 +215,22 @@
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h2 class="fw-bold text-dark m-0">Consola de Administración</h2>
-                <p class="text-muted mb-0">Bienvenida de nuevo, <strong>{{ current_user.nombre }}</strong></p>
+                <p class="text-muted mb-0">Bienvenida de nuevo, <strong>{{ current_user.correo_institucional }}</strong></p>
             </div>
-            <div class="d-flex align-items-center bg-white p-2 rounded-4 shadow-sm px-3">
+            <div class="d-flex align-items-center bg-white p-2 rounded-4 shadow-sm px-3"
+                onclick="abrirModalPerfil()" 
+                style="cursor: pointer;">
                 <div class="text-end me-3 d-none d-md-block">
                     <p class="m-0 small fw-bold text-dark">{{ current_user.nombre }} {{ current_user.apellidos }}</p>
-                    <span class="badge bg-success-subtle text-success" style="font-size: 0.6rem;">SISTEMA ACTIVO</span>
+                    <span class="badge bg-success-subtle text-success" style="font-size: 0.6rem;">PERFIL</span>
                 </div>
-                <div class="avatar-initials">
+                {% if current_user.foto_perfil %}
+                <img src="{{ url_for('static', filename='uploads/perfiles/' + current_user.foto_perfil) }}" 
+                     class="avatar-profile" 
+                     alt="Perfil"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                {% endif %}
+                <div class="avatar-initials" style="{% if current_user.foto_perfil %}display:none;{% endif %}">
                     {{ current_user.nombre[0] }}{{ current_user.apellidos[0] if current_user.apellidos else '' }}
                 </div>
             </div>
@@ -201,59 +262,83 @@
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card table-card shadow-sm h-100">
-                    <div class="card-header bg-white py-4 px-4 d-flex justify-content-between align-items-center border-0">
-                        <h5 class="fw-bold m-0 text-dark">Actividad Reciente</h5>
-                        <div class="input-group input-group-sm w-auto">
-                            <input type="text" class="form-control border-light bg-light" placeholder="Buscar usuario...">
-                            <button class="btn btn-outline-light border-light bg-light text-muted"><i class="fas fa-search"></i></button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="ps-4 border-0">Identidad</th>
-                                        <th class="border-0">Rol</th>
-                                        <th class="border-0">Identificación</th>
-                                        <th class="text-end pe-4 border-0">Gestión</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in ultimos_usuarios %}
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="d-flex align-items-center">
-                                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center fw-bold text-muted me-3" style="width:38px; height:38px; font-size: 0.8rem; border: 1px solid #eee;">
-                                                    {{ user.nombre[0] }}{{ user.apellidos[0] if user.apellidos else '' }}
-                                                </div>
-                                                <div>
-                                                    <p class="m-0 fw-bold small text-dark">{{ user.nombre }} {{ user.apellidos }}</p>
-                                                    <p class="m-0 text-muted" style="font-size: 0.7rem;">{{ user.correo_institucional }}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            {% set role_badges = {'admin': 'danger', 'profesor': 'success', 'directivo': 'warning', 'estudiante': 'primary'} %}
-                                            <span class="badge bg-{{ role_badges[user.rol] or 'secondary' }} bg-opacity-10 text-{{ role_badges[user.rol] or 'secondary' }} badge-role">
-                                                {{ user.rol }}
-                                            </span>
-                                        </td>
-                                        <td><span class="text-muted small fw-bold">{{ user.dip }}</span></td>
-                                        <td class="text-end pe-4">
-                                            <div class="btn-group shadow-sm rounded-3">
-                                                <a href="#" class="btn btn-sm btn-white border-light text-primary" title="Editar"><i class="fas fa-pen"></i></a>
-                                                <button class="btn btn-sm btn-white border-light text-danger" title="Suspender"><i class="fas fa-user-slash"></i></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <div class="card table-card shadow-sm h-100 border-0" style="border-radius: 16px;">
+    <div class="card-header bg-white py-4 px-4 d-flex justify-content-between align-items-center border-0">
+        <div>
+            <h5 class="fw-bold m-0 text-dark">Gestión de Usuarios</h5>
+            <small class="text-success fw-bold">
+                <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> {{ usuarios_online }} En línea ahora
+            </small>
+        </div>
+        <div class="input-group input-group-sm" style="max-width: 250px;">
+            <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="adminSearch" class="form-control bg-light border-0" placeholder="Buscar por nombre o DIP...">
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="userTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 border-0 text-muted small fw-bold">IDENTIDAD</th>
+                        <th class="border-0 text-muted small fw-bold text-center">ESTADO</th>
+                        <th class="border-0 text-muted small fw-bold">IDENTIFICACIÓN</th>
+                        <th class="text-end pe-4 border-0 text-muted small fw-bold">GESTIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in ultimos_usuarios %}
+                    <tr class="user-row {{ 'row-pausada' if user.activar_desactivar == 'desactivar' }}" style="{% if loop.index > 8 %}display: none;{% endif %}" data-index="{{ loop.index }}">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    {% if user.rol == 'profesor' and user.profesor and user.profesor.archivo_foto %}
+                                        <img src="{{ url_for('static', filename='uploads/fotos/' ~ user.profesor.archivo_foto) }}" 
+                                        class="rounded-circle border" 
+                                        style="width:38px; height:38px; object-fit:cover; border: 1px solid #eee;">
+                                    {% elif user.foto_perfil %}
+                                        <img src="{{ url_for('static', filename='uploads/perfiles/' ~ user.foto_perfil) }}" 
+                                        class="rounded-circle border" 
+                                        style="width:38px; height:38px; object-fit:cover; border: 1px solid #eee;">
+                                    {% else %}
+                                        <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center fw-bold text-danger border border-danger-subtle" 
+                                            style="width:38px; height:38px; font-size: 0.8rem;">
+                                            {{ user.nombre[0] }}{{ user.apellidos[0] if user.apellidos else '' }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="m-0 fw-bold small text-dark name-target">{{ user.nombre }} {{ user.apellidos }}</p>
+                                    <p class="m-0 text-muted" style="font-size: 0.7rem;">{{ user.correo_institucional }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {{ 'bg-success' if user.activo else 'bg-secondary' }} bg-opacity-10 {{ 'text-success' if user.activo else 'text-secondary' }} rounded-pill" style="font-size: 0.6rem;">
+                                {{ 'ACTIVO' if user.activo else 'PAUSADO' }}
+                            </span>
+                        </td>
+                        <td><span class="text-muted small fw-bold dip-target">{{ user.dip }}</span></td>
+                        <td class="text-end pe-4">
+                            <div class="btn-group shadow-sm rounded-3">
+                                <button onclick="toggleEstado('{{ user.id }}', '{{ user.nombre }}', '{{ user.activar_desactivar }}')" 
+                                        class="btn btn-sm btn-white border-light {{ 'text-warning' if user.activar_desactivar == 'activar' else 'text-success' }}" 
+                                        title="{{ 'Pausar cuenta' if user.activar_desactivar == 'activar' else 'Activar cuenta' }}">
+                                    <i class="fas {{ 'fa-pause-circle' if user.activar_desactivar == 'activar' else 'fa-play-circle' }}"></i>
+                                </button>
+                                <button onclick="eliminarUsuario('{{ user.id }}', '{{ user.nombre }}')" class="btn btn-sm btn-white border-light text-danger" title="Eliminar definitivamente">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
             </div>
 
             <div class="col-lg-4">
@@ -267,19 +352,12 @@
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-cloud-download-alt me-3 fa-lg text-warning"></i>
                                     <div>
-                                        <div class="fw-bold small">Generar Exel</div>
-                                        <div class="tiny opacity-50" style="font-size: 0.7rem;">Descargar base de datos hoy</div>
+                                        <div class="fw-bold small">Generar Excel</div>
+                                        <div class="tiny opacity-50" style="font-size: 0.7rem;">Descargar base de datos</div>
                                     </div>
                                 </div>
                             </a>
-                            <a href="{{ url_for('consola_maestra') }}" target="_blank" class="btn btn-white border py-3 text-start px-3 rounded-4 shadow-sm">
-                                <div class="d-flex align-items-center text-primary">
-                                    <i class="fas fa-user-cog me-3 fa-lg"></i>
-                                        <div class="fw-bold small">Consola de Administración</div>
-                                </div>
-                            </a>
-                            
-                            <button class="btn btn-unge-light py-3 text-start px-3 rounded-4 border-0">
+                            <button onclick="enviarAvisoGlobal()" class="btn btn-unge-light py-3 text-start px-3 rounded-4 border-0">
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-bullhorn me-3 fa-lg"></i>
                                     <div class="fw-bold small">Notificación Global</div>
@@ -289,51 +367,53 @@
                     </div>
                 </div>
 
-                <!-- Control de hardware-->
+                                <!-- Control de hardware-->
                 <div class="card shadow-sm bg-dark text-white border-0 overflow-hidden">
-    <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h6 class="fw-bold m-0 small text-uppercase" style="letter-spacing: 1px;">
-                <i class="fas fa-microchip me-2 text-success"></i>Monitor de Sistema
-            </h6>
-            <span id="badge-entorno" class="badge bg-secondary small" style="font-size: 0.6rem;">Detectando...</span>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="fw-bold m-0 small text-uppercase" style="letter-spacing: 1px;">
+                                <i class="fas fa-microchip me-2 text-success"></i>Monitor de Sistema
+                            </h6>
+                            <span id="badge-entorno" class="badge bg-secondary small" style="font-size: 0.6rem;">Detectando...</span>
+                        </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-2 border border-secondary rounded">
+                                <small class="opacity-50 d-block mb-1" style="font-size: 0.7rem;">CPU</small>
+                                    <h5 id="cpu-val" class="fw-bold m-0">0%</h5>
+                            </div>
+                        </div>
+                    <div class="col-6">
+                        <div class="p-2 border border-secondary rounded">
+                            <small class="opacity-50 d-block mb-1" style="font-size: 0.7rem;">RAM</small>
+                            <h5 id="ram-val" class="fw-bold m-0">0%</h5>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-3">
+                        <div class="d-flex justify-content-between mb-1 small">
+                            <span class="opacity-75">Disco (<span id="disco-info">0 GB</span>)</span>
+                            <span id="disco-p" class="fw-bold">0%</span>
+                        </div>
+                        <div class="progress bg-secondary" style="height: 6px;">
+                            <div id="disco-bar" class="progress-bar bg-primary" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-3 pt-2 border-top border-secondary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="opacity-75">Base de Datos:</small>
+                            <span id="db-status" class="badge bg-success">Verificando</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <div class="row g-3">
-            <div class="col-6">
-                <div class="p-2 border border-secondary rounded">
-                    <small class="opacity-50 d-block mb-1" style="font-size: 0.7rem;">CPU</small>
-                    <h5 id="cpu-val" class="fw-bold m-0">0%</h5>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="p-2 border border-secondary rounded">
-                    <small class="opacity-50 d-block mb-1" style="font-size: 0.7rem;">RAM</small>
-                    <h5 id="ram-val" class="fw-bold m-0">0%</h5>
-                </div>
-            </div>
-
-            <div class="col-12 mt-3">
-                <div class="d-flex justify-content-between mb-1 small">
-                    <span class="opacity-75">Disco (<span id="disco-info">0 GB</span>)</span>
-                    <span id="disco-p" class="fw-bold">0%</span>
-                </div>
-                <div class="progress bg-secondary" style="height: 6px;">
-                    <div id="disco-bar" class="progress-bar bg-primary" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <div class="col-12 mt-3 pt-2 border-top border-secondary">
-                <div class="d-flex justify-content-between align-items-center">
-                    <small class="opacity-75">Base de Datos:</small>
-                    <span id="db-status" class="badge bg-success">Verificando</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
+    <!-- JS-->
+    <script>
 function refreshStats() {
     fetch('/admin/api/stats')
         .then(res => res.json())
@@ -372,6 +452,258 @@ refreshStats();
         </div>
     </main>
 
+    <script>
+    function enviarAvisoGlobal() {
+    Swal.fire({
+        title: 'Difusión de Anuncio',
+        html: `
+            <div class="text-start">
+                <p class="small text-muted">Selecciona quién recibirá este mensaje:</p>
+                <div class="d-flex gap-2 mb-3">
+                    <input type="checkbox" class="btn-check" id="btn-est" value="estudiante" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="btn-est">Estudiantes</label>
+
+                    <input type="checkbox" class="btn-check" id="btn-prof" value="profesor" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="btn-prof">Profesores</label>
+
+                    <input type="checkbox" class="btn-check" id="btn-dir" value="directivo" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="btn-dir">Directivos</label>
+                </div>
+                <textarea id="swal-msg" class="form-control" rows="4" placeholder="Escribe el mensaje..."></textarea>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Enviar masivamente',
+        preConfirm: () => {
+            const roles = [];
+            if (document.getElementById('btn-est').checked) roles.push('estudiante');
+            if (document.getElementById('btn-prof').checked) roles.push('profesor');
+            if (document.getElementById('btn-dir').checked) roles.push('directivo');
+            
+            const mensaje = document.getElementById('swal-msg').value;
+
+            if (roles.length === 0 || !mensaje) {
+                Swal.showValidationMessage('Selecciona al menos un rol y escribe un mensaje');
+                return false;
+            }
+            return { roles, mensaje };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar carga
+            Swal.fire({ title: 'Procesando...', didOpen: () => Swal.showLoading() });
+
+            // PETICIÓN POST
+            fetch('/admin/api/enviar-anuncio-global', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(result.value)
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.fire(data.status === 'success' ? '¡Éxito!' : 'Error', data.message, data.status);
+            })
+            .catch(() => Swal.fire('Error', 'No se pudo conectar con el servidor', 'error'));
+        }
+    });
+}
+    </script>
+
+    <script>
+        function abrirModalPerfil() {
+    Swal.fire({
+        title: 'Seguridad del Perfil Administrativo',
+        html: `
+            <form id="form-perfil-admin" enctype="multipart/form-data" class="text-start p-2">
+                <div class="text-center mb-4">
+                    <div class="mx-auto position-relative" style="width: 90px; height: 90px;">
+                        <img id="preview-foto-modal" src="${document.querySelector('.avatar-profile')?.src || ''}" 
+                             style="width:100%; height:100%; object-fit:cover; border-radius:50%; border:3px solid #800000; ${document.querySelector('.avatar-profile') ? '' : 'display:none;'}">
+                        <div id="preview-text-modal" class="avatar-initials" style="width:100%; height:100%; border-radius:50%; display:${document.querySelector('.avatar-profile') ? 'none' : 'flex'}; align-items:center; justify-content:center; background:#800000; color:white; font-size:1.5rem;">
+                            {{ current_user.nombre[0] }}
+                        </div>
+                    </div>
+                    <label for="input-foto-modal" class="btn btn-sm btn-outline-secondary mt-2">
+                        <i class="fas fa-camera me-1"></i> Cambiar Foto
+                    </label>
+                    <input type="file" name="foto_perfil" id="input-foto-modal" class="d-none" accept="image/*" onchange="previewImagenEnModal(this)">
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-6 mb-3">
+                        <label class="form-label small fw-bold">Nombre</label>
+                        <input type="text" name="nombre" class="form-control" value="{{ current_user.nombre }}">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label small fw-bold">Apellidos</label>
+                        <input type="text" name="apellidos" class="form-control" value="{{ current_user.apellidos }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control" value="{{ current_user.telefono or '' }}">
+                </div>
+
+                <hr class="my-4">
+                <h6 class="fw-bold text-danger mb-3"><i class="fas fa-key me-2"></i>Cambio de Contraseña</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Contraseña Actual</label>
+                    <input type="password" name="password_actual" class="form-control border-danger-subtle" placeholder="Requerido para cambios críticos">
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-6 mb-3">
+                        <label class="form-label small fw-bold">Nueva Contraseña</label>
+                        <input type="password" id="pass_nueva" name="password_hash" class="form-control" placeholder="Mín. 8 caracteres">
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label small fw-bold">Repetir Contraseña</label>
+                        <input type="password" id="pass_repetir" class="form-control" placeholder="Confirmar">
+                    </div>
+                </div>
+                <div id="password-error" class="text-danger small" style="display:none;">Las contraseñas no coinciden.</div>
+            </form>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar Cambios',
+        cancelButtonText: 'Cancelar',
+        customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-light' },
+        
+        preConfirm: () => {
+            const form = document.getElementById('form-perfil-admin');
+            const passNueva = document.getElementById('pass_nueva').value;
+            const passRepetir = document.getElementById('pass_repetir').value;
+            const passActual = form.querySelector('[name="password_actual"]').value;
+
+            // Validación: Si intenta cambiar contraseña, debe llenar los 3 campos
+            if (passNueva || passRepetir) {
+                if (!passActual) {
+                    Swal.showValidationMessage('Debes introducir tu contraseña actual');
+                    return false;
+                }
+                if (passNueva !== passRepetir) {
+                    Swal.showValidationMessage('Las nuevas contraseñas no coinciden');
+                    return false;
+                }
+                if (passNueva.length < 8) {
+                    Swal.showValidationMessage('La nueva contraseña debe tener al menos 8 caracteres');
+                    return false;
+                }
+            }
+
+            const formData = new FormData(form);
+            return fetch('/admin/editar-perfil', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (!response.ok) return response.json().then(json => { throw new Error(json.message || 'Error del servidor'); });
+                return response.json();
+            }).catch(error => {
+                Swal.showValidationMessage(`Error: ${error.message}`);
+            });
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Perfil Actualizado',
+                text: 'Los cambios se han guardado correctamente.',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => location.reload());
+        }
+    });
+}
+
+function previewImagenEnModal(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById('preview-foto-modal');
+            const txt = document.getElementById('preview-text-modal');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            txt.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+    </script>
+
+    <script>
+    // 1. Lógica del Buscador (Filtra sobre todos, pero respeta el límite de 8 si está vacío)
+    document.getElementById('adminSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.user-row');
+        
+        rows.forEach(row => {
+            const name = row.querySelector('.name-target').innerText.toLowerCase();
+            const dip = row.querySelector('.dip-target').innerText.toLowerCase();
+            const index = parseInt(row.getAttribute('data-index'));
+
+            if (term === "") {
+                row.style.display = index <= 8 ? '' : 'none';
+            } else {
+                row.style.display = (name.includes(term) || dip.includes(term)) ? '' : 'none';
+            }
+        });
+    });
+
+    // 2. Función para Pausar / Activar (Reversible)
+    function toggleEstado(userId, nombre, estadoActual) {
+    // Convertimos el string en un booleano para que la lógica del Swal funcione
+    const estaActivo = (estadoActual === 'activar'); 
+    
+    const accion = estaActivo ? 'PAUSAR' : 'ACTIVAR';
+    const icono = estaActivo ? 'warning' : 'success';
+    
+    Swal.fire({
+        title: `¿${accion} cuenta?`,
+        text: `¿Estás seguro de cambiar el estado de acceso para ${nombre}?`,
+        icon: icono,
+        showCancelButton: true,
+        confirmButtonColor: estaActivo ? '#ffc107' : '#28a745',
+        confirmButtonText: `Sí, ${accion.toLowerCase()}`,
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/toggle-status/${userId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Actualizado', data.message, 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            });
+        }
+    });
+  }
+
+    // 3. Función para Eliminar (Definitivo)
+    function eliminarUsuario(userId, nombre) {
+        Swal.fire({
+            title: '¿Eliminar definitivamente?',
+            text: `Esta acción borrará a ${nombre} de la base de datos de forma permanente.`,
+            icon: 'error',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Aquí deberías tener una ruta en Flask para borrar: /admin/eliminar/<id>
+                fetch(`/admin/eliminar-usuario/${userId}`, { method: 'DELETE' })
+                .then(res => res.ok ? location.reload() : Swal.fire('Error', 'No se pudo eliminar', 'error'));
+            }
+        });
+    }
+</script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!--JS-->
 </body>
 </html>

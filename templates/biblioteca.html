@@ -1,314 +1,228 @@
 {% extends "base.html" %}
 
-
 {% block content %}
-
-<!--Estilo para modicar base.html (fondo, etc) desde flask (no puede ir en archivo externo de css)-->
 <style>
-    
-/* Fondo solo para biblioteca.html */
-body.biblioteca-page {
-    background-image: url("{{ url_for('static', filename='img/biblioteca1.jpg') }}");
-    background-size: cover;       /* Ocupa toda la pantalla */
-    background-position: center;  /* Centrado */
-    background-repeat: no-repeat;
-    background-attachment: fixed; /* Se mantiene al hacer scroll */
-    background-repeat: no-repeat; /* evita que se repita */
-    background-position: center center; /* centra la imagen */
-    /*background-size: contain; /* la imagen se ajusta sin recortarse ni estirarse */
-}
+    /* Fondo con overlay para mejorar legibilidad */
+    body.biblioteca-page {
+        background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("{{ url_for('static', filename='img/biblioteca1.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+    }
 
+    /* Contenedor Principal con efecto Glassmorphism */
+    .container-biblioteca {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    }
 
-/* Opcional: hacer que el contenido tenga fondo semitransparente */
-.container-biblioteca {
-    background-color:  rgba(255, 255, 255, 0.85);
-    padding: 20px;
-    border-radius: 10px;
-}
-/* Para sobre escribir los fondos */
-.fondo-tfg {
-    background-color: /*transparent !important;*/ rgba(255, 255, 255, 0.6) !important; /* blanco 60% opacidad */
-    border: none !important;
-}
+    /* Tarjetas de Galería */
+    .biblio-card-img {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+    .biblio-card-img:hover {
+        transform: translateY(-5px);
+    }
+    .biblio-card-img .card-body {
+        background: #1a237e; /* Azul institucional */
+        color: white;
+        padding: 10px;
+    }
 
+    /* Secciones de Información */
+    .info-section {
+        background: #f8f9fa;
+        border-left: 5px solid #1a237e;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    /* Botones de Acceso Principal */
+    .btn-main-access {
+        transition: all 0.3s;
+        border-radius: 10px;
+        padding: 25px;
+        border: 2px solid #eee;
+    }
+    .btn-main-access:hover {
+        border-color: #1a237e;
+        background: #f0f2ff;
+        transform: scale(1.02);
+    }
+
+    /* Estilo para items de TFG */
+    .tfg-item {
+        border-radius: 12px !important;
+        border: 1px solid #eee !important;
+        margin-bottom: 15px;
+        transition: box-shadow 0.3s;
+    }
+    .tfg-item:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
+
+    /* Separadores decorativos */
+    .custom-hr {
+        width: 50px;
+        height: 5px;
+        background: #1a237e;
+        margin: 20px 0;
+        border-radius: 5px;
+        border: none;
+    }
 </style>
 
-<!--------------------------------------------------------------------------------------------------------------------->
-<!--------------------------------------------------------------------------------------------------------------------->
-
-<!-- MIGAS DE PAN (CONTENEDOR INDEPENDIENTE) -->
-<div class="container-fluid bg-light border-bottom">
+<div class="container-fluid bg-white border-bottom shadow-sm">
     <div class="container py-2">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('inicio') }}" class="text-decoration-none">
-                      <i class="bi bi-house-door"></i> Inicio
-                    </a>
-                </li>
-
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('biblioteca_page') }}" class="text-decoration-none">
-                      <i class="bi bi-building"></i> Biblioteca
-                    </a>
-                </li>
+                <li class="breadcrumb-item"><a href="{{ url_for('inicio') }}" class="text-decoration-none text-primary"><i class="bi bi-house-door"></i> Inicio</a></li>
+                <li class="breadcrumb-item active">Biblioteca</li>
             </ol>
         </nav>
     </div>
 </div>
 
-
-
-<!--Para que todo este transparente    style= "background-color: transparent;"-->
-<div class="container container-biblioteca my-4 fondo-tfg"> 
-
-    <div class="container my-4">
-
-  <h1 id="biblioteca">Biblioteca</h1>
-  <h4 id="biblioteca-descripcion">La biblioteca universitaria es un espacio clave para el acceso a conocimiento, investigación y aprendizaje
-      permite a estudiantes y profesores consultar y adquirir información de manera organizada y segura
-      con el objetivo de ofrecer recursos físicos y digitales que apoyen la docencia y la investigación,
-      proveer acceso a libros, tesis y artículos relevantes para las diferentes áreas académicas.
-      Facilitar la consulta de recursos físicos y digitales de manera sencilla. Cómo accedo a los libros de la biblioteca? siga leyendo... <br>
-    </h4>
-    <!-- FOTO GRANDE ILUSTRATIVA DE LA BIBLIOTECA -->
-         <!-- IMÁGENES ILUSTRATIVAS DE LA BIBLIOTECA -->
-<div class="row mb-4">
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm" style="background-color: green;">
-      <img src="{{ url_for('static', filename='img/biblioteca2.jpg') }}"
-           class="card-img-top" alt="Biblioteca 1">
-      <div class="card-body">
-        <p class="card-text text-center small">Sección lectura alta. Edi. II</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm" style="background-color: green;">
-      <img src="{{ url_for('static', filename='img/biblioteca6.jpg') }}"
-           class="card-img-top" alt="Biblioteca 2">
-      <div class="card-body">
-        <p class="card-text text-center small">Sección lectura baja. Edi II</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm" style="background-color: green;">
-      <img src="{{ url_for('static', filename='img/biblioteca8.jpg') }}"
-           class="card-img-top" alt="Biblioteca 3">
-      <div class="card-body">
-        <p class="card-text text-center small">Sala del bibliotecario. Edi II</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
-    <hr class="hr">
-    <hr class="hr">
-    <hr class="hr">
-    <h5 id="biblioteca-digital">
-      <strong>Acceder a Libros en Físico:</strong> <br>
-      Libros y documentos impresos que se encuentran disponibles en el espacio físico de la biblioteca (Edificio I y Edificio II). <br>
-      Características:
-      Acceso controlado, solo usuarios de la Facultd de Ciencias de la Salud pueden<br>
-      consulta libros en sala y posibilidad de préstamo, disponoble en el edi. 1 y en el edi. 2. <br>
-      Ejemplos de recursos: Libros de texto, manuales, enciclopedias, tesis impresas. <br>
-      Ventaja: Experiencia táctil y referencia inmediata sin necesidad de dispositivos.
-    </h5>
-    <h5 id="biblioteca-fisico">
-      <strong>Sección de Libros Digitales:</strong><br>
-      Recursos accesibles a través de internet mediante esa platforma. <br>
-      Debes ser un estudiante matriculado y poseer un usuario y conseña válidos. <br>
-      Tipos de recursos: PDFs de libros, artículos y tesis TFG. <br>
-      Ventaja, Acceso inmediato y simultáneo desde múltiples ubicaciones. <br>
-    </h5>
-    <hr class="hr">
-    <hr class="hr">
-    <hr class="hr">
-    <h5 id="biblioteca-gestion">
-      <strong>Gestión y Funcionalidades:</strong> <br>
-      1. Acceder a libros originales impresas. <br>
-      2. Integración de bases de datos externas (PubMed, Medline, Scielo, etc.). <br>
-      3. Posiblidad de subir libros digitales reconocidas. <br>
-      4. Los estudiantes finalista pueden agregar sus TFG a este repositorio de forma digital. <br>
-    </h5>
-    <hr class="hr">
-    <hr class="hr">
-    <hr class="hr">
-
-    <!-- IMÁGENES ILUSTRATIVAS DE LA BIBLIOTECA -->
-<div class="row mb-4">
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm" style="background-color: green;">
-      <img src="{{ url_for('static', filename='img/biblioteca1.jpg') }}"
-           class="card-img-top" alt="Biblioteca 1">
-      <div class="card-body">
-        <p class="card-text text-center small">Sala de lectura</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm" style="background-color: green;">
-      <img src="{{ url_for('static', filename='img/biblioteca4.jpg') }}"
-           class="card-img-top" alt="Biblioteca 2">
-      <div class="card-body">
-        <p class="card-text text-center small">Sección de libros en físico</p>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4 mb-3">
-    <div class="card shadow-sm" style="background-color: green;">
-      <img src="{{ url_for('static', filename='img/biblioteca7.jpg') }}"
-           class="card-img-top" alt="Biblioteca 3">
-      <div class="card-body">
-        <p class="card-text text-center small">Zona digital y ordenadores</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-  <!-- Cómo acceder -->
-  <div class="card p-3 mb-4 fondo-tfg" >
-    <h4>¿Cómo acceder a la biblioteca?</h4>
-    <ul>
-      <li>Debes estar registrado y tener tu usuario activo.</li>
-      <li>Se requiere DNI y validación del rol según el tipo de material.</li>
-      <li>Libros TFG son visibles gratuitamente.</li>
-    </ul>
-  </div>
-
-  <!-- Opciones principales -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-6">
-      <div class="card p-3 text-center fondo-tfg">
-        <h5>1. Libros en físico</h5>
-        <p><a href="{{ url_for('biblioteca_fisicos') }}" class="btn btn-primary">Acceder</a></p>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3 text-center fondo-tfg">
-        <h5>2. Libros en digital</h5>
-        <p><a href="{{ url_for('biblioteca_digitales') }}" class="btn btn-primary">Acceder</a></p>
-      </div>
-    </div>
-  </div>
-
-
-
-  <!-- Libros TFG visibles -->
-  <div class="card p-3 fondo-tfg">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4 class="mb-0">Trabajo Fin de Grado</h4>
-
-    <!-- Botón filtro pequeño -->
-    <div class="dropdown">
-      <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filtroDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-funnel-fill"></i> <!-- icono de filtrar -->
-      </button>
-      <ul class="dropdown-menu" aria-labelledby="filtroDropdown">
-        <li><a class="dropdown-item" href="{{ url_for('biblioteca_page') }}">Todos</a></li>
-        {% for titulacion, label in [
-            ("medicina", "Medicina"),
-            ("enfermeria grado II", "Enfermería Grado II"),
-            ("fisioterapia", "Fisioterapia"),
-            ("anestesiologia grado I", "Anestesiología Grado I"),
-            ("ginecobstetricia", "Ginecobstetricia"),
-            ("laboratorio", "Laboratorio"),
-            ("higiene y epidemiologia", "Higiene y Epidemiología"),
-            ("imagenologia", "Imagenología"),
-            ("enfermeria grado I", "Enfermería Grado I")
-          ] %}
-          <li>
-            <a class="dropdown-item" href="{{ url_for('biblioteca_page', titulacion=titulacion) }}">
-              {{ label }}
-            </a>
-          </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-
-    <div class="list-group mt-2" >
-
-      {% for item in tfg_publicos %}
-      <div class="list-group-item py-3 fondo-tfg">
-
-        <div class="d-flex">
-
-          <!-- PORTADA -->
-          <div style="width:90px;height:120px;overflow:hidden;border-radius:6px;" class="me-3">
-            {% if item.portada %}
-              <img src="{{ url_for('static', filename='uploads/portadas/' ~ item.portada) }}"
-                   class="img-fluid portada-TFG"
-                   style="object-fit: cover; width:100%; height:100%;">
-            {% else %}
-              <img src="{{ url_for('static', filename='img/default_cover.png') }}"
-                   class="img-fluid"
-                   style="object-fit: cover; width:100%; height:100%;">
-            {% endif %}
-          </div>
-
-          <!-- INFORMACIÓN Y DETALLES DEL LIBRO TFG-->
-          <div class="flex-grow-1" >
-            <h5 class="fw-bold color-tfg">{{ item.titulo }}</h5>
-
-            {% if item.tipo_libro == 'tfg' and item.titulacion %}
-              <p class="color-tfg"><strong>Titulación:</strong> {{ item.titulacion }}</p>
-            {% endif %}
-
-            <p class=" color-tfg">
-              <strong>Publicado por:</strong>
-              <a href="{{ url_for('ver_perfil', usuario_id=item.usuario_id) }}" class="text-decoration-none color-tfg">
-                {{ item.uploader.nombre }} {{ item.uploader.apellidos }}
-              </a>
-            </p>
-
-
-            {% if item.descripcion %}
-              <p class="text-muted small">{{ item.descripcion }}</p>
-            {% endif %}
-
-            <!-- ENLACE O PDF -->
-            {% if item.tipo == 'pdf' %}
-              <a class="btn btn-success btn-sm"
-                 href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) }}"
-                 target="_blank">📄 Ver PDF</a>
-            {% else %}
-              <a class="btn btn-info btn-sm"
-                 href="{{ item.enlace }}" target="_blank">🌐 Abrir enlace</a>
-            {% endif %}
-
-            <!--Solo el usuario id puede ver esos botones-->
-            {% if item.usuario_id == session['usuario_id'] %}
-            <!-- EDITAR -->
-            <a href="{{ url_for('biblioteca_editar', item_id=item.id) }}"
-               class="btn btn-warning btn-sm ms-2">✏️ Editar</a>
-
-            <!-- ELIMINAR -->
-            <form action="{{ url_for('biblioteca_eliminar', item_id=item.id) }}"
-                  method="POST" class="d-inline"
-                  onsubmit="return confirm('¿Eliminar este TFG?');">
-              <button class="btn btn-danger btn-sm">🗑 Eliminar</button>
-            </form>
-            {% endif %}
-          </div>
+<div class="container my-5">
+    <div class="container-biblioteca">
+        
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-dark mb-3">Biblioteca Universitaria</h1>
+                <p class="lead text-muted">Portal de acceso a recursos físicos y digitales para la docencia e investigación.</p>
+                <div class="custom-hr"></div>
+            </div>
         </div>
 
-      </div>
-      {% else %}
-        <p class="text-muted">No hay TFG disponibles.</p>
-      {% endfor %}
+        <div class="row mb-5">
+            {% for img, texto in [('biblioteca2.jpg', 'Sección Lectura Alta'), ('biblioteca6.jpg', 'Sección Lectura Baja'), ('biblioteca8.jpg', 'Sala del Bibliotecario')] %}
+            <div class="col-md-4 mb-4">
+                <div class="card biblio-card-img shadow-sm h-100">
+                    <img src="{{ url_for('static', filename='img/' ~ img) }}" class="card-img-top" alt="Vista Biblioteca" style="height: 200px; object-fit: cover;">
+                    <div class="card-body text-center">
+                        <small class="fw-bold">{{ texto }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <div class="info-section h-100">
+                    <h5 class="fw-bold"><i class="bi bi-journal-bookmark-fill me-2"></i>Libros en Físico</h5>
+                    <p class="small text-muted">Ubicados en Edificios I y II. Acceso exclusivo para la Facultad de Ciencias de la Salud. Consulta en sala y préstamos disponibles.</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-section h-100" style="border-left-color: #00bcd4;">
+                    <h5 class="fw-bold"><i class="bi bi-cloud-arrow-down-fill me-2"></i>Biblioteca Digital</h5>
+                    <p class="small text-muted">Repositorio de artículos, PDFs y bases de datos (PubMed, Scielo). Requiere credenciales de estudiante activo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-6">
+                <a href="{{ url_for('biblioteca_fisicos') }}" class="text-decoration-none">
+                    <div class="card btn-main-access text-center shadow-sm">
+                        <i class="bi bi-book display-6 text-primary mb-3"></i>
+                        <h5 class="text-dark">Acceder a Catálogo Físico</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('biblioteca_digitales') }}" class="text-decoration-none">
+                    <div class="card btn-main-access text-center shadow-sm">
+                        <i class="bi bi-laptop display-6 text-info mb-3"></i>
+                        <h5 class="text-dark">Acceder a Libros Digitales</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm p-4" style="background: #fdfdfd;">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h4 class="mb-0 fw-bold text-dark"><i class="bi bi-mortarboard me-2"></i>Trabajos Fin de Grado (TFG)</h4>
+                
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle btn-sm rounded-pill px-3" type="button" id="filtroDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-funnel me-1"></i> Filtrar Titulación
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow">
+                        <li><a class="dropdown-item" href="{{ url_for('biblioteca_page') }}">Todas las carreras</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% for titulacion, label in [
+                            ("medicina", "Medicina"), ("enfermeria grado II", "Enfermería Grado II"),
+                            ("fisioterapia", "Fisioterapia"), ("anestesiologia grado I", "Anestesiología Grado I"),
+                            ("ginecobstetricia", "Ginecobstetricia"), ("laboratorio", "Laboratorio"),
+                            ("higiene y epidemiologia", "Higiene y Epidemiología"), ("imagenologia", "Imagenología"),
+                            ("enfermeria grado I", "Enfermería Grado I")
+                        ] %}
+                        <li><a class="dropdown-item" href="{{ url_for('biblioteca_page', titulacion=titulacion) }}">{{ label }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="list-group list-group-flush">
+                {% for item in tfg_publicos %}
+                <div class="list-group-item tfg-item p-3 border-0 bg-white">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="shadow-sm" style="width:80px; height:110px; border-radius:8px; overflow:hidden;">
+                                <img src="{{ url_for('static', filename='uploads/portadas/' ~ item.portada if item.portada else 'img/default_cover.png') }}" class="w-100 h-100" style="object-fit: cover;">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h5 class="fw-bold text-dark mb-1">{{ item.titulo }}</h5>
+                            <span class="badge bg-light text-primary border mb-2">{{ item.titulacion }}</span>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-person-circle me-1"></i> {{ item.uploader.nombre }} {{ item.uploader.apellidos }}
+                            </p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('static', filename='uploads/libros/' ~ item.archivo) if item.tipo == 'pdf' else item.enlace }}" class="btn btn-sm btn-dark rounded-pill px-3" target="_blank">
+                                    <i class="bi {{ 'bi-file-earmark-pdf' if item.tipo == 'pdf' else 'bi-link-45deg' }} me-1"></i> Ver Recurso
+                                </a>
+
+                                {% if current_user.is_authenticated and (item.usuario_id == current_user.id or current_user.rol == 'admin') %}
+                                    <div class="btn-group shadow-sm" role="group">
+                                        <a href="{{ url_for('biblioteca_editar', item_id=item.id) }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-pencil-fill"></i> Editar
+                                        </a>
+                            
+                                        <form action="{{ url_for('biblioteca_eliminar', item_id=item.id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este TFG?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+
+                                {% if item.usuario_id == session['usuario_id'] %}
+                                    <a href="{{ url_for('biblioteca_editar', item_id=item.id) }}" class="btn btn-sm btn-outline-warning rounded-pill">Editar</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-archive text-muted display-1"></i>
+                    <p class="text-muted mt-3">No se encontraron trabajos en esta categoría.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
 
     </div>
-  </div>
-
-    </div>
-
-
 </div>
-
 {% endblock %}

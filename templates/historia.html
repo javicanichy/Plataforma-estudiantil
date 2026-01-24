@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Historia - Facultad de Ciencias de la Salud{% endblock %}
+
+{% block content %}
+<div class="bg-dark text-white py-5 mb-5 position-relative overflow-hidden" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('{{ url_for('static', filename='img/campus_bata.jpg') }}') no-repeat center center; background-size: cover;">
+    <div class="container py-5 text-center position-relative" style="z-index: 2;">
+        <h1 class="display-3 fw-bold">Nuestra Historia</h1>
+        <p class="lead">Desde las raíces coloniales hasta el corazón de la medicina moderna en Guinea Ecuatorial.</p>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <div class="row align-items-center mb-5">
+                <div class="col-md-6 order-md-2 mb-4 mb-md-0">
+                    <img src="{{ url_for('static', filename='img/historia.jpeg') }}" class="img-fluid rounded-4 shadow" alt="Orígenes UNGE">
+                </div>
+                <div class="col-md-6 order-md-1">
+                    <div class="badge bg-primary mb-2">1935 - 1959</div>
+                    <h2 class="fw-bold">Raíces y Fundaciones</h2>
+                    <p class="text-muted">
+                        La tradición académica en nuestra nación nace con el <strong>Instituto Colonial Indígena</strong> en 1935. Lo que comenzó como un centro de enseñanza técnica, escaló en 1943 a la <strong>Escuela Superior Indígena (ESI)</strong>, sentando las bases de la educación superior que hoy conocemos.
+                    </p>
+                    <p class="text-muted small italic">
+                        En 1958, bajo el nombre de Escuela Superior Santo Tomás de Aquino, la institución consolidó su prestigio provincial.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-5">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="p-4 bg-light rounded-4 border-start border-warning border-5">
+                        <div class="badge bg-warning text-dark mb-2">1971 - 1987</div>
+                        <h2 class="fw-bold">Evolución Institucional</h2>
+                        <p class="text-muted">
+                            Tras la independencia, la institución se reformula en 1971 como la <strong>Escuela Superior Martin Luther King (ESMLK)</strong>. Este periodo fue crucial para la identidad nacional, transformándose más tarde en la Escuela Universitaria de Formación del Profesorado.
+                        </p>
+                        <ul class="text-muted small">
+                            <li>1984: Enfoque en formación pedagógica en Malabo.</li>
+                            <li>1987: Creación de la Escuela Nacional de Agricultura.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6 text-center">
+                     
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-5">
+                <div class="col-md-12 text-center mb-5">
+                    <div class="py-4 border-top border-bottom">
+                        <h2 class="display-6 fw-bold text-primary">1995: La Creación de la UNGE</h2>
+                        <p class="text-muted mx-auto" style="max-width: 700px;">
+                            Bajo un decreto unificador, nace la <strong>Universidad Nacional de Guinea Ecuatorial</strong>, agrupando las diversas escuelas universitarias para crear un frente común de conocimiento.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-4">
+                        <h4 class="fw-bold"><i class="bi bi-hospital me-2 text-danger"></i>Facultad en Bata</h4>
+                        <p class="text-muted">
+                            Nuestra unidad en Bata se ha consolidado como el referente en la formación de profesionales de la salud, respondiendo a la necesidad de expandir el acceso a la educación médica en la región continental.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-4">
+                        <h4 class="fw-bold"><i class="bi bi-globe me-2 text-info"></i>Cooperación Internacional</h4>
+                        <p class="text-muted">
+                            Mantenemos vínculos estratégicos con la <strong>UNESCO</strong> y el <strong>Gobierno de España</strong>, garantizando que nuestros planes de estudio cumplan con estándares internacionales de calidad.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-primary text-white p-5 rounded-4 shadow-lg text-center">
+                <h2 class="fw-bold mb-3">Hacia el Futuro: Sistema GMD/LMD</h2>
+                <p class="mb-4">
+                    Hoy, la Facultad opera bajo el sistema de <strong>Grado, Máster y Doctorado (LMD)</strong>. Esta reforma permite que nuestros graduados obtengan titulaciones compatibles con el espacio internacional, facilitando la movilidad y la excelencia en la investigación médica.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <div class="text-center px-3">
+                        <h3 class="fw-bold mb-0">L</h3>
+                        <small>Licenciatura</small>
+                    </div>
+                    <div class="vr"></div>
+                    <div class="text-center px-3">
+                        <h3 class="fw-bold mb-0">M</h3>
+                        <small>Máster</small>
+                    </div>
+                    <div class="vr"></div>
+                    <div class="text-center px-3">
+                        <h3 class="fw-bold mb-0">D</h3>
+                        <small>Doctorado</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .italic { font-style: italic; }
+    .shadow-lg { box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important; }
+    .vr { width: 2px; background-color: rgba(255,255,255,0.5); }
+</style>
+{% endblock %}

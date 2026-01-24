@@ -184,7 +184,7 @@ class BuzonAyudaForm(FlaskForm):
     correo = StringField('Correo', validators=[DataRequired(), Email()])
     mensaje = TextAreaField('Mensaje', validators=[DataRequired()])
     archivo = FileField('Adjuntar PDF', validators=[
-        FileAllowed(['pdf'], 'Solo se permiten archivos PDF.')
+        FileAllowed(['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'], 'Solo se permiten 3 tipos de extenciones.')
     ])
     submit = SubmitField('Enviar Mensaje')
 
