@@ -626,3 +626,62 @@ class DocumentoRecibido(db.Model):
     # foreign_keys es necesario porque hay dos enlaces a la misma tabla 'usuarios'
     remitente = db.relationship('Usuario', foreign_keys=[remitente_id], backref='envios')
     destinatario = db.relationship('Usuario', foreign_keys=[destinatario_id], backref='recepciones')
+
+
+#============================================================
+#   TABLA 28: VOTAR AL DELEGADO
+# ============================================================
+# 1. VOTOS A DELEGADOS (Debe ir antes o después pero con la FK correcta)
+class VotoDelegado(db.Model):
+    __tablename__ = 'votos_delegados'
+    id = db.Column(db.Integer, primary_key=True)
+    # Quién vota
+    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id'), nullable=False, unique=True)
+    
+    # A QUIÉN VOTA (Esta es la columna que falta y causa el error)
+    candidato_id = db.Column(db.Integer, db.ForeignKey('candidatos_delegado.id', ondelete='CASCADE'), nullable=False)
+    
+    candidato_nombre = db.Column(db.String(100), nullable=False) # Puedes mantenerlo como respaldo
+    fecha_voto = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relaciones
+    estudiante = db.relationship('Estudiante', backref=db.backref('voto_emitido', uselist=False))
+
+# 2. CANDIDATOS A DELEGADO
+class CandidatoDelegado(db.Model):
+    __tablename__ = 'candidatos_delegado'
+    id = db.Column(db.Integer, primary_key=True)
+    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id', ondelete='CASCADE'), unique=True, nullable=False)
+    lema = db.Column(db.String(200), nullable=False)
+    fecha_postulacion = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Ahora esta relación SÍ encontrará la llave foránea en VotoDelegado
+    votos_recibidos = db.relationship('VotoDelegado', backref='candidato_asociado', lazy=True)
+
+# 2. Propuestas de Alumnos (Tablero de ideas con sistema de likes)
+class Propuesta(db.Model):
+    __tablename__ = 'propuestas'
+    id = db.Column(db.Integer, primary_key=True)
+    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id', ondelete='CASCADE'), nullable=False)
+    titulo = db.Column(db.String(100), nullable=False)
+    descripcion = db.Column(db.Text, nullable=False)
+    likes = db.Column(db.Integer, default=0)
+    # Fecha de publicación automática
+    fecha_publicacion = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relación para saber quién hizo la propuesta
+    autor = db.relationship('Estudiante', backref='mis_propuestas')
+
+# 3. Voto al Mejor Profesor (Ranking de popularidad docente)
+class VotoProfesor(db.Model):
+    __tablename__ = 'votos_profesores'
+    id = db.Column(db.Integer, primary_key=True)
+    estudiante_id = db.Column(db.Integer, db.ForeignKey('estudiantes.id', ondelete='CASCADE'), nullable=False)
+    profesor_id = db.Column(db.Integer, db.ForeignKey('profesores.id', ondelete='CASCADE'), nullable=False)
+    # Registro del momento del voto
+    fecha_voto = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # RESTRICCIÓN DEFINITIVA: 
+    # Un estudiante (estudiante_id) solo puede emitir un voto en esta tabla por semestre.
+    # Nota: Si quieres permitir un voto POR CADA profesor, usa ('estudiante_id', 'profesor_id')
+    __table_args__ = (db.UniqueConstraint('estudiante_id', name='unique_voto_profesor_estudiante'),)

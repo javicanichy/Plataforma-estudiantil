@@ -27,6 +27,37 @@
 
     <!--Web Responsive Desing, para que los moviles se adapten al diseno-->
     <link rel="stylesheet" href="{{ url_for('static', filename='correcciones_movil.css') }}">
+    {% block head %}
+    <style>
+    :root {
+        /* Cambia este código HEX por el color que desees */
+        --bs-primary: #002366; /* Azul UNGE por defecto */
+        --bs-primary-rgb: 0, 123, 255;
+    }
+
+    /* Sobrescribimos el fondo del Navbar y Footer para que coincidan */
+    .bg-primary {
+        background-color: var(--bs-primary) !important;
+    }
+
+    /* Ajuste para los botones primarios */
+    .btn-primary {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+
+    .btn-outline-primary {
+        color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+
+    .btn-outline-primary:hover {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+    }
+</style>
+
+{% endblock %}
 </head>
 
 <body class="d-flex flex-column min-vh-100   {{ body_class or '' }}">
@@ -35,13 +66,23 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-0">
             <div class="container-fluid d-flex justify-content-between align-items-center flex-nowrap">
                 <!-- Logo y título -->
-                <a class="navbar-brand d-flex align-items-center flex-grow-1" href="/" style="min-width: 0;">
-                    <img src="{{ url_for('static', filename='img/logo_unge.png') }}" width="35" height="35" class="me-2 flex-shrink-0" alt="Logo UNGE">
-                    <div class="d-flex flex-column" style="min-width: 0; overflow: hidden;">
-                        <span class="fw-bold text-nowrap brand-title">Universidad Nacional de Guinea Ecuatorial</span>
-                        <small class="text-nowrap brand-subtitle">Facultad de Ciencias de la Salud</small>
-                    </div>
-                </a>
+                <a class="navbar-brand d-flex align-items-center flex-grow-1 brand-container-mobile" href="/" style="min-width: 0;">
+    
+    <img src="{{ url_for('static', filename='img/logo_unge.png') }}" 
+         width="70" height="50" 
+         class="me-2 flex-shrink-0 d-none d-sm-block" alt="Logo UNGE">
+
+    <img src="{{ url_for('static', filename='img/logo_unge.png') }}" 
+         class="d-block d-sm-none logo-grande-movil" alt="Logo UNGE">
+    
+    <div class="brand-text-container d-flex flex-column" style="min-width: 0; overflow: hidden;">
+        <span class="fw-bold text-nowrap brand-main-text d-none d-sm-block">Universidad Nacional de Guinea Ecuatorial</span>
+        <span class="fw-bold text-nowrap brand-main-text d-block d-sm-none">UNIVERSIDAD NACIONAL DE GUINEA ECUATORIAL</span>
+        
+        <small class="text-nowrap brand-sub-text d-none d-sm-block">Facultad de Ciencias de la Salud</small>
+        <small class="text-nowrap brand-sub-text d-block d-sm-none">FACULTAD DE CIENCIAS DE LA SALUD</small>
+    </div>
+</a>
 
                 <!-- Botón hamburguesa para móviles -->
                 <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -183,16 +224,14 @@
             <!-- COLUMNA IZQUIERDA -->
             <div class="col-md-4 mb-3 mb-md-0">
                 <h6 class="fw-bold">Facultad de Ciencias de la Salud:</h6>
-                <p class="mb-1 small">
-                    © 2025 Universidad Nacional de Guinea E.
-                    <br>
-                    Todos los derechos reservados.
-                </p>
+                <a href="https://ungecampus.com/request-info/" class="mb-1 small" target="_blank" style="color: white; text-decoration: none;">© Universidad Nacional de Guinea E.</a>
+                <br>
+                <p class="mb-1 small">Todos los derechos reservados.</p>
                 <p class="small mb-0">Última actualización: Enero 2026</p>
 
                 <hr>
 
-                <a href="{{ url_for('buzon_privado') }}" class="text-white small d-block text-decoration-none">
+                <a href="{{ url_for('buzon_privado') }}" target="_blank" class="text-white small d-block text-decoration-none">
                         Buzón de ayuda
                 </a>
             </div>
@@ -214,7 +253,7 @@
 
                 <hr>
 
-                <a href="{{ url_for('condiciones_uso') }}" class="text-white small d-block text-decoration-none">
+                <a href="{{ url_for('condiciones_uso') }}" target="_blank" class="text-white small d-block text-decoration-none">
                         Condiciones de uso
                 </a>
             </div>
@@ -243,7 +282,7 @@
 
                 <hr>
                 <!-- ENLACES NUEVOS -->
-                    <a href="{{ url_for('desarrolladores') }}" class="text-white small d-block text-decoration-none">
+                    <a href="{{ url_for('desarrolladores') }}" target="_blank" class="text-white small d-block text-decoration-none">
                         Desarrolladores
                     </a>
                 </div>

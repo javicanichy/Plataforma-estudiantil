@@ -60,7 +60,8 @@ from models import (
     SecretariaActa, db, Usuario, Estudiante, Nota, Mensaje, Evento, Evento, Debate, Notificacion, Administrador, Comentario,
     CodigoEstudiante, Asignatura, Noticia, Debate, Notificacion, Comentario,
     Biblioteca, Buzon, OpinionSelectividad, Selectividad, SolicitudMatricula, Expediente, Profesor,
-    Directivo, SecretariaActa, Carpeta, DocumentoArchivo, Secretaria, AnuncioDirectivo, DocumentoRecibido
+    Directivo, SecretariaActa, Carpeta, DocumentoArchivo, Secretaria, AnuncioDirectivo, DocumentoRecibido,
+    CandidatoDelegado, VotoProfesor, Propuesta, VotoDelegado
     )
     
 from config import Config
@@ -107,6 +108,10 @@ app.secret_key = app.config['SECRET_KEY']
 # Permite hasta 32 Megabytes de subida (suficiente para todos los PDFs y fotos)
 app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
+@app.errorhandler(413)
+def error_413(e):
+    return render_template('archivo_muy_grande.html'), 413
+
 # Indica a Flask que confíe en los proxies (necesario en Render/servidores en la nube)
 app.config['PREFERRED_URL_SCHEME'] = 'https'
 #Forzar que la cookie de sesión solo se envíe sobre HTTPS, esto resuelve el problema de la sesión en el navegador de Render
@@ -117,7 +122,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 #-----------------------------------------
 
 #------ CONFIGURACION DE CORREOS--------#
-# MANEJAR CORREOS ELECTRONICOS. BUZON DE AYUDA
+# MANEJAR CORREOS ELECTRONICOS. SECRETARIA MATRICULA
 # CONFIGURACIÓN DEFINITIVA CON GMAIL
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'               # Servidor de Google (Cambiado)
 app.config['MAIL_PORT'] = 587                              # Puerto TLS para Gmail
@@ -134,36 +139,19 @@ mail = Mail(app)
 
 # SEGUNDA CONFIGURACION DEL CORREO. SECRETARIA-MATRICULA, ESTUDIANTES
 # Definimos estas variables por separado para no sobrescribir app.config
-"""CORREO_MATRICULAS_USER = 'secretaria-matriculas@gmail.com' 
-CORREO_MATRICULAS_PASS = 'tu_segunda_contraseña_app'
-CORREO_MATRICULAS_SERVER = 'smtp.gmail.com'
-CORREO_MATRICULAS_PORT = 587"""
+# CREDENCIALES SECCIÓN TIC
+TIC_USER = 'secciontic.cienciasdelasalud.gq@gmail.com'
+TIC_PASS = 'zrzpccnovznszqsr' # La de 16 letras de Gmail
+TIC_SERVER = 'smtp.gmail.com'
+TIC_PORT = 587
+
+# TERCERA CONFIGURACION DEL CORREO. CREDENCIALES BUZÓN DE SUGERENCIAS Y CONSULTAS
+BUZON_USER = 'buzon.cienciasdelasalud.gq@gmail.com'
+BUZON_PASS = 'tu_contraseña_de_aplicacion_aqui' # La de 16 letras de Gmail
+BUZON_SERVER = 'smtp.gmail.com'
+BUZON_PORT = 587
 
 
-# TERCERA CONFIGURACION DEL CORREO. REGISTRO DE PROFESORES
-# Definimos estas variables por separado para no sobrescribir app.config
-"""CORREO_MATRICULAS_USER = 'secretaria-matriculas@gmail.com' 
-CORREO_MATRICULAS_PASS = 'tu_segunda_contraseña_app'
-CORREO_MATRICULAS_SERVER = 'smtp.gmail.com'
-CORREO_MATRICULAS_PORT = 587"""
-
-
-
-# CUARTA CONFIGURACION DEL CORREO. SUSPENCION DE CUENTAS
-# Definimos estas variables por separado para no sobrescribir app.config
-"""CORREO_MATRICULAS_USER = 'secretaria-matriculas@gmail.com' 
-CORREO_MATRICULAS_PASS = 'tu_segunda_contraseña_app'
-CORREO_MATRICULAS_SERVER = 'smtp.gmail.com'
-CORREO_MATRICULAS_PORT = 587"""
-
-
-
-# QUITA CONFIGURACION DEL CORREO. RECUPERACION DE CUENTAS
-# Definimos estas variables por separado para no sobrescribir app.config
-"""CORREO_MATRICULAS_USER = 'secretaria-matriculas@gmail.com' 
-CORREO_MATRICULAS_PASS = 'tu_segunda_contraseña_app'
-CORREO_MATRICULAS_SERVER = 'smtp.gmail.com'
-CORREO_MATRICULAS_PORT = 587"""
 
 
 # CONFIGURACIÓN DE CORREO (TEMPORAL PARA MAILHOG).
@@ -275,13 +263,13 @@ def requiere_rol(roles_permitidos):
             # 1. Verificar si está autenticado
             if not current_user.is_authenticated:
                 flash("Por favor, inicia sesión para acceder.", "warning")
-                return redirect(url_for('login'))
+                return redirect(url_for('api_login'))
             
             # 2. Verificar si el rol del usuario está DENTRO de la lista permitida
             if current_user.rol not in roles_permitidos:
                 roles_texto = ", ".join(roles_permitidos)
                 flash(f"Acceso denegado. Se requiere uno de estos roles: {roles_texto}.", "danger")
-                return redirect(url_for('inicio'))
+                abort(403)  # Prohibido
                 
             return f(*args, **kwargs)
         return decorated_function
@@ -308,11 +296,20 @@ CARRERAS_INFO = {
 # ==========================================================
 
 # Correo automatico acuse buzon
+
 def enviar_buzon_cliente(nombre, email_destino, mensaje_original, dominio):
+    """
+    Envía confirmación de recepción de consulta al usuario.
+    Configurado con la cuenta oficial del Buzón de la Facultad.
+    """
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Buzón de consultas <{CORREO_MATRICULAS_USER}>"
+    # Remitente actualizado a la cuenta de Buzón
+    msg['From'] = f"Buzón de Consultas FCS <{BUZON_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "Hemos recibido tu consulta - FCS"
+
+    # URL del logo en GitHub para evitar bloqueos de imágenes
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
 
     html_content = f"""
     <html>
@@ -320,21 +317,21 @@ def enviar_buzon_cliente(nombre, email_destino, mensaje_original, dominio):
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
             <tr>
                 <td style="padding: 15px 40px; text-align: center; background-color: #1a237e;">
-                    <h2 style="color: #ffffff; margin: 0; font-size: 18px; font-weight: 300; letter-spacing: 1px;">BUZONN DE AYUDA</h2>
+                    <h2 style="color: #ffffff; margin: 0; font-size: 18px; font-weight: 300; letter-spacing: 1px;">BUZÓN DE AYUDA</h2>
                 </td>
             </tr>
             <tr>
                 <td style="padding: 40px 40px 20px 40px;">
                     <p style="font-size: 16px; color: #2c3e50; margin-bottom: 20px;">Hola, <strong>{nombre}</strong>.</p>
                     <p style="font-size: 14px; color: #546e7a; line-height: 1.6; margin-bottom: 25px;">
-                        Confirmamos que hemos recibido tu mensaje en nuestro sistema. Un responsable de la administración revisará tu consulta y te responderá a la brevedad posible.
+                        Confirmamos que hemos recibido tu mensaje correctamente en nuestro sistema. Un responsable de la administración revisará tu consulta y te responderá a la brevedad posible a través de esta vía.
                     </p>
                     <div style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; border-left: 4px solid #1a237e; margin-bottom: 30px;">
                         <p style="margin: 0 0 10px 0; font-size: 12px; color: #1a237e; font-weight: bold; text-transform: uppercase;">Tu mensaje enviado:</p>
@@ -345,9 +342,9 @@ def enviar_buzon_cliente(nombre, email_destino, mensaje_original, dominio):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Buzón de consultas - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Buzón de Consultas - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
-                        Este es un mensaje automático, por favor no responda a este correo.
+                        Este es un mensaje automático para confirmar la recepción.
                     </p>
                 </td>
             </tr>
@@ -355,16 +352,19 @@ def enviar_buzon_cliente(nombre, email_destino, mensaje_original, dominio):
     </body>
     </html>
     """
-    # ... lógica de envío smtplib igual a la que ya usas ...
     msg.attach(MIMEText(html_content, 'html'))
 
+    # BLOQUE DE ENVÍO CON CREDENCIALES DEL BUZÓN
     try:
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
+        server = smtplib.SMTP(BUZON_SERVER, BUZON_PORT)
+        server.starttls()
+        server.login(BUZON_USER, BUZON_PASS)
         server.send_message(msg)
         server.quit()
+        print(f"✅ [BUZÓN] Acuse de recibo enviado a {email_destino}")
         return True
     except Exception as e:
-        print(f"Error al enviar código de activación: {e}")
+        print(f"❌ [BUZÓN ERROR] No se pudo enviar el acuse: {e}")
         return False
 
 # Inicio / buzon
@@ -554,15 +554,19 @@ def buzon_privado():
 
 def responder_buzon_cliente(consulta, texto_respuesta, ruta_adjunto, dominio):
     """
-    Envía la respuesta del administrador al cliente usando el diseño 
-    institucional de la UNGE y permitiendo adjuntos.
+    Envía la respuesta oficial del administrador desde la cuenta del BUZÓN.
+    Soporta archivos adjuntos y mantiene el diseño premium de la UNGE.
     """
-    msg = MIMEMultipart('mixed') # Usamos 'mixed' para soportar adjuntos correctamente
-    msg['From'] = f"Buzón de consultas <{CORREO_MATRICULAS_USER}>"
+    # Usamos 'mixed' para que el cuerpo HTML y los adjuntos convivan correctamente
+    msg = MIMEMultipart('mixed') 
+    msg['From'] = f"Buzón de Consultas FCS <{BUZON_USER}>"
     msg['To'] = consulta.correo
     msg['Subject'] = f"Respuesta a su consulta #{consulta.id} - UNGE"
 
-    # Cuerpo del correo en HTML (Adaptado del diseño de activación)
+    # URL del logo en GitHub
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+
+    # Cuerpo del correo en HTML
     html_content = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
@@ -570,12 +574,11 @@ def responder_buzon_cliente(consulta, texto_respuesta, ruta_adjunto, dominio):
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
             </tr>
-
 
             <tr>
                 <td style="padding: 20px 40px; text-align: center; background-color: #1a237e;">
@@ -604,9 +607,9 @@ def responder_buzon_cliente(consulta, texto_respuesta, ruta_adjunto, dominio):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Buzón de consultas - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Buzón de Consultas - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
-                        Puede responder a ese correo, si lo ve necesario.
+                        Puede responder directamente a este correo si tiene más dudas.
                     </p>
                 </td>
             </tr>
@@ -615,10 +618,10 @@ def responder_buzon_cliente(consulta, texto_respuesta, ruta_adjunto, dominio):
     </html>
     """
     
-    # Adjuntamos el HTML al mensaje
+    # Adjuntamos el HTML (usando una parte alternativa dentro del mixed)
     msg.attach(MIMEText(html_content, 'html'))
 
-    # PROCESO DE ARCHIVO ADJUNTO (Si existe)
+    # PROCESO DE ARCHIVO ADJUNTO
     if ruta_adjunto and os.path.exists(ruta_adjunto):
         try:
             with open(ruta_adjunto, "rb") as attachment:
@@ -632,19 +635,21 @@ def responder_buzon_cliente(consulta, texto_respuesta, ruta_adjunto, dominio):
             )
             msg.attach(part)
         except Exception as e:
-            print(f"Error al procesar el archivo adjunto: {e}")
+            print(f"⚠️ Error al adjuntar archivo: {e}")
 
-    # ENVÍO MEDIANTE SERVIDOR SMTP
+    # ENVÍO MEDIANTE SERVIDOR GMAIL (BUZÓN)
     try:
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
-        # server.starttls() # Descomenta si tu servidor requiere TLS
-        server.login(CORREO_MATRICULAS_USER, CORREO_MATRICULAS_PASS)
+        server = smtplib.SMTP(BUZON_SERVER, BUZON_PORT)
+        server.starttls()  # Seguridad obligatoria para Gmail
+        server.login(BUZON_USER, BUZON_PASS)
         server.send_message(msg)
         server.quit()
+        print(f"✅ [BUZÓN] Respuesta enviada satisfactoriamente a {consulta.correo}")
         return True
     except Exception as e:
-        print(f"Error crítico en el envío del buzón: {e}")
+        print(f"❌ [BUZÓN ERROR] Error crítico en el envío: {e}")
         return False
+
 
 # Para responer al buzon
 @app.route('/admin/responder-consulta/<int:id>', methods=['POST'])
@@ -984,8 +989,8 @@ def delete_evento(id):
 # ==========================================================
 def crear_correo_unge_estandar(nombre, apellidos):
     """
-    Genera correo: inicialesNombre.primerApellido.año.cienciasdelasalud@unge.gq
-    Ejemplo: Isaias Nkogo + Esono Aviri -> in.esono.2025.cienciasdelasalud@unge.gq
+    Genera correo: inicialesNombre.primerApellido.año.cienciasdelasalud@alumnos.unge.gq
+    Ejemplo: Isaias Nkogo + Esono Aviri -> in.esono.2025.cienciasdelasalud@alumnos.unge.gq
     """
     def normalizar(texto):
         if not texto: return ""
@@ -1006,7 +1011,7 @@ def crear_correo_unge_estandar(nombre, apellidos):
     # 4. Construir base con el estándar fijo de la facultad
     # Resultado: in.esono.2025.cienciasdelasalud
     correo_base = f"{iniciales}.{primer_apellido}.{anio}.cienciasdelasalud"
-    dominio = "@unge.gq"
+    dominio = "@alumnos.unge.gq"
     
     email_final = f"{correo_base}{dominio}"
     
@@ -1020,20 +1025,29 @@ def crear_correo_unge_estandar(nombre, apellidos):
 
 
 
+
+# CORREO DE ENVÍO DE CÓDIGO DE ACTIVACIÓN
 def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
     """
-    Envía el correo de aprobación con el código de un solo uso,
-    manteniendo el diseño institucional de la UNGE.
+    Envía el correo de aprobación con el código de un solo uso desde Sección TIC.
+    Usa la lógica de logo remoto (GitHub) para evitar adjuntos repetidos.
     """
     email_destino = solicitud.email
     nombre_alumno = f"{solicitud.nombre} {solicitud.apellidos}"
     carrera_alumno = solicitud.carrera
 
+    # 1. Credenciales de la Sección TIC (Asegúrate de que estas variables estén definidas)
+    # CORREO_TIC_USER = 'secciontic.cienciasdelasalud.gq@gmail.com'
+    # CORREO_TIC_PASS = 'tu_contraseña_de_aplicacion'
+
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Seccción TIC <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC FCS <{CORREO_MATRICULAS_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "¡Solicitud Admitida! - Código de Activación de Cuenta"
 
+    # URL del logo en GitHub (Modo Raw)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+    
     # Enlace directo al wizard de registro
     url_registro = f"{dominio}/registro-estudiante"
 
@@ -1044,7 +1058,7 @@ def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -1100,31 +1114,39 @@ def enviar_codigo_activacion(solicitud, codigo_nuevo, dominio):
     
     msg.attach(MIMEText(html_content, 'html'))
 
+    # 2. Lógica de envío manual con smtplib para Gmail
     try:
         server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
+        server.starttls()  # Activa el cifrado TLS
+        server.login(CORREO_MATRICULAS_USER, CORREO_MATRICULAS_PASS)
         server.send_message(msg)
         server.quit()
+        print(f"✅ Código enviado correctamente a {email_destino}")
         return True
     except Exception as e:
-        print(f"Error al enviar código de activación: {e}")
+        print(f"❌ Error al enviar código de activación: {e}")
         return False
 
 
 
 # NO ENVIAR CODIGO DE ESTUDIANTE SI COMPROBANTE DE MATRICULA NO ESTÁ APROBADO
+
 def enviar_rechazo_solicitud(solicitud, motivo, dominio):
     """
-    Envía el correo de rechazo o solicitud de corrección,
-    manteniendo la línea gráfica de la UNGE.
+    Envía el correo de rechazo o solicitud de corrección desde Sección TIC.
+    Usa la lógica de logo remoto para un diseño limpio y profesional.
     """
     email_destino = solicitud.email
     nombre_alumno = f"{solicitud.nombre} {solicitud.apellidos}"
     carrera_alumno = solicitud.carrera
 
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Sección TIC <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC FCS <{CORREO_MATRICULAS_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "Acción Requerida: Revisión de su Solicitud de Matrícula"
+
+    # URL del logo en GitHub (Modo Raw) para evitar el clip de adjunto
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
 
     html_content = f"""
     <html>
@@ -1133,7 +1155,7 @@ def enviar_rechazo_solicitud(solicitud, motivo, dominio):
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -1184,13 +1206,17 @@ def enviar_rechazo_solicitud(solicitud, motivo, dominio):
     
     msg.attach(MIMEText(html_content, 'html'))
 
+    # Lógica de envío con smtplib y TLS para la cuenta de Sección TIC
     try:
         server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
+        server.starttls() # Seguridad obligatoria para Gmail
+        server.login(CORREO_MATRICULAS_USER, CORREO_MATRICULAS_PASS)
         server.send_message(msg)
         server.quit()
+        print(f"✅ Notificación de rechazo enviada a {email_destino}")
         return True
     except Exception as e:
-        print(f"Error al enviar correo de rechazo: {e}")
+        print(f"❌ Error al enviar correo de rechazo: {e}")
         return False
 
 
@@ -2582,7 +2608,8 @@ def exportar_matriculas():
 
 def enviar_confirmacion_matricula(solicitud, dominio):
     """
-    Envía un correo de admisión usando Flask-Mail y Outlook.
+    Envía un correo de admisión usando Flask-Mail con logo remoto.
+    Evita archivos adjuntos repetidos usando la imagen alojada en GitHub.
     """
     # 1. Preparación de datos
     email_destino = solicitud.email
@@ -2592,22 +2619,23 @@ def enviar_confirmacion_matricula(solicitud, dominio):
     carrera_alumno = solicitud.carrera
     tipo_estudiante = solicitud.tipo_estudiante
 
-    # 2. Creación del objeto Message de Flask-Mail
-    # No hace falta configurar servidor/puerto aquí, ya lo toma del app.config
+    # 2. URL del Logo en GitHub (Modo Raw)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+
+    # 3. Creación del objeto Message
     msg = Message(
         subject=f"¡FELICIDADES! Has sido admitido en la UNGE - Ref: {id_solicitud}",
-        recipients=[email_destino],
-        # El sender debe ser el de Secretaría configurado en app.config
+        recipients=[email_destino]
     )
 
-    # 3. Construcción del HTML (Tu diseño elegante se mantiene igual)
+    # 4. Construcción del HTML
     msg.html = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -2655,6 +2683,7 @@ def enviar_confirmacion_matricula(solicitud, dominio):
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px;">
                         <strong>Secretaría Académica - Facultad de Ciencias de la Salud</strong><br>
+                        Campus de Bata, Guinea Ecuatorial<br>
                         Este es un mensaje automático, por favor no responda.
                     </p>
                 </td>
@@ -2664,21 +2693,22 @@ def enviar_confirmacion_matricula(solicitud, dominio):
     </html>
     """
     
-    # 4. Envío real con Flask-Mail
+    # 5. Envío real con Flask-Mail (Sin adjuntos)
     try:
         mail.send(msg)
+        print(f"✅ Confirmación enviada a {email_destino} con éxito.")
         return True
     except Exception as e:
-        # Si falla aquí usando Outlook, revisa la "Actividad Reciente" en la web de Outlook
-        print(f"Error al enviar correo vía Outlook: {e}")
+        print(f"❌ Error al enviar confirmación de matrícula: {e}")
         return False
 
 # --------------------------------------------------------------------------
 # Mensaje automatico que se recibe tras solicitar matricula
+
 def enviar_acuse_recibo(solicitud, dominio):
     """
-    Envía un correo de confirmación de recepción profesional.
-    Logo incrustado (CID) y transparente para evitar repeticiones al final.
+    Versión definitiva y profesional.
+    Usa la imagen alojada en GitHub para evitar que aparezca como archivo adjunto repetido.
     """
     # 1. Preparación de datos
     email_destino = solicitud.email
@@ -2686,13 +2716,16 @@ def enviar_acuse_recibo(solicitud, dominio):
     id_solicitud = solicitud.id
     carrera_alumno = solicitud.carrera
 
-    # 2. Creación del objeto Message
+    # 2. URL de tu GitHub (Modo Raw con ?raw=true)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+
+    # 3. Creación del objeto Message
     msg = Message(
         subject=f"Solicitud de Matrícula Recibida - Ref: {id_solicitud}",
         recipients=[email_destino]
     )
 
-    # 3. Diseño del contenido HTML
+    # 4. Diseño del contenido HTML (Usando la URL externa directamente)
     msg.html = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
@@ -2700,7 +2733,7 @@ def enviar_acuse_recibo(solicitud, dominio):
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="cid:logo_fcs" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -2763,26 +2796,13 @@ def enviar_acuse_recibo(solicitud, dominio):
     </html>
     """
 
-    # 4. Lógica de imagen incrustada (Optimizado para PNG Transparente)
-    # 4. Lógica de imagen incrustada "invisible" como adjunto
+    # 5. Ejecución del envío (Sin adjuntos para máxima limpieza)
     try:
-        with app.open_resource("static/img/logo_unge.png") as fp:
-            msg.attach(
-                filename=None,           # Al no tener nombre, muchos clientes no lo listan abajo
-                content_type="image/png", 
-                data=fp.read(), 
-                disposition="inline", 
-                headers={
-                    "Content-ID": "<logo_fcs>",
-                    "Content-Disposition": "inline" # Reforzamos la instrucción aquí
-                }
-            )
-        
         mail.send(msg)
-        print(f"✅ Acuse enviado a {email_destino} - Logo forzado como inline")
+        print(f"✅ Correo enviado con éxito a {email_destino} - Logo remoto (Sin adjuntos)")
         return True
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Error al enviar acuse de recibo: {e}")
         return False
 
 
@@ -2795,7 +2815,7 @@ def generar_pdf_admision(solicitud):
 
     # --- INSERTAR LOGO ---
     # Buscamos la ruta absoluta de la imagen en tu carpeta static
-    ruta_logo = os.path.join(current_app.root_path, 'static', 'img', 'logo_unge.jpeg')
+    ruta_logo = os.path.join(current_app.root_path, 'static', 'img', 'logo_unge.png')
     
     try:
         # image(ruta, x, y, ancho)
@@ -2862,19 +2882,22 @@ def generar_pdf_admision(solicitud):
 def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
     """
     Envía un correo informando que la documentación es incorrecta.
-    Mantiene el diseño HTML original y usa Flask-Mail para Outlook.
+    Mantiene el diseño HTML original y usa el logo de GitHub para evitar adjuntos repetidos.
     """
     email_destino = solicitud.email
     nombre_alumno = f"{solicitud.nombre} {solicitud.apellidos}"
     id_solicitud = solicitud.id
 
-    # Creamos el objeto mensaje de Flask-Mail
+    # 1. URL del logo en GitHub (Modo Raw)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+
+    # 2. Creamos el objeto mensaje de Flask-Mail
     msg = Message(
         subject=f"ACCIÓN REQUERIDA: Documentación Incompleta - Ref: {id_solicitud}",
         recipients=[email_destino]
     )
 
-    # Pegamos tu HTML original exactamente igual
+    # 3. HTML con la nueva lógica de imagen
     msg.html = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
@@ -2882,7 +2905,7 @@ def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -2938,12 +2961,13 @@ def enviar_aviso_revision(solicitud, dominio, comentario="No especificado"):
     </html>
     """
 
+    # 4. Envío
     try:
-        # Usamos el objeto 'mail' inicializado en la app para enviar por Outlook
         mail.send(msg)
+        print(f"✅ Aviso de revisión enviado a {email_destino} (Logo remoto)")
         return True
     except Exception as e:
-        print(f"Error al enviar aviso de revisión vía Outlook: {e}")
+        print(f"❌ Error al enviar aviso de revisión: {e}")
         return False
 # ----------------------------------------------------------------
 
@@ -3626,7 +3650,8 @@ def admin_profesor_validar(id):
         nombres = profe.nombre_aspirante.lower().split()
         iniciales = "".join([n[0] for n in nombres if n])
         primer_apellido = profe.apellidos_aspirante.lower().split()[0]
-        correo_inst = f"{iniciales}.{primer_apellido}.2025@profesores.cienciasdelasalud.unge.gq"
+        anio = datetime.now().year
+        correo_inst = f"{iniciales}.{primer_apellido}.{anio}.cienciasdelasalud@profesores.unge.gq"
         
         # Generar Código de Activación
         codigo = "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
@@ -3696,20 +3721,29 @@ def admin_profesor_rechazar(id):
 
 # Mensaje automatico tras hacer el registro
 # Mensaje automático tras hacer el registro (Estructura Original Mantenida)
+
 def enviar_correo_recepcion_profesor(profesor, dominio):
+    """
+    Envía el acuse de recibo a un profesor desde la cuenta de Sección TIC
+    usando la configuración manual de Gmail.
+    """
+    # 1. Configuración del mensaje
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
-    # Usamos el correo personal que el aspirante acaba de registrar
+    msg['From'] = f"Sección TIC para cuentas <{TIC_USER}>"
     msg['To'] = profesor.correo_personal
     msg['Subject'] = f"Solicitud de Registro Recibida - Ref: {profesor.id}"
 
+    # URL del logo en GitHub (Modo Raw) para evitar adjuntos repetidos
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+
+    # 2. Contenido HTML
     html_content = f"""
     <html>
     <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f9;">
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -3753,25 +3787,37 @@ def enviar_correo_recepcion_profesor(profesor, dominio):
     """
     msg.attach(MIMEText(html_content, 'html'))
 
-    # BLOQUE DE ENVÍO CONFIGURADO PARA MAILHOG
+    # 3. Bloque de envío configurado para Gmail (Sección TIC)
     try:
-        with smtplib.SMTP('127.0.0.1', 1025) as server:
-            server.send_message(msg)
-            print(f"DEBUG: Correo de recepción enviado a {profesor.correo_personal}")
+        server = smtplib.SMTP(TIC_SERVER, TIC_PORT)
+        server.starttls()  # Cifrado obligatorio para Gmail
+        server.login(TIC_USER, TIC_PASS)
+        server.send_message(msg)
+        server.quit()
+        print(f"✅ [TIC] Correo de recepción enviado a {profesor.correo_personal}")
+        return True
     except Exception as e:
-        print(f"DEBUG ERROR: No se pudo enviar el correo: {e}")
-
+        print(f"❌ [TIC ERROR] No se pudo enviar el correo: {e}")
+        return False
 
 # Correo de activacion de la cuenta
 # Correo de activacion de la cuenta (Estructura Original Mantenida)
+
 def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
+    """
+    Envía el correo con el código de activación y correo institucional al profesor.
+    Usa la cuenta de Sección TIC y el logo remoto de GitHub.
+    """
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
-    # IMPORTANTE: Se envía al correo personal para que pueda verlo y activar
+    msg['From'] = f"Sección TIC para cuentas <{TIC_USER}>"
+    # Se envía al correo personal registrado por el aspirante
     msg['To'] = aspirante.correo_personal
     msg['Subject'] = "¡ALTA CONFIRMADA! Active su Cuenta de Docente"
 
-    # Ajustamos la URL para que coincida con nuestra nueva estructura limpia
+    # URL del logo en GitHub (Modo Raw)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+    
+    # URL para el botón de activación
     url_activacion = f"{dominio.rstrip('/')}/profesor/activar"
 
     html_content = f"""
@@ -3780,7 +3826,7 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -3793,12 +3839,12 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
             <tr>
                 <td style="padding: 40px 40px 20px 40px;">
                     <p style="font-size: 18px; color: #2c3e50; margin-bottom: 25px;">Estimado/a <strong>{aspirante.nombre_aspirante}</strong>,</p>
-                    <p style="font-size: 15px; color: #546e7a; line-height: 1.6;">Su identidad ha sido confirmada. Se ha generado su nueva identidad digital para el acceso a la plataforma académica:</p>
+                    <p style="font-size: 15px; color: #546e7a; line-height: 1.6;">Su identidad ha sido confirmada satisfactoriamente. Se ha generado su nueva identidad digital para el acceso a la plataforma académica:</p>
                     
                     <div style="background-color: #f8fafb; border-radius: 10px; padding: 25px; border-left: 5px solid #28a745; margin: 25px 0;">
-                        <p style="margin: 0; font-size: 13px;"><strong>CORREO INSTITUCIONAL:</strong></p>
+                        <p style="margin: 0; font-size: 13px; color: #666;"><strong>CORREO INSTITUCIONAL:</strong></p>
                         <p style="font-size: 18px; color: #1a237e; font-weight: bold; margin: 5px 0;">{correo_inst}</p>
-                        <p style="margin: 15px 0 0 0; font-size: 13px;"><strong>CÓDIGO DE ACTIVACIÓN:</strong></p>
+                        <p style="margin: 15px 0 0 0; font-size: 13px; color: #666;"><strong>CÓDIGO DE ACTIVACIÓN:</strong></p>
                         <p style="font-size: 22px; color: #ff6f00; font-weight: bold; letter-spacing: 4px; margin: 5px 0;">{codigo}</p>
                     </div>
 
@@ -3808,6 +3854,10 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
                             ACTIVAR MI CUENTA DOCENTE
                         </a>
                     </div>
+                    
+                    <p style="font-size: 13px; color: #78909c; text-align: center; font-style: italic;">
+                        Este código es personal e intransferible. Una vez activada la cuenta, podrá acceder con su nuevo correo y contraseña.
+                    </p>
                 </td>
             </tr>
             <tr>
@@ -3825,24 +3875,36 @@ def enviar_activacion_profesor(aspirante, codigo, correo_inst, dominio):
     """
     msg.attach(MIMEText(html_content, 'html'))
 
-    # BLOQUE DE ENVÍO SMTP (Mantenemos MailHog)
+    # BLOQUE DE ENVÍO SMTP (Configuración Sección TIC)
     try:
-        with smtplib.SMTP('127.0.0.1', 1025) as server:
-            server.send_message(msg)
-            print(f"DEBUG: Correo de activación enviado a {aspirante.correo_personal}")
+        server = smtplib.SMTP(TIC_SERVER, TIC_PORT)
+        server.starttls()  # Seguridad obligatoria
+        server.login(TIC_USER, TIC_PASS)
+        server.send_message(msg)
+        server.quit()
+        print(f"✅ [TIC] Correo de activación enviado a {aspirante.correo_personal}")
+        return True
     except Exception as e:
-        print(f"DEBUG ERROR: No se pudo enviar el correo de activación: {e}")
+        print(f"❌ [TIC ERROR] No se pudo enviar el correo de activación: {e}")
+        return False
 
 
 # REGISTRO RECHAZADO
+
 def enviar_rechazo_profesor(usuario, motivo, dominio):
+    """
+    Envía el correo de rechazo a un profesor desde la cuenta de Sección TIC.
+    Mantiene el diseño de alerta (rojo) y utiliza la carga de imagen remota.
+    """
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Sección TIC para cuentas <{TIC_USER}>"
     msg['To'] = usuario.correo
     msg['Subject'] = "IMPORTANTE: Solicitud de Registro Denegada"
 
-    # Ajustamos el enlace para que el profesor pueda volver a intentarlo 
-    # en la ruta correcta que configuramos antes
+    # URL del logo en GitHub (Modo Raw)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+
+    # Ajustamos el enlace para el reintento de registro
     url_reintento = f"{dominio.rstrip('/')}/profesor/registro"
 
     html_content = f"""
@@ -3851,7 +3913,7 @@ def enviar_rechazo_profesor(usuario, motivo, dominio):
         <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; margin-top: 30px; border-radius: 15px; border: 1px solid #e1e8ed; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -3865,15 +3927,15 @@ def enviar_rechazo_profesor(usuario, motivo, dominio):
                 <td style="padding: 40px 40px 20px 40px;">
                     <p style="font-size: 18px; color: #2c3e50; margin-bottom: 25px;">Estimado/a <strong>{usuario.nombre}</strong>,</p>
                     <p style="font-size: 15px; color: #546e7a; line-height: 1.6;">
-                        Tras revisar su documentación, lamentamos informarle que su solicitud de alta como docente ha sido <strong>RECHAZADA</strong> por el siguiente motivo:
+                        Tras revisar su documentación, lamentamos informarle que su solicitud de alta como docente ha sido <strong>RECHAZADA</strong> por el siguiente motivo técnico:
                     </p>
                     
-                    <div style="background-color: #fff5f5; border-radius: 10px; padding: 25px; border-left: 5px solid #b71c1c; margin: 25px 0; color: #b71c1c; font-weight: bold;">
-                        {motivo}
+                    <div style="background-color: #fff5f5; border-radius: 10px; padding: 25px; border-left: 5px solid #b71c1c; margin: 25px 0; color: #b71c1c; font-style: italic;">
+                        "{motivo}"
                     </div>
 
                     <p style="font-size: 14px; color: #455a64;">
-                        Para subsanar este error, deberá realizar un nuevo registro con la documentación correcta o ponerse en contacto con la secretaría académica.
+                        Para subsanar esta situación, le sugerimos realizar un nuevo registro asegurándose de adjuntar archivos legibles o ponerse en contacto con el soporte técnico de la facultad.
                     </p>
 
                     <div style="text-align: center; margin: 40px 0;">
@@ -3899,14 +3961,18 @@ def enviar_rechazo_profesor(usuario, motivo, dominio):
     """
     msg.attach(MIMEText(html_content, 'html'))
 
-    # BLOQUE DE ENVÍO SMTP
+    # BLOQUE DE ENVÍO SMTP (Configuración Sección TIC)
     try:
-        with smtplib.SMTP('127.0.0.1', 1025) as server:
-            server.send_message(msg)
-            print(f"DEBUG: Correo de rechazo enviado a {usuario.correo}")
+        server = smtplib.SMTP(TIC_SERVER, TIC_PORT)
+        server.starttls()  # Protocolo de seguridad para Gmail
+        server.login(TIC_USER, TIC_PASS)
+        server.send_message(msg)
+        server.quit()
+        print(f"✅ [TIC] Correo de rechazo enviado a {usuario.correo}")
+        return True
     except Exception as e:
-        print(f"DEBUG ERROR: No se pudo enviar el correo de rechazo: {e}")
-
+        print(f"❌ [TIC ERROR] No se pudo enviar el correo de rechazo: {e}")
+        return False
 
 
 
@@ -5221,15 +5287,19 @@ def publicar_anuncio_directivo():
 # CONTROL DISCIPLINARIO DE CUENTAS ESTUDIANTILES
 # ==========================================================
 # Funcion para enviar correo tras suspender la cuenta
-def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=None, dominio="http://localhost:5000"):
+
+def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=None, dominio="https://fcs-unge.com"):
     """
-    Envía una notificación disciplinaria con el diseño Premium de la UNGE.
+    Envía notificaciones de estado de cuenta (activación/suspensión) 
+    utilizando la configuración del BUZÓN de la Facultad.
     """
     email_destino = estudiante.correo
-    nombre_alumno = f"{estudiante.nombre}{estudiante.apellidos}"  
+    nombre_alumno = f"{estudiante.nombre} {estudiante.apellidos}"  
     
+    # URL del logo en GitHub para carga remota limpia
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
     
-    # Configuración dinámica según la acción
+    # Configuración dinámica según la acción (Activar o Suspender)
     if accion == 'activar':
         color_principal = "#1b5e20"  # Verde UNGE
         color_fondo_caja = "#f1f8e9"
@@ -5243,21 +5313,22 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
             detalle = "Su cuenta cuenta ahora con <strong>Acceso Indefinido</strong>."
             
         btn_texto = "ENTRAR A MI CUENTA"
-        url_btn = f"{dominio}/login"
+        url_btn = f"{dominio.rstrip('/')}/login"
     else:
         color_principal = "#b71c1c"  # Rojo Disciplinario
         color_fondo_caja = "#ffebee"
         titulo_banner = "CUENTA SUSPENDIDA"
         saludo = "Aviso Importante"
-        mensaje_estado = "Le informamos que su cuenta de estudiante ha sido <strong>DESACTIVADA</strong> temporalmente por el departamento administrativo."
+        mensaje_estado = "Le informamos que su cuenta de estudiante ha sido <strong>DESACTIVADA</strong> temporalmente tras una revisión administrativa."
         detalle = f"<strong>Motivo de la medida:</strong><br>{motivo}"
-        btn_texto = "CONTACTAR SOPORTE"
-        url_btn = "mailto:soporte@unge.gq"
+        btn_texto = "CONTACTAR AL BUZÓN"
+        url_btn = f"mailto:{BUZON_USER}"
 
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Sección TIC para cuentas <{CORREO_MATRICULAS_USER}>"
+    # Remitente actualizado al Buzón
+    msg['From'] = f"Buzón de la Facultad FCS <{BUZON_USER}>"
     msg['To'] = email_destino
-    msg['Subject'] = f"{titulo_banner} - Sistema Académico FCS"
+    msg['Subject'] = f"{titulo_banner} - Comunicación Oficial FCS"
 
     html_content = f"""
     <html>
@@ -5266,7 +5337,7 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -5291,7 +5362,7 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
                     </div>
 
                     <p style="font-size: 14px; color: #455a64; margin-bottom: 25px; text-align: center;">
-                        Si tiene alguna duda sobre este cambio, por favor contacte con la administración de la facultad.
+                        Para cualquier aclaración adicional, puede responder directamente a este correo o acudir a la ventanilla de atención.
                     </p>
 
                     <div style="text-align: center; margin-bottom: 30px;">
@@ -5303,9 +5374,9 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Sección TIC - Facultad de Ciencias de la Salud</strong><br>
-                        Campus de Bata, Guinea Ecuatorial<br>
-                        Puede responder a ese correo, si lo ve necesario.
+                        <strong>Buzón de Atención - Facultad de Ciencias de la Salud</strong><br>
+                        Universidad Nacional de Guinea Ecuatorial<br>
+                        Este es un canal oficial de comunicación para estudiantes.
                     </p>
                 </td>
             </tr>
@@ -5316,16 +5387,17 @@ def enviar_correo_disciplinario(estudiante, accion, motivo, fecha_expiracion=Non
     
     msg.attach(MIMEText(html_content, 'html'))
 
+    # BLOQUE DE ENVÍO USANDO CREDENCIALES DEL BUZÓN
     try:
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
-        if CORREO_MATRICULAS_PORT == 587:
-            server.starttls()
-            server.login(CORREO_MATRICULAS_USER, CORREO_MATRICULAS_PASS)
+        server = smtplib.SMTP(BUZON_SERVER, BUZON_PORT)
+        server.starttls()
+        server.login(BUZON_USER, BUZON_PASS)
         server.send_message(msg)
         server.quit()
+        print(f"✅ [BUZÓN] Notificación disciplinaria enviada a {email_destino}")
         return True
     except Exception as e:
-        print(f"Error al enviar correo disciplinario: {e}")
+        print(f"❌ [BUZÓN ERROR] No se pudo enviar el correo: {e}")
         return False
 
 # RUTA PARA CAMBIO DE ESTADO
@@ -5701,21 +5773,25 @@ def update_record(tabla, id):
         return jsonify({"status": "error", "message": str(e)}), 500
 #--------------------------------------------------\\
 # Enviar correo de recuperacion
+
 def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
     """
-    Envía un correo de soporte desde la consola administrativa para recuperar acceso.
-    Adaptado a la estructura institucional de la UNGE y configuración MailHog.
+    Envía un correo desde el BUZÓN DE CONSULTAS para recuperar acceso.
+    Mantiene el diseño institucional y usa carga de logo remota.
     """
     email_destino = usuario.correo
     nombre_usuario = f"{usuario.nombre} {usuario.apellidos}"
     
+    # URL del logo en GitHub (Modo Raw)
+    url_logo_github = "https://github.com/javicanichy/Plataforma-estudiantil/blob/main/static/img/logo_unge.png?raw=true"
+    
     msg = MIMEMultipart('alternative')
-    msg['From'] = f"Buzón de consultas <{CORREO_MATRICULAS_USER}>"
+    msg['From'] = f"Buzón de Consultas FCS <{BUZON_USER}>"
     msg['To'] = email_destino
     msg['Subject'] = "Restablecimiento de Acceso - Consola Administrativa"
 
-    # Enlace a la página de cambio de contraseña o login
-    url_soporte = f"{dominio}/reset-password?email={usuario.correo}&codigo={codigo_temporal}"
+    # Enlace dinámico para el reset
+    url_soporte = f"{dominio.rstrip('/')}/reset-password?email={usuario.correo}&codigo={codigo_temporal}"
 
     html_content = f"""
     <html>
@@ -5724,7 +5800,7 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
             
             <tr>
                 <td align="center" style="padding: 40px 0 20px 0; background-color: #ffffff;">
-                    <img src="{dominio}/static/img/logo_unge.jpeg" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
+                    <img src="{url_logo_github}" alt="Logo UNGE" width="100" style="display: block; margin-bottom: 15px;">
                     <h1 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Universidad Nacional de Guinea Ecuatorial</h1>
                     <h5 style="margin: 0; font-size: 14px; color: #1a237e; letter-spacing: 1px; text-transform: uppercase;">Facultad de Ciencias de la Salud</h5>
                 </td>
@@ -5766,9 +5842,9 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
             <tr>
                 <td style="background-color: #eceff1; padding: 30px; text-align: center; border-top: 1px solid #cfd8dc;">
                     <p style="margin: 0; color: #78909c; font-size: 12px; line-height: 1.5;">
-                        <strong>Buzón de consultas - Facultad de Ciencias de la Salud</strong><br>
+                        <strong>Buzón de Consultas - Facultad de Ciencias de la Salud</strong><br>
                         Campus de Bata, Guinea Ecuatorial<br>
-                        Puede responder a ese correo, si lo ve necesario.
+                        Puede responder a este correo si necesita asistencia técnica adicional.
                     </p>
                 </td>
             </tr>
@@ -5779,14 +5855,17 @@ def enviar_recuperacion_consola(usuario, codigo_temporal, dominio):
     
     msg.attach(MIMEText(html_content, 'html'))
 
+    # BLOQUE DE ENVÍO USANDO CREDENCIALES DEL BUZÓN
     try:
-        # Conexión a MailHog
-        server = smtplib.SMTP(CORREO_MATRICULAS_SERVER, CORREO_MATRICULAS_PORT)
+        server = smtplib.SMTP(BUZON_SERVER, BUZON_PORT)
+        server.starttls()
+        server.login(BUZON_USER, BUZON_PASS)
         server.send_message(msg)
         server.quit()
+        print(f"✅ [BUZÓN] Recuperación enviada a {email_destino}")
         return True
     except Exception as e:
-        print(f"Error al enviar recuperación de cuenta: {e}")
+        print(f"❌ [BUZÓN ERROR] No se pudo enviar recuperación: {e}")
         return False
 
 # Cambiar contrasena
@@ -6117,6 +6196,290 @@ def usuarios_en_linea():
     return render_template('usuarios_online.html', 
                            usuarios=usuarios_activos, 
                            count=online_count)
+
+# ==========================================================
+# SITIO PARA ESTADISTICAS DE LOS ESTUDIANTES
+# ==========================================================
+
+@app.route('/estadisticas')
+@login_required
+def estadisticas():
+    # 1. RANKING ESTUDIANTES (Sin cambios, funciona correctamente)
+    ranking_data = db.session.query(
+        Usuario.nombre,
+        Usuario.apellidos,
+        Usuario.foto_perfil,
+        Usuario.carrera,
+        Usuario.curso,
+        Estudiante.matricula,
+        db.func.sum(Expediente.nota_final).label('puntos_totales')
+    ).join(Estudiante, Usuario.id == Estudiante.usuario_id)\
+     .join(Expediente, Estudiante.id == Expediente.estudiante_id)\
+     .group_by(Usuario.id, Estudiante.id)\
+     .order_by(db.desc('puntos_totales')).all()
+
+    # 2. DELEGADOS (Conteo de votos)
+    votos_delegados = db.session.query(
+        Usuario.nombre,
+        Usuario.apellidos,
+        CandidatoDelegado.lema,
+        CandidatoDelegado.id,
+        db.func.count(VotoDelegado.id).label('total_votos')
+    ).join(Estudiante, CandidatoDelegado.estudiante_id == Estudiante.id)\
+     .join(Usuario, Estudiante.usuario_id == Usuario.id)\
+     .outerjoin(VotoDelegado, CandidatoDelegado.id == VotoDelegado.candidato_id)\
+     .group_by(CandidatoDelegado.id, Usuario.id, Estudiante.id)\
+     .order_by(db.desc('total_votos')).all()
+
+    # 3. PROFESORES (Ordenados para detectar al "Docente Estrella")
+    ranking_profesores = db.session.query(
+        Usuario.nombre,
+        Usuario.apellidos,
+        Profesor.especialidad,
+        Profesor.archivo_foto,
+        Profesor.id,
+        db.func.count(VotoProfesor.id).label('num_votos')
+    ).join(Usuario, Profesor.usuario_id == Usuario.id)\
+     .outerjoin(VotoProfesor, Profesor.id == VotoProfesor.profesor_id)\
+     .group_by(Profesor.id, Usuario.id)\
+     .order_by(db.desc('num_votos')).all()
+
+    # 4. PROPUESTAS (Carga optimizada usando la relación 'autor')
+    # Usamos joinedload para que Jinja tenga acceso inmediato a p.autor.usuario
+    propuestas_alumnos = Propuesta.query.options(
+        joinedload(Propuesta.autor).joinedload(Estudiante.usuario)
+    ).order_by(Propuesta.likes.desc()).all()
+    
+    promedio_val = db.session.query(db.func.avg(Expediente.nota_final)).scalar() or 0
+    estudiante_actual = Estudiante.query.filter_by(usuario_id=current_user.id).first()
+    
+    ya_voto_delegado = False
+    ya_voto_profesor = False
+    
+    if estudiante_actual:
+        ya_voto_delegado = VotoDelegado.query.filter_by(estudiante_id=estudiante_actual.id).first() is not None
+        ya_voto_profesor = VotoProfesor.query.filter_by(estudiante_id=estudiante_actual.id).first() is not None
+    
+    # 5. RENDIMIENTO POR CURSO (Para el nuevo gráfico)
+    puntos_por_curso = db.session.query(
+        Usuario.curso,
+        db.func.sum(Expediente.nota_final).label('total')
+    ).join(Estudiante, Usuario.id == Estudiante.usuario_id)\
+    .join(Expediente, Estudiante.id == Expediente.estudiante_id)\
+    .group_by(Usuario.curso).all()
+
+    # Convertimos a diccionario para fácil acceso en JS: {'1ro': 500, '2do': 450...}
+    stats_cursos = {c.curso: float(c.total) for c in puntos_por_curso if c.curso}
+    
+    return render_template(
+        'estadisticas.html', 
+        ranking=ranking_data, 
+        candidatos=votos_delegados, 
+        profesores=ranking_profesores,
+        propuestas=propuestas_alumnos,
+        promedio=round(promedio_val, 2),
+        ya_voto_delegado=ya_voto_delegado,
+        ya_voto_profesor=ya_voto_profesor,
+        stats_cursos=stats_cursos
+    )
+
+
+@app.route('/postular_delegado', methods=['POST'])
+@login_required
+def postular_delegado():
+    estudiante = Estudiante.query.filter_by(usuario_id=current_user.id).first()
+    if not estudiante:
+        flash("Solo los estudiantes pueden postularse.", "danger")
+        return redirect(url_for('estadisticas'))
+
+    ya_es_candidato = CandidatoDelegado.query.filter_by(estudiante_id=estudiante.id).first()
+    if ya_es_candidato:
+        flash("Ya estás postulado como candidato.", "info")
+        return redirect(url_for('estadisticas'))
+
+    lema = request.form.get('lema')
+    if not lema:
+        flash("Debes incluir un lema de campaña.", "warning")
+        return redirect(url_for('estadisticas'))
+
+    nuevo_candidato = CandidatoDelegado(
+        estudiante_id=estudiante.id,
+        lema=lema,
+        fecha_postulacion=datetime.now() # Fecha de postulación
+    )
+    db.session.add(nuevo_candidato)
+    db.session.commit()
+    flash(f"¡Candidatura registrada con éxito!", "success")
+    return redirect(url_for('estadisticas'))
+
+@app.route('/votar_delegado', methods=['POST'])
+@login_required
+def votar_delegado():
+    estudiante = Estudiante.query.filter_by(usuario_id=current_user.id).first()
+    candidato_id = request.form.get('candidato_id')
+
+    if not estudiante or not candidato_id:
+        flash("Error: Selecciona un candidato válido.", "danger")
+        return redirect(url_for('estadisticas'))
+
+    # 1. Evitar doble voto
+    ya_voto = VotoDelegado.query.filter_by(estudiante_id=estudiante.id).first()
+    if ya_voto:
+        flash("Ya has emitido tu voto.", "warning")
+        return redirect(url_for('estadisticas'))
+
+    # 2. OBTENER EL NOMBRE DEL CANDIDATO (Crucial para el NOT NULL)
+    # Buscamos al candidato para extraer su nombre y apellidos desde Usuario
+    candidato_data = db.session.query(Usuario.nombre, Usuario.apellidos)\
+        .join(Estudiante, Usuario.id == Estudiante.usuario_id)\
+        .join(CandidatoDelegado, Estudiante.id == CandidatoDelegado.estudiante_id)\
+        .filter(CandidatoDelegado.id == candidato_id).first()
+
+    if not candidato_data:
+        flash("El candidato seleccionado no existe.", "danger")
+        return redirect(url_for('estadisticas'))
+
+    nombre_completo_candidato = f"{candidato_data.nombre} {candidato_data.apellidos}"
+
+    # 3. CREAR EL VOTO CON LA COLUMNA FALTANTE
+    nuevo_voto = VotoDelegado(
+        estudiante_id=estudiante.id,
+        candidato_id=candidato_id,
+        candidato_nombre=nombre_completo_candidato, # <--- Esto soluciona el error
+        fecha_voto=datetime.now()
+    )
+
+    try:
+        db.session.add(nuevo_voto)
+        db.session.commit()
+        flash(f"¡Voto registrado para {nombre_completo_candidato}!", "success")
+    except Exception as e:
+        db.session.rollback()
+        # Log del error para depuración
+        print(f"Error de integridad: {e}")
+        flash("Error interno al procesar el voto.", "danger")
+        
+    return redirect(url_for('estadisticas'))
+
+@app.route('/nueva_propuesta', methods=['POST'])
+@login_required
+def nueva_propuesta():
+    # Buscamos al estudiante asociado al usuario actual
+    estudiante = Estudiante.query.filter_by(usuario_id=current_user.id).first()
+    
+    if not estudiante:
+        flash("Solo los estudiantes registrados pueden crear propuestas.", "danger")
+        return redirect(url_for('estadisticas'))
+
+    titulo = request.form.get('titulo')
+    descripcion = request.form.get('desc')
+
+    if not titulo or not descripcion:
+        flash("Completa todos los campos de la propuesta.", "warning")
+        return redirect(url_for('estadisticas'))
+
+    # Creamos la instancia usando los nombres de columna de tu modelo Class Propuesta
+    nueva = Propuesta(
+        titulo=titulo,
+        descripcion=descripcion,
+        estudiante_id=estudiante.id,
+        fecha_publicacion=datetime.now(),  # <--- Cambiado de fecha_creacion a fecha_publicacion
+        likes=0
+    )
+    
+    try:
+        db.session.add(nueva)
+        db.session.commit()
+        flash("¡Tu propuesta está en línea!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash("Error al publicar la propuesta. Inténtalo de nuevo.", "danger")
+        
+    return redirect(url_for('estadisticas'))
+
+@app.route('/votar_profesor/<int:profesor_id>', methods=['POST'])
+@login_required
+def votar_profesor(profesor_id):
+    estudiante = Estudiante.query.filter_by(usuario_id=current_user.id).first()
+    
+    if not estudiante:
+        flash("Acción solo para estudiantes.", "danger")
+        return redirect(url_for('estadisticas'))
+
+    ya_voto = VotoProfesor.query.filter_by(estudiante_id=estudiante.id).first()
+    if ya_voto:
+        flash("Solo puedes votar por un profesor por periodo.", "warning")
+        return redirect(url_for('estadisticas'))
+
+    voto = VotoProfesor(
+        estudiante_id=estudiante.id,
+        profesor_id=profesor_id,
+        fecha_voto=datetime.now()
+    )
+    db.session.add(voto)
+    db.session.commit()
+    flash("Voto docente registrado correctamente.", "success")
+    return redirect(url_for('estadisticas'))
+
+# Dar like a las propuestas
+@app.route('/like_propuesta/<int:id>', methods=['POST'])
+@login_required
+def like_propuesta(id):
+    # Buscamos la propuesta por su ID
+    propuesta = Propuesta.query.get_or_404(id)
+    
+    # Incrementamos el contador de likes
+    if propuesta.likes is None:
+        propuesta.likes = 0
+    
+    propuesta.likes += 1
+    
+    try:
+        db.session.commit()
+        # No usamos flash aquí para no saturar al usuario, 
+        # ya que los likes suelen ser acciones rápidas.
+    except Exception as e:
+        db.session.rollback()
+        flash("No se pudo registrar el like.", "danger")
+    
+    return redirect(url_for('estadisticas'))
+
+
+# Reiniciar votos
+@app.route('/reiniciar_elecciones', methods=['POST'])
+@login_required
+def reiniciar_elecciones():
+    codigo = request.form.get('codigo')
+    
+    if codigo == "ADMIN2026":
+        try:
+            # Orden importante: Primero los votos, luego los candidatos
+            # para evitar errores de llaves foráneas (Foreign Keys)
+            db.session.query(VotoDelegado).delete()
+            db.session.query(CandidatoDelegado).delete()
+            
+            db.session.commit()
+            flash("Sistema electoral reseteado: Candidatos y votos eliminados correctamente.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error técnico al reiniciar: {str(e)}", "danger")
+    else:
+        flash("Código de seguridad incorrecto.", "danger")
+        
+    return redirect(url_for('estadisticas'))
+
+@app.route('/reiniciar_votos_profesor', methods=['POST'])
+@login_required
+def reiniciar_votos_profesor():
+    codigo = request.form.get('codigo')
+    if codigo == "PROF2026":
+        # Suponiendo que los votos de profesor están en una tabla VotoProfesor
+        VotoProfesor.query.delete()
+        db.session.commit()
+        flash("Los votos de profesores han sido limpiados.", "success")
+    else:
+        flash("Código incorrecto.", "danger")
+    return redirect(url_for('estadisticas'))
 
 # ==========================================================
 # CONFIGURACIÓN DE FLASK-LOGIN (PROFESIONAL)

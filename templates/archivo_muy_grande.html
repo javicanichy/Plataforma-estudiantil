@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Archivo demasiado grande - FCS{% endblock %}
+
+{% block content %}
+<div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="text-center p-5 shadow-lg rounded-4 border-top border-5 border-primary" style="max-width: 600px; background: white;">
+        
+        <div class="mb-4">
+            <i class="bi bi-file-earmark-arrow-up text-danger" style="font-size: 5rem;"></i>
+        </div>
+
+        <h1 class="fw-bold text-dark mb-3">¡Vaya! El archivo es muy pesado</h1>
+        
+        <p class="text-muted fs-5 mb-4">
+            Lo sentimos, pero el sistema solo permite subir archivos con un tamaño máximo de 
+            <span class="badge bg-primary px-3 py-2">32 Megabytes</span>.
+        </p>
+
+        <div class="alert alert-info border-0 shadow-sm mb-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Sugerencia:</strong> Si es un PDF, intenta comprimirlo. Si es una imagen, reduce su resolución antes de subirla.
+        </div>
+
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="javascript:history.back()" class="btn btn-primary btn-lg px-4 gap-3 shadow-sm">
+                <i class="bi bi-arrow-left"></i> Volver a intentarlo
+            </a>
+            <a href="/" class="btn btn-outline-secondary btn-lg px-4 shadow-sm">
+                Ir al Inicio
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

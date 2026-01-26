@@ -238,8 +238,8 @@ html, body, h1, h2, h3, h4, h5, h6, p, a, span, label, input, button, select, te
     left: 0;
     width: 25%;
     height: 100%;
-    background: rgba(0, 86, 179, 0.9);
-    color: black;
+    background: rgba(4, 35, 102, 0.8);
+    color: white;
     display: flex;
     align-items: center;
     padding-left: 5%;
@@ -259,7 +259,7 @@ html, body, h1, h2, h3, h4, h5, h6, p, a, span, label, input, button, select, te
     display: inline-block;
     padding: 10px 25px;
     background-color: white;
-    color: #0056b3;
+    color: #002366;
     text-decoration: none;
     font-weight: bold;
     border-radius: 50px;

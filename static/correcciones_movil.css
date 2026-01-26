@@ -1,221 +1,320 @@
-/* ======================================= */
-/* CORRECCIONES FINALES GLOBALES Y DE BLOQUE (MOBILE) */
-/* ======================================= */
+/* ================================================= */
+/* REGLAS GLOBALES SENSATAS (NO ROMPEN LAPTOP)       */
+/* ================================================= */
 
-/* Ajuste global para el contenedor de presentación con el sidebar */
-#presentacion {
-    padding-left: 4rem; /* Espacio para el botón del sidebar */
+/* Evita el scroll horizontal molesto en móviles */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
 }
 
-@media (max-width: 768px) {
-    
-    /* --- 1. CONFIGURACIÓN DEL VIEWPORT --- */
-    body {
-        /* Fuerza a que el cuerpo no se estire más allá del ancho del dispositivo */
-        overflow-x: hidden !important; 
-        padding: 0 5px !important; /* Reduce el padding del borde del cuerpo */
-    }
-
-    /* --- 2. ESCALADO DE ELEMENTOS DE BLOQUE Y FOTOS --- */
-    
-    /* Regla crucial para todas las imágenes (incluyendo fotos de noticias) */
-    img {
-        width: 100% !important;
-        max-width: 100% !important;
-        height: auto !important; /* Evita que las fotos se estiren o se salgan */
-        display: block !important;
-    }
-
-    /* Contenedores de texto y enlaces (p, div, secciones) */
-    section, div, aside, article {
-        width: 100% !important;
-        padding: 5px 0 !important;
-        margin: 5px 0 !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Tablas, si las hay */
-    table {
-        width: 100% !important;
-        display: block !important;
-        overflow-x: auto; /* Permite desplazamiento horizontal en tablas grandes */
-    }
-
-    /* --- 3. HEADER Y NAVEGACIÓN --- */
-    .navbar-brand {
-        font-size: 0.9rem !important;
-    }
-    .navbar-brand img {
-        width: 30px !important;
-        height: 30px !important;
-    }
-    .navbar-brand div {
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-    .navbar-brand span {
-        font-size: 0.9rem !important;
-        white-space: normal !important;
-    }
-    .navbar-brand small {
-        font-size: 0.7rem !important;
-        white-space: normal !important;
-    }
-    .navbar-nav .nav-link {
-        padding: 0.5rem 0.75rem !important;
-        font-size: 0.85rem !important;
-    }
-    .navbar-nav {
-        flex-wrap: nowrap !important;
-    }
-
-    /* Para pantallas muy pequeñas */
-    @media (max-width: 576px) {
-        .navbar-brand img {
-            width: 20px !important;
-            height: 20px !important;
-        }
-        .navbar-brand span {
-            font-size: 0.6rem !important;
-        }
-        .navbar-brand small {
-            font-size: 0.5rem !important;
-        }
-        .navbar-nav .nav-link span {
-            display: none !important; /* Ocultar texto, mostrar solo íconos */
-        }
-        .navbar-nav .nav-link {
-            font-size: 0.75rem !important;
-            padding: 0.25rem 0.5rem !important;
-        }
-    }
-
-    /* --- 4. FOOTER --- */
-    footer .row > div {
-        text-align: center !important;
-        margin-bottom: 20px !important;
-    }
-    footer .col-md-4 {
-        padding: 10px !important;
-    }
-    footer a {
-        display: inline-block !important;
-        margin: 5px !important;
-    }
-
-    /* --- 5. SIDEBAR --- */
-    #sidebar {
-        width: 250px !important;
-    }
-
-    /* --- 6. TUS CLASES DE CONTENEDOR ESPECÍFICAS --- */
-    
-    .noticia-layout, .contenedor-principal {
-        display: block !important; 
-        width: 100% !important;
-        padding: 10px !important;
-    }
-    
-    .ugr-contenedor, .noticia-instrucciones, .noticia-formulario, 
-    .ugr-input, .ugr-textarea {
-        width: 100% !important;
-        min-width: unset !important;
-        margin: 0 !important;
-        padding: 10px !important;
-        box-sizing: border-box !important; 
-    }
-    
-    /* Asegura que los enlaces de configuración (o botones) no se salgan */
-    .enlaces-configuracion, .botones-accion {
-        width: 100% !important;
-        display: block !important;
-        text-align: center !important; /* Centra los enlaces */
-    }
-
-    /* --- INDEX.HTML --- */
-    .card-title {
-        font-size: 1rem !important;
-    }
-    .card-text {
-        font-size: 0.9rem !important;
-    }
-    .noticia-card img {
-        height: 200px !important;
-        object-fit: cover !important;
-    }
-    .noticia-overlay h5 {
-        font-size: 1rem !important;
-    }
+img {
+    max-width: 100%;
+    height: auto;
 }
 
+/* ================================================= */
+/* RESPONSIVIDAD ESPECÍFICA (MOBILE & TABLET)       */
+/* ================================================= */
 
+@media (max-width: 991px) {
+    
+    /* 1. Ajuste del Navbar para que no se amontone */
+    .brand-title {
+        font-size: 0.9rem;
+        line-height: 1.1;
+    }
 
+    .brand-subtitle {
+        font-size: 0.75rem;
+        opacity: 0.9;
+    }
 
-
-/* ======================================= */
-/* RESPONSIVIDAD PARA TABLES Y DISPOSITIVOS MEDIANOS */
-/* ======================================= */
-
- /* Hacer que la barra de navegacion se vea asi:
-    [ LOGO ]  Universidad Nacional de Guinea Ecuatorial
-          Facultad de Ciencias de la Salud          [ ☰ ]
-    */
-@media (max-width: 775px) {
-    /* Menú desplegable ocupa todo el ancho */
+    /* 2. Menú desplegable estético */
     .navbar-collapse {
-        background-color: black; /* mismo azul */
-    }
-
-    /* Links verticales */
-    .navbar-nav {
-        width: 100%;
+        background-color: #004a99; /* Azul oficial sólido */
+        margin-top: 10px;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
 
     .navbar-nav .nav-link {
-        padding: 8px 0;
-        font-size: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding: 12px 0 !important;
     }
 
-    /* Permitir que los elementos bajen de línea */
-    header .container-fluid {
-        flex-wrap: wrap !important;
-        justify-content: space-between !important;
-    }
+    /* 3. Corrección de contenedores de contenido */
+    .noticia-layout, .contenedor-principal, .ugr-contenedor {
+        padding: 15px !important;
+        margin: 0 !important;
+        width: 100% !important;
+    </div>
+}
 
-    /* Logo y texto */
-    .navbar-brand {
-        flex: 1 1 auto !important;      /* permite crecer y encoger */
-        min-width: 0 !important;        /* elimina restricción de ancho */
+/* Pantallas muy pequeñas (Smartphones) */
+@media (max-width: 576px) {
+    .navbar-brand img {
+        width: 32px !important;
+        height: 32px !important;
     }
 
     .brand-title {
         font-size: 0.85rem;
-        white-space: normal !important;  /* permite dividir en varias líneas */
-        overflow: visible !important;
-        text-overflow: clip !important;
     }
 
-    .brand-subtitle {
-        font-size: 0.7rem;
-        white-space: normal !important;
-        margin-left: 2rem; /* Indentar para alinear con el título */
+    /* Ocultamos textos largos de iconos si el espacio es crítico */
+    .navbar-nav .nav-link i {
+        margin-right: 10px;
     }
 
-    /* Hamburguesa alineada a la derecha */
-    .navbar-toggler {
-        flex-shrink: 0 !important;
-        margin-left: auto !important;
+    /* Ajustes para el sidebar en móviles */
+    #sidebar {
+        width: 250px !important; /* Reducir ancho en móviles */
     }
 
-    /* Para asegurar que el menú colapsable ocupe toda la pantalla */
-    #navbarNav {
-        width: 100% !important;
+    #btn-sidebar {
+        top: 70px !important; /* Ajustar posición del botón */
+        left: 5px !important;
+        font-size: 0.8rem !important;
+        padding: 5px 8px !important;
+    }
+
+    /* Ajustar el footer para móviles */
+    .col-md-4 {
+        text-align: center !important;
+        margin-bottom: 20px;
+    }
+
+    .col-md-4:last-child {
+        margin-bottom: 0;
     }
 }
 
 
 
+/* --- CSS PARA EL LOGO DE MÓVIL --- */
+
+/* Forzamos el tamaño del logo móvil */
+img.logo-grande-movil {
+    width: 100px !important;  /* ¡Aquí puedes poner 100px, 120px o lo que quieras! */
+    height: auto !important;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+@media (max-width: 768px) {
+    /* Centramos el contenedor para que luzca profesional */
+    .brand-container-mobile {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        padding: 15px 0 !important;
+    }
+
+    .brand-text-container {
+        align-items: center !important;
+    }
+
+    /* Ajustamos los textos para que acompañen al logo grande */
+    .brand-main-text {
+        font-size: 1rem !important; /* FCS resaltado */
+        color: white !important; 
+    }
+
+    .brand-sub-text {
+        font-size: 1.4rem !important; /* FCS resaltado */
+        color: white !important; 
+    }
+}
+
+/* ================================================= */
+/* PAGINA DE INICIO*/
 
 
+/* --- ESTILOS PARA EL CARRUSEL --- */
+
+/* Ajuste de altura responsivo */
+.carousel-img {
+    height: 70vh; /* Altura en Desktop */
+    object-fit: cover;
+    filter: brightness(0.85); /* Oscurece un poco la imagen base */
+}
+
+/* Capa de contraste para el texto */
+.carousel-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    /* Degradado de negro transparente a negro más sólido abajo */
+    /* Para el carrusel o el menú móvil */
+    background: linear-gradient(to top, 
+        rgba(0, 35, 102, 1) 0%,    /* Azul sólido abajo (100% opacidad) */
+        rgba(0, 35, 102, 0.8) 60%,  /* Azul semi-transparente en el medio */
+        rgba(0, 35, 102, 0) 100%    /* Completamente invisible arriba */ ) !important;
+    display: flex;
+    align-items: flex-end; /* Texto abajo como en la imagen de ejemplo */
+    justify-content: center;
+    padding-bottom: 50px;
+}
+
+.overlay-content {
+    color: white;
+    text-align: center;
+    max-width: 85%;
+}
+
+/* --- AJUSTES ESPECÍFICOS PARA MÓVIL --- */
+@media (max-width: 768px) {
+    .carousel-img {
+        height: 55vh; /* Altura más corta en móvil para no tapar todo */
+    }
+
+    .overlay-content h4 {
+        font-size: 1.5rem !important;
+        margin-bottom: 10px;
+    }
+
+    .overlay-content p {
+        font-size: 0.9rem !important;
+        line-height: 1.3;
+    }
+
+    /* Ajuste para que los botones de navegación (flechas) no molesten */
+    .carousel-control-prev, .carousel-control-next {
+        width: 10%;
+    }
+}
+
+
+/* ================================================= */
+/* BARRA DE NAVEGACIÓN SUPERIOR DEL CARROUSEL*/
+
+@media (max-width: 767px) {
+    /* 1. Centrar los títulos y quitar flechas si estorban */
+    .navbar-nav .nav-item {
+        text-align: center !important;
+        width: 100%;
+    }
+
+    /* 2. Forzar que los Dropdowns se vean centrados y limpios */
+    .dropdown-menu {
+        text-align: center !important;
+        background-color: transparent !important;
+        border: none !important;
+    }
+
+    /* 3. CORRECCIÓN DE ICONOS: Forzar horizontal */
+    .navbar-collapse .d-flex {
+        flex-direction: row !important; /* Esto evita que se pongan uno debajo de otro */
+        display: flex !important;
+        justify-content: center !important;
+        gap: 25px !important; /* Espacio entre iconos */
+    }
+
+    /* 4. Estilo de los iconos sociales para que se vean como en la UGR */
+    .social-icon {
+        font-size: 1.5rem; /* Un poco más grandes para móvil */
+        color: black !important; /* Tu color azul */
+        display: inline-block;
+    }
+    
+    /* Quitar márgenes extraños que pusimos antes */
+    .barra {
+        margin: 0 !important;
+        padding: 15px !important;
+    }
+}
+
+
+@media (max-width: 767px) {
+    /* 1. Fondo Azul Primario para todo el desplegable */
+    #navBarraSuperiorCompleta {
+        background-color: #002366 !important; /* Tu azul primario */
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 20px 0 !important;
+    }
+
+    /* 2. Quitar márgenes del contenedor interno (el cuadro blanco que ves) */
+    .barra {
+        background-color: transparent !important; /* Quitamos el blanco */
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important; /* Centra todo el contenido */
+    }
+
+    /* 3. Centrar los textos de Presentación y Consejo */
+    .navbar-nav {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .nav-item {
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    /* 3. Forzamos el color y centrado en los títulos principales */
+#navBarraSuperiorCompleta .nav-item .dropdown-toggle, 
+#navBarraSuperiorCompleta .nav-link {
+    color: white !important;
+    font-size: 1.3rem !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
+    padding: 15px 0 !important;
+    text-decoration: none !important;
+}
+
+/* Evitamos que cambien de color al pasar el mouse */
+#navBarraSuperiorCompleta .nav-item .dropdown-toggle:hover,
+#navBarraSuperiorCompleta .nav-item .dropdown-toggle:focus {
+    color: white !important;
+    background: transparent !important;
+}
+
+    /* 4. Submenús (Historia, Quiénes somos) también centrados */
+    .dropdown-menu {
+        background-color: rgba(255, 255, 255, 0.1) !important; /* Fondo sutil para submenús */
+        border: none !important;
+        width: 100% !important;
+        text-align: center !important;
+        margin: 0 !important;
+    }
+
+    .dropdown-item {
+        color: white !important;
+        padding: 10px 0 !important;
+    }
+
+    /* 5. Iconos en Horizontal y Centrados */
+    .barra > div:last-child { 
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        gap: 30px !important;
+        width: 100% !important;
+        margin-top: 25px !important;
+        padding-top: 20px !important;
+        border-top: 1px solid rgba(255,255,255,0.2) !important;
+    }
+
+    .barra i {
+        color: white !important;
+        font-size: 1.6rem !important;
+    }
+}
 

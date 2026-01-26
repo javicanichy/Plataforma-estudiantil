@@ -72,13 +72,29 @@
             {% endif %}
 
             <div class="d-flex align-items-center py-4 border-top border-bottom mb-4">
-                <span class="me-3 fw-bold text-muted small text-uppercase">Compartir:</span>
-                <div class="share-icons">
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#" class="btn btn-outline-secondary btn-sm rounded-circle me-2"><i class="bi bi-whatsapp"></i></a>
-                </div>
-            </div>
+    <span class="me-3 fw-bold text-muted small text-uppercase">Compartir:</span>
+    <div class="share-icons d-flex align-items-center">
+        <a href="#" onclick="compartir('facebook')" class="btn btn-outline-secondary btn-sm rounded-circle me-2 btn-fb" title="Compartir en Facebook">
+            <i class="bi bi-facebook"></i>
+        </a>
+        <a href="#" onclick="compartir('twitter')" class="btn btn-outline-secondary btn-sm rounded-circle me-2 btn-x" title="Compartir en X">
+            <i class="bi bi-twitter-x"></i>
+        </a>
+        <a href="#" onclick="compartir('whatsapp')" class="btn btn-outline-secondary btn-sm rounded-circle me-2 btn-wa" title="Compartir por WhatsApp">
+            <i class="bi bi-whatsapp"></i>
+        </a>
+        <a href="https://www.instagram.com/" onclick="compartir('copy')" class="btn btn-outline-secondary btn-sm rounded-circle me-2 btn-ig" title="Copiar enlace para Instagram">
+            <i class="bi bi-instagram"></i>
+        </a>
+        <a href="https://www.tiktok.com/" onclick="compartir('copy')" class="btn btn-outline-secondary btn-sm rounded-circle btn-tk" title="Copiar enlace para TikTok">
+            <i class="bi bi-tiktok"></i>
+        </a>
+    </div>
+</div>
+
+<div id="toast-copiado" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 p-2 px-3 bg-dark text-white rounded-pill small shadow-lg" style="display: none; z-index: 9999; font-size: 0.8rem;">
+    <i class="bi bi-link-45deg me-1"></i> Enlace copiado al portapapeles
+</div>
 
             {% if current_user.is_authenticated and (current_user.id == noticia.autor_id or current_user.rol == 'admin') %}
               <div class="mt-4 p-3 bg-light rounded-3 border">
@@ -281,5 +297,43 @@
             mainTag.style.overflow = 'visible';
         }
     });
+</script>
+
+<script>
+function compartir(plataforma) {
+    // Tomamos los datos reales de la noticia desde el DOM
+    const urlNoticia = window.location.href;
+    const tituloNoticia = "{{ noticia.titulo | e }}"; // 'e' para escapar caracteres especiales
+    const urlEncoded = encodeURIComponent(urlNoticia);
+    const tituloEncoded = encodeURIComponent(tituloNoticia);
+    
+    let shareUrl = '';
+
+    if (plataforma === 'copy') {
+        // Lógica para Redes Visuales (Instagram/TikTok)
+        navigator.clipboard.writeText(urlNoticia).then(() => {
+            const toast = document.getElementById('toast-copiado');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2500);
+        });
+        return;
+    }
+
+    switch(plataforma) {
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}`;
+            break;
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?url=${urlEncoded}&text=${tituloEncoded}`;
+            break;
+        case 'whatsapp':
+            shareUrl = `https://api.whatsapp.com/send?text=${tituloEncoded}%20${urlEncoded}`;
+            break;
+    }
+
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=450,menubar=no,toolbar=no,resizable=yes,scrollbars=yes');
+    }
+}
 </script>
 {% endblock %}
