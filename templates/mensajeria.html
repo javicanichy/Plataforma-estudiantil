@@ -2,122 +2,151 @@
 
 {% block content %}
 <style>
-    /* Selecciona el body cuando tiene la clase fondo-mensajes */
+    /* 1. FONDO Y ESTILO BASE */
     body.fondo-mensajes {
-        background-color: black; /* Un gris muy suave tipo Facebook/Gmail */
-        background-image: radial-gradient(#d1d1d1 0.5px, transparent 0.5px); /* Un patrón sutil de puntos */
-        background-size: 20px 20px;
+        background: radial-gradient(circle at center, #1e1e2f 0%, #0d0d15 100%);
+        background-attachment: fixed;
+        color: #ffffff;
     }
+
+    :root { 
+        --neon-blue: #00d2ff;
+        --deep-dark: rgba(20, 20, 30, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    .main-container-mail { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+
+    .inbox-wrapper { 
+        background: var(--deep-dark);
+        backdrop-filter: blur(15px);
+        height: 85vh; 
+        border-radius: 20px; 
+        display: flex; 
+        overflow: hidden; 
+        border: 1px solid var(--glass-border);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+
+    /* 2. SIDEBAR Y CONTADORES */
+    .sidebar-mail { width: 280px; background: rgba(0,0,0,0.3); padding-top: 20px; border-right: 1px solid var(--glass-border); }
+    .btn-compose { 
+        margin: 0 20px 20px 20px; padding: 12px; 
+        border-radius: 12px; background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%); 
+        border: none; color: white; font-weight: bold; width: calc(100% - 40px);
+        transition: 0.3s;
+    }
+    
+    .nav-mail .nav-link { color: #888; padding: 12px 25px; transition: 0.3s; font-size: 0.9rem; }
+    .nav-mail .nav-link.active { color: var(--neon-blue); font-weight: bold; background: rgba(0, 210, 255, 0.1); border-left: 4px solid var(--neon-blue); }
+    .badge-mail { font-size: 0.75rem; padding: 4px 8px; border-radius: 10px; }
+
+    /* 3. FILAS DE MENSAJES */
+    .mail-row { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--glass-border); cursor: pointer; transition: 0.2s; }
+    .mail-row:hover { background-color: rgba(255,255,255,0.05); }
+    .unread { background: rgba(0, 210, 255, 0.05); font-weight: bold; }
+
+    /* 4. AVATARES */
+    .avatar-sm { width: 38px; height: 38px; object-fit: cover; border-radius: 50%; }
+    .avatar-backup {
+        width: 38px; height: 38px; border-radius: 50%;
+        background: var(--neon-blue); color: #000;
+        display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;
+    }
+
+    /* 5. MODAL Y BUSCADOR DE SUGERENCIAS */
+    .search-bar-container {
+        background: var(--deep-dark); border: 1px solid var(--glass-border); border-radius: 12px;
+        padding: 12px 20px; margin-bottom: 20px; display: flex; align-items: center;
+    }
+    .search-bar-container input { background: transparent; border: none; width: 100%; outline: none; color: white; margin-left: 10px; }
+
+    #listaSugerencias { 
+        z-index: 1100; max-height: 300px; overflow-y: auto; 
+        background: #161625; border: 1px solid var(--neon-blue); border-top: none;
+    }
+    .op-usuario { background: #161625; color: white; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .op-usuario:hover { background: #1f1f35; cursor: pointer; }
 </style>
 
 <style>
-    :root { 
-        --gmail-border: #f1f3f4; 
-        --gmail-blue: #1a73e8; 
-        --bg-body: #f6f8fc; 
-    }
+    /* 1. Color del texto en el campo "Para..." y el área de mensaje */
+#buscadorUsuarios, 
+#formRedactar textarea[name="contenido"] {
+    color: #ffffff !important; /* Blanco puro para máxima claridad */
+}
 
-    body { background-color: var(--bg-body); }
+/* Placeholder (el texto "Para..." o "Escribe tu mensaje...") */
+#buscadorUsuarios::placeholder,
+#formRedactar textarea[name="contenido"]::placeholder {
+    color: rgba(255, 255, 255, 0.5); /* Blanco semitransparente */
+}
 
-    /* Contenedor Principal Centrado */
-    .main-container-mail {
-        max-width: 1200px;
-        margin: 20px auto;
-        padding: 0 15px;
-    }
+/* 2. Color de los nombres en la lista de búsqueda del receptor */
+.op-usuario .fw-bold {
+    color: #00d2ff !important; /* Azul neón para resaltar el nombre */
+}
 
-    .inbox-wrapper { 
-        background: #fff; 
-        height: 80vh; 
-        border-radius: 16px; 
-        display: flex; 
-        overflow: hidden; 
-        border: 1px solid var(--gmail-border);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    }
+/* 3. Color del correo institucional y el rol en la lista */
+.op-usuario .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important; /* Blanco suave para el correo */
+}
 
-    /* Sidebar */
-    .sidebar-mail { width: 260px; background: #f8f9fa; padding-top: 15px; border-right: 1px solid var(--gmail-border); }
-    .btn-compose { 
-        margin: 0 15px 20px 15px; padding: 12px 24px; 
-        border-radius: 24px; background: #fff; box-shadow: 0 1px 3px rgba(60,64,67,0.3); 
-        border: none; font-weight: 500; transition: 0.2s; 
-    }
-    .btn-compose:hover { box-shadow: 0 4px 10px rgba(60,64,67,0.2); }
-    
-    .nav-mail .nav-link { color: #3c4043; border-radius: 0 20px 20px 0; padding: 10px 25px; font-size: 0.9rem; transition: 0.2s; }
-    .nav-mail .nav-link.active { background: #e8f0fe; color: var(--gmail-blue); font-weight: bold; }
+/* 4. Asegurar que al pasar el mouse (hover) el texto siga siendo visible */
+.op-usuario:hover .fw-bold {
+    color: #ffffff !important;
+}
 
-    /* Fila de Mensajes */
-    .mail-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--gmail-border); cursor: pointer; }
-    .mail-row:hover { background-color: #f7f9fc; box-shadow: inset 3px 0 0 var(--gmail-blue); }
-    .unread { background: #fff; font-weight: bold; }
-    .read { background: #f8f9fa; color: #5f6368; }
-    
-    /* Fotos y Avatares de Iniciales */
-    .avatar-sm { width: 35px; height: 35px; object-fit: cover; border-radius: 50%; }
-    .avatar-backup {
-        width: 35px; height: 35px; border-radius: 50%;
-        background: #1a73e8; color: white;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 0.9rem; text-transform: uppercase;
-    }
-
-    /* Buscador Superior */
-    .search-bar-container {
-        background: #fff; border: 1px solid #dfe1e5; border-radius: 8px;
-        padding: 10px 20px; margin-bottom: 15px; display: flex; align-items: center;
-    }
-    .search-bar-container input { border: none; width: 100%; outline: none; margin-left: 10px; }
-
-    /* Sugerencias en el modal */
-    #listaSugerencias { z-index: 1050; max-height: 250px; overflow-y: auto; }
+/* 5. Color del texto del archivo adjunto */
+input[type="file"] {
+    color: #ffffff !important;
+}
 </style>
+
+
+
 
 <div class="main-container-mail">
     <div class="search-bar-container shadow-sm">
-        <i class="fas fa-search text-muted"></i>
+        <i class="fas fa-search text-info"></i>
         <input type="text" id="searchInbox" placeholder="Buscar por remitente o contenido...">
     </div>
 
     <div class="inbox-wrapper">
         <div class="sidebar-mail">
             <button class="btn-compose" data-bs-toggle="modal" data-bs-target="#redactarModal">
-                <img src="https://www.gstatic.com/images/icons/material/system_gm/2x/create_black_24dp.png" width="24" class="me-2"> Redactar
+                <i class="fas fa-edit me-2"></i> Redactar
             </button>
             <nav class="nav flex-column nav-mail">
                 <a class="nav-link d-flex justify-content-between align-items-center {% if vista_actual == 'recibidos' %}active{% endif %}" href="{{ url_for('bandeja_entrada', vista='recibidos') }}">
                     <span><i class="fas fa-inbox me-3"></i> Recibidos</span>
                     {% if total_recibidos > 0 %}
-                        <span class="badge rounded-pill bg-danger">{{ total_recibidos }}</span>
+                        <span class="badge bg-danger badge-mail">{{ total_recibidos }}</span>
                     {% endif %}
                 </a>
-                
                 <a class="nav-link d-flex justify-content-between align-items-center {% if vista_actual == 'favoritos' %}active{% endif %}" href="{{ url_for('bandeja_entrada', vista='favoritos') }}">
                     <span><i class="far fa-star me-3"></i> Favoritos</span>
                     {% if total_favoritos > 0 %}
-                        <span class="badge rounded-pill bg-warning text-dark">{{ total_favoritos }}</span>
+                        <span class="badge bg-warning text-dark badge-mail">{{ total_favoritos }}</span>
                     {% endif %}
                 </a>
-
                 <a class="nav-link d-flex justify-content-between align-items-center {% if vista_actual == 'enviados' %}active{% endif %}" href="{{ url_for('bandeja_entrada', vista='enviados') }}">
                     <span><i class="far fa-paper-plane me-3"></i> Enviados</span>
                     {% if total_enviados > 0 %}
-                        <span class="badge rounded-pill bg-secondary text-white">{{ total_enviados }}</span>
+                        <span class="badge bg-secondary badge-mail">{{ total_enviados }}</span>
                     {% endif %}
                 </a>
             </nav>
         </div>
 
-        <div class="flex-grow-1 d-flex flex-column bg-white">
-            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                <h6 class="m-0 text-capitalize fw-bold text-secondary">{{ vista_actual }}</h6>
+        <div class="flex-grow-1 d-flex flex-column">
+            <div class="p-3 border-bottom border-secondary">
+                <h6 class="m-0 text-capitalize fw-bold text-info">{{ vista_actual }}</h6>
             </div>
 
             <div class="overflow-auto">
                 {% for msg in mensajes %}
                 {% set user_display = msg.emisor if vista_actual == 'recibidos' else msg.receptor %}
-                
                 <div class="mail-row {% if vista_actual == 'recibidos' and not msg.leido %}unread{% else %}read{% endif %}" 
                      onclick="window.location.href='{{ url_for('ver_mensaje', id=msg.id) }}'">
                     
@@ -125,31 +154,30 @@
                         <i class="{% if msg.mensaje_favorito %}fas fa-star text-warning{% else %}far fa-star text-muted{% endif %}"></i>
                     </div>
                     
-                    {% if user_display.rol in ['estudiante', 'directivo', 'administrador', 'secretaria'] %}
-                        {% set archivo_autor = user_display.foto_perfil %}
-                        {% set carpeta_autor = 'perfiles/' %}
-                    {% elif user_display.rol == 'profesor' %}
-                        {% set archivo_autor = user_display.profesor.archivo_foto if user_display.profesor else none %}
-                        {% set carpeta_autor = 'fotos/' %}
-                    {% else %}
-                        {% set archivo_autor = none %}
-                    {% endif %}
+                    <div class="me-3">
+                        {% if user_display.rol == 'profesor' %}
+                            {% set archivo_list = user_display.profesor.archivo_foto if user_display.profesor else none %}
+                            {% set carpeta_list = 'fotos/' %}
+                        {% else %}
+                            {% set archivo_list = user_display.foto_perfil %}
+                            {% set carpeta_list = 'perfiles/' %}
+                        {% endif %}
 
-                    {% if archivo_autor %}
-                    <img src="{{ url_for('static', filename='uploads/' + carpeta_autor + archivo_autor) }}" 
-                         class="avatar-sm me-3 border"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    {% endif %}
-                    <div class="avatar-backup me-3" style="{% if archivo_autor %}display:none;{% else %}display:flex;{% endif %}">
-                        {{ user_display.nombre[0] }}
+                        {% if archivo_list %}
+                        <img src="{{ url_for('static', filename='uploads/' + carpeta_list + archivo_list) }}" 
+                             class="avatar-sm border border-secondary" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        {% endif %}
+                        <div class="avatar-backup" style="{% if archivo_list %}display:none;{% else %}display:flex;{% endif %}">
+                            {{ user_display.nombre[0] }}
+                        </div>
                     </div>
                     
-                    <div style="min-width: 200px;" class="text-truncate me-3 small">
+                    <div style="min-width: 200px;" class="text-truncate me-3 small fw-bold">
                         {{ user_display.nombre }} {{ user_display.apellidos }}
                     </div>
                     
-                    <div class="flex-grow-1 text-truncate small">
-                        <span>{{ msg.contenido }}</span>
+                    <div class="flex-grow-1 text-truncate small opacity-75">
+                        {{ msg.contenido|striptags|truncate(80)|safe }}
                     </div>
                     
                     <div class="ms-3 small text-muted">
@@ -166,27 +194,25 @@
 
 <div class="modal fade" id="redactarModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg border-0">
-            <div class="modal-header bg-dark text-white py-2">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary py-2">
                 <h6 class="modal-title small">Nuevo Mensaje</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form id="formRedactar" action="{{ url_for('enviar_mensaje') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body p-0 position-relative">
-                    <div class="px-3 py-2 border-bottom">
-                        <input type="text" id="buscadorUsuarios" class="form-control border-0 p-0 shadow-none" placeholder="Para..." autocomplete="off" required>
+                    <div class="px-3 py-2 border-bottom border-secondary">
+                        <input type="text" id="buscadorUsuarios" class="form-control bg-transparent border-0 p-0 shadow-none text-white" placeholder="Para..." autocomplete="off" required>
                         <input type="hidden" name="email_institucional" id="email_final">
                     </div>
                     
-                    <div id="listaSugerencias" class="list-group position-absolute w-100 d-none bg-white shadow">
+                    <div id="listaSugerencias" class="list-group position-absolute w-100 d-none shadow-lg">
                         {% for u in usuarios %}
                             {% if u.id != current_user.id %}
-                                {% if u.rol in ['estudiante', 'directivo', 'administrador', 'secretaria'] %}
-                                    {% set img_s = u.foto_perfil %}{% set carp_s = 'perfiles/' %}
-                                {% elif u.rol == 'profesor' %}
+                                {% if u.rol == 'profesor' %}
                                     {% set img_s = u.profesor.archivo_foto if u.profesor else none %}{% set carp_s = 'fotos/' %}
                                 {% else %}
-                                    {% set img_s = none %}
+                                    {% set img_s = u.foto_perfil %}{% set carp_s = 'perfiles/' %}
                                 {% endif %}
 
                                 <div class="op-usuario list-group-item list-group-item-action d-flex align-items-center" 
@@ -194,30 +220,30 @@
                                     
                                     {% if img_s %}
                                     <img src="{{ url_for('static', filename='uploads/' + carp_s + img_s) }}" 
-                                         class="avatar-sm me-3 border"
+                                         class="avatar-sm me-3 border border-secondary" style="width:30px; height:30px;"
                                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                     {% endif %}
-                                    <div class="avatar-backup me-3" style="{% if img_s %}display:none;{% else %}display:flex;{% endif %} width:30px; height:30px; font-size: 0.75rem;">
+                                    <div class="avatar-backup me-3" style="{% if img_s %}display:none;{% else %}display:flex;{% endif %} width:30px; height:30px; font-size: 0.7rem;">
                                         {{ u.nombre[0] }}
                                     </div>
 
                                     <div>
                                         <div class="small fw-bold">{{ u.nombre }} {{ u.apellidos }}</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">{{ u.correo_institucional }} <span class="badge bg-light text-dark border ms-1">{{ u.rol }}</span></div>
+                                        <div class="text-muted" style="font-size: 0.65rem;">{{ u.correo_institucional }}</div>
                                     </div>
                                 </div>
                             {% endif %}
                         {% endfor %}
                     </div>
 
-                    <textarea name="contenido" class="form-control border-0 px-3 py-3 shadow-none" rows="8" placeholder="Escribe tu mensaje..." required style="resize:none;"></textarea>
+                    <textarea name="contenido" class="form-control bg-transparent border-0 px-3 py-3 text-white shadow-none" rows="8" placeholder="Escribe tu mensaje..." required style="resize:none;"></textarea>
                     
-                    <div class="px-3 py-2 bg-light border-top">
-                        <input type="file" name="archivo_adjunto" class="form-control form-control-sm border-0 bg-transparent shadow-none">
+                    <div class="px-3 py-2 bg-black bg-opacity-50 border-top border-secondary">
+                        <input type="file" name="archivo_adjunto" class="form-control form-control-sm border-0 bg-transparent text-muted shadow-none">
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Enviar</button>
+                    <button type="submit" class="btn btn-info rounded-pill px-4 fw-bold">Enviar</button>
                 </div>
             </form>
         </div>
@@ -225,7 +251,12 @@
 </div>
 
 <script>
-    // Buscador en tiempo real de la bandeja
+    // 1. Fondo dinámico
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.add("fondo-mensajes");
+    });
+
+    // 2. Buscador de bandeja
     document.getElementById('searchInbox').addEventListener('input', function() {
         const query = this.value.toLowerCase();
         document.querySelectorAll('.mail-row').forEach(row => {
@@ -233,7 +264,7 @@
         });
     });
 
-    // Lógica del buscador de usuarios en modal
+    // 3. Buscador de usuarios (Modal)
     const inputBusqueda = document.getElementById('buscadorUsuarios');
     const lista = document.getElementById('listaSugerencias');
     const emailFinal = document.getElementById('email_final');
@@ -242,7 +273,8 @@
         const filtro = this.value.toLowerCase();
         lista.classList.toggle('d-none', filtro.length === 0);
         document.querySelectorAll('.op-usuario').forEach(op => {
-            op.style.display = op.innerText.toLowerCase().includes(filtro) ? 'flex' : 'none';
+            const contenido = op.innerText.toLowerCase();
+            op.style.display = contenido.includes(filtro) ? 'flex' : 'none';
         });
     });
 
@@ -255,20 +287,18 @@
         });
     });
 
-    // --- INTEGRACIÓN: AUTO-RELLENO DESDE PERFIL AJENO ---
+    // 4. Auto-relleno y Posición Scroll
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const modalElement = document.getElementById('redactarModal');
         const modal = new bootstrap.Modal(modalElement);
 
-        // Si Flask detecta un receptor_id en la URL, rellena el modal y lo abre
         {% if usuario_preseleccionado %}
             inputBusqueda.value = "{{ usuario_preseleccionado.nombre }} {{ usuario_preseleccionado.apellidos }} <{{ usuario_preseleccionado.correo_institucional }}>";
             emailFinal.value = "{{ usuario_preseleccionado.correo_institucional }}";
             modal.show();
         {% endif %}
 
-        // Mantener tu lógica de Responder/Reenviar vía sessionStorage
         if (urlParams.get('accion') === 'redactar') {
             const accion = sessionStorage.getItem('accion_mail');
             if (accion === 'responder') {
@@ -279,6 +309,18 @@
             }
             modal.show();
             sessionStorage.clear();
+        }
+    });
+
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' });
+            sessionStorage.removeItem('scrollPos');
         }
     });
 </script>

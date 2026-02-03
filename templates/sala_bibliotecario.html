@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Centro de Mando Biblioteca | UNGE{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --unge-red: #c62828;
+        --unge-blue: #1565c0;
+        --unge-gold: #f9a825;
+        --unge-dark: #1e293b;
+    }
+
+    body { background-color: #f8fafc; }
+
+    /* Header Estilo Dashboard */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--unge-dark) 0%, #334155 100%);
+        border-radius: 0 0 30px 30px;
+        padding: 3rem 2rem;
+        margin-bottom: -4rem;
+        color: white;
+    }
+
+    /* Tarjetas de Estadísticas Reorganizadas */
+    .kpi-card {
+        border: none;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .kpi-card:hover { transform: translateY(-5px); }
+    
+    .kpi-icon {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 5rem;
+        opacity: 0.05;
+        transform: rotate(-15deg);
+    }
+
+    /* Interruptores Estilizados */
+    .switch-panel {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Lista de Actividad Estilo Feed */
+    .feed-card {
+        background: white;
+        border-radius: 24px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .feed-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .scroll-area {
+        max-height: 450px;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    /* Estilo para los items de la lista */
+    .activity-item {
+        border-radius: 15px;
+        margin-bottom: 0.75rem;
+        padding: 1rem;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        background: #f8fafc;
+    }
+    .activity-item:hover {
+        background: white;
+        border-color: var(--unge-blue);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    /* Estilos específicos para la sección de Mensajes */
+    .dm-item {
+        text-decoration: none !important;
+        color: inherit !important;
+        display: block;
+    }
+    .avatar-mini {
+        width: 35px;
+        height: 35px;
+        background: var(--unge-blue);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header shadow-lg">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-8 text-center text-md-start">
+                <span class="badge bg-primary mb-2 px-3 py-2 rounded-pill">MODO ADMINISTRACIÓN</span>
+                <h1 class="fw-bold display-6 mb-0">Sala del Bibliotecario</h1>
+                <p class="opacity-75">Gestión centralizada de recursos, préstamos y convocatorias.</p>
+            </div>
+            <div class="col-md-4 text-center text-md-end mt-3 mt-md-0">
+                <div class="dropdown">
+                    <button class="btn btn-warning btn-lg rounded-pill px-4 fw-bold shadow-lg dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-plus-circle me-2"></i>NUEVO REGISTRO
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2">
+                        <li><a class="dropdown-item rounded-3 p-3" href="{{ url_for('agregar_libro_fisico') }}"><i class="fas fa-book me-2 text-danger"></i> Agregar Libro Físico</a></li>
+                        <li><a class="dropdown-item rounded-3 p-3" href="{{ url_for('biblioteca_editar') }}"><i class="fas fa-file-pdf me-2 text-primary"></i> Subir Digital / TFG</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid py-5 px-4">
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <i class="fas fa-book kpi-icon"></i>
+                <h6 class="text-muted fw-bold">LIBROS FÍSICOS</h6>
+                <h2 class="fw-bold display-5" style="color: var(--unge-red);">{{ info.fisicos }}</h2>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-danger" style="width: 70%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <i class="fas fa-laptop-code kpi-icon"></i>
+                <h6 class="text-muted fw-bold">RECURSOS DIGITALES</h6>
+                <h2 class="fw-bold display-5" style="color: var(--unge-blue);">{{ info.digitales }}</h2>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-primary" style="width: 45%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4">
+                <i class="fas fa-user-graduate kpi-icon"></i>
+                <h6 class="text-muted fw-bold">TESIS (TFG)</h6>
+                <h2 class="fw-bold display-5" style="color: var(--unge-gold);">{{ info.tfg }}</h2>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-warning" style="width: 30%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card kpi-card p-4 bg-dark text-white">
+                <h6 class="text-muted fw-bold">TOTAL ACERVO</h6>
+                <h2 class="fw-bold display-5 text-white">{{ info.total_general }}</h2>
+                <small class="text-success fw-bold"><i class="fas fa-chart-line me-1"></i> Actualizado hoy</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="switch-panel shadow-sm h-100">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="fas fa-toggle-on text-primary me-2"></i> Convocatorias Estudiantiles
+                </h5>
+                
+                <div class="card bg-light border-0 mb-3 rounded-4 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold d-block">Recepción Física</span>
+                            <small class="text-muted small">Activa el formulario de subida</small>
+                        </div>
+                        <a href="{{ url_for('toggle_permiso', tipo='fisico') }}" 
+                           class="btn {{ 'btn-success' if permiso_fisico else 'btn-outline-secondary' }} rounded-pill px-4 shadow-sm fw-bold">
+                           {{ 'ACTIVO' if permiso_fisico else 'INACTIVO' }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card bg-light border-0 mb-4 rounded-4 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold d-block">Recepción Digital</span>
+                            <small class="text-muted small">Notifica y habilita recursos</small>
+                        </div>
+                        <a href="{{ url_for('toggle_permiso', tipo='digital') }}" 
+                           class="btn {{ 'btn-primary' if permiso_digital else 'btn-outline-secondary' }} rounded-pill px-4 shadow-sm fw-bold">
+                           {{ 'ACTIVO' if permiso_digital else 'INACTIVO' }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="alert alert-info border-0 rounded-4 p-3 mb-0">
+                    <small class="fw-bold"><i class="fas fa-info-circle me-1"></i> NOTA:</small>
+                    <p class="small mb-0">Al activar estos permisos, se enviará un mensaje masivo a todos los estudiantes con el link directo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <div class="card feed-card h-100">
+                        <div class="feed-header">
+                            <h5 class="fw-bold mb-0 small text-uppercase"><i class="fas fa-clipboard-check text-success me-2"></i>Préstamos</h5>
+                            <a href="{{ url_for('lista_solicitudes_prestamo') }}" class="btn btn-sm btn-link text-decoration-none">Ver todo</a>
+                        </div>
+                        <div class="scroll-area">
+                            {% for sol in solicitudes %}
+                            <div class="activity-item d-flex align-items-center justify-content-between">
+                                <div class="overflow-hidden">
+                                    <h6 class="mb-0 fw-bold text-truncate" style="font-size: 0.85rem;">{{ sol.libro.titulo }}</h6>
+                                    <small class="text-muted">{{ sol.usuario.nombre }}</small>
+                                </div>
+                                <div class="d-flex gap-1 ms-2">
+                                    <form action="{{ url_for('respuestas_bibliotecario', id=sol.id, accion='aprobar') }}" method="POST">
+                                        <button class="btn btn-sm btn-success rounded-circle" style="width: 30px; height: 30px;"><i class="fas fa-check fa-xs"></i></button>
+                                    </form>
+                                    <form action="{{ url_for('respuestas_bibliotecario', id=sol.id, accion='rechazar') }}" method="POST">
+                                        <button class="btn btn-sm btn-outline-danger rounded-circle" style="width: 30px; height: 30px;"><i class="fas fa-times fa-xs"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4 text-muted small">Sin préstamos pendientes.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="card feed-card h-100">
+                        <div class="feed-header">
+                            <h5 class="fw-bold mb-0 small text-uppercase"><i class="fas fa-envelope text-primary me-2"></i>DMs Recientes</h5>
+                            <a href="{{ url_for('bandeja_entrada') }}" class="btn btn-sm btn-link text-decoration-none">Inbox</a>
+                        </div>
+                        <div class="scroll-area">
+                            {% for msg in mensajes_recientes %}
+                            <a href="{{ url_for('ver_mensaje', id=msg.id) }}" class="dm-item">
+                                <div class="activity-item d-flex align-items-center mb-2">
+                                    <div class="avatar-mini me-2">{{ msg.emisor.nombre[0] }}</div>
+                                    <div class="overflow-hidden">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold small">{{ msg.emisor.nombre }}</span>
+                                            <span class="text-muted" style="font-size: 0.6rem;">{{ msg.fecha.strftime('%H:%M') }}</span>
+                                        </div>
+                                        <div class="text-muted text-truncate small">{{ msg.contenido|striptags }}</div>
+                                    </div>
+                                </div>
+                            </a>
+                            {% else %}
+                            <div class="text-center py-4 text-muted small">Bandeja vacía.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
+{% endblock %}

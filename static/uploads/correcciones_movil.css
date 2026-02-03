@@ -1,0 +1,47 @@
+/* ======================================= */
+/* CORRECCIONES PARA DISEÑO RESPONSIVO (max-width: 768px) */
+/* ======================================= */
+
+@media (max-width: 768px) {
+
+    /* --- NAVEGACIÓN Y ESTRUCTURA DE CABECERA --- */
+    .ugr-navbar-lista {
+        flex-direction: column; /* Apila los ítems de navegación */
+        align-items: flex-start;
+        width: 100%;
+    }
+    
+    /* Si tienes la navegación en una barra flex, asegúrate de que el logo y el menú no choquen */
+    .ugr-navbar {
+        flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea */
+        padding: 10px;
+    }
+
+    /* --- CONTENEDORES PRINCIPALES Y COLUMNAS --- */
+    /* Asegura que los layouts basados en Flex o Grid se apilen verticalmente */
+    .noticia-layout,
+    .contenedor-principal {
+        display: block !important; /* Desactiva Flex o Grid para que los elementos se apilen */
+        padding: 10px;
+    }
+    
+    /* Regla crucial: Todos los contenedores internos deben ser 100% */
+    .ugr-contenedor, .noticia-instrucciones, .noticia-formulario, 
+    .ugr-input, .ugr-textarea {
+        width: 100% !important;
+        min-width: unset !important; /* Elimina cualquier ancho mínimo */
+        margin: 0;
+        padding: 10px;
+        /* box-sizing evita que el padding y borde desborden el 100% */
+        box-sizing: border-box; 
+    }
+
+    /* --- FOOTER --- */
+    /* Haz que los ítems del footer se apilen */
+    .ugr-footer-contenido {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+        padding: 20px 10px;
+    }
+}

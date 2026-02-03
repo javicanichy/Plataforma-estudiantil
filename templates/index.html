@@ -77,7 +77,7 @@
           <div class="overlay-content animate__animated animate__fadeInUp">
             <h4>Únete a La Salud</h4>
             <p>Tu oportunidad de ejerercer en el mundo laboral como sanitario</p>
-            <a href="/matricula" class="btn-triangle">Saber más</a>
+            <a href="{{ url_for('requisitos') }}" class="btn-triangle">Saber más</a>
           </div>
         </div>
       </div>
@@ -88,7 +88,7 @@
           <div class="overlay-content">
             <h4>Oferta Académica en Grados</h4>
             <p>Medicina, Enfermería, Laboratorio, Fisioterpia, y nuevas tecnologías de la salud</p>
-            <a href="/matricula" class="btn-triangle">Ver Grados</a>
+            <a href="{{ url_for('solicitar_matricula') }}" class="btn-triangle">Ver Grados</a>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@
           <div class="overlay-content">
             <h4>La mejor facultad</h4>
             <p>La facultad lider en el campus de Bata de la Universidad Nacional de Guinea Ecuatorial</p>
-            <a href="/matricula" class="btn-triangle">Míralo aquí</a>
+            <a href="{{ url_for('solicitar_matricula') }}" class="btn-triangle">Míralo aquí</a>
           </div>
         </div>
       </div>
@@ -518,6 +518,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     cargarEventosInicio();
 });
+</script>
+
+
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
 </script>
 {% endblock %}
 

@@ -75,6 +75,52 @@
     </div>
 </div>
 
+
+
+<div class="container mt-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show shadow-sm border-0 rounded-4 mb-3" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle fa-lg"></i>
+                    {% elif category == 'warning' %}
+                        <i class="fas fa-exclamation-triangle fa-lg"></i>
+                    {% elif category == 'danger' %}
+                        <i class="fas fa-times-circle fa-lg"></i>
+                    {% else %}
+                        <i class="fas fa-info-circle fa-lg"></i>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <strong class="d-block">Notificación del Sistema</strong>
+                    <span class="small">{{ message }}</span>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</div>
+
+<style>
+    /* Estilo extra para que los alertas se vean más limpios */
+    .alert {
+        transition: all 0.3s ease;
+    }
+    .alert-success { background-color: #d1e7dd; color: #0f5132; }
+    .alert-danger { background-color: #f8d7da; color: #842029; }
+    .alert-warning { background-color: #fff3cd; color: #664d03; }
+    .alert-info { background-color: #cff4fc; color: #055160; }
+</style>
+
+
+
+
 <div class="container my-5">
     <div class="container-fisicos">
         
@@ -164,4 +210,26 @@
         </div>
     </div>
 </div>
+
+
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
 {% endblock %}

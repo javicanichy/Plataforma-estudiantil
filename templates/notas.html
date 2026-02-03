@@ -2,56 +2,114 @@
 
 {% block content %}
 <style>
-    :root { --border-color: #ced4da; }
-    .table-excel { font-size: 11px; border-collapse: collapse; }
+    /* 1. FONDO Y COLORES BASE (Estilo Directorio) */
+    body.fondo-mensajes {
+        background: radial-gradient(circle at center, #1e1e2f 0%, #0d0d15 100%);
+        background-attachment: fixed;
+        color: #ffffff;
+    }
+
+    :root { 
+        --neon-blue: #00d2ff;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --border-color: rgba(255, 255, 255, 0.2); 
+    }
+
+    /* 2. TARJETA PRINCIPAL (Glassmorphism) */
+    .card.shadow-sm.m-4 {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        color: white;
+    }
+
+    .card-header.bg-white {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border-bottom: 1px solid var(--glass-border) !important;
+        color: white;
+    }
+
+    /* 3. TABLA ESTILO EXCEL ADAPTADA */
+    .table-excel { font-size: 11px; border-collapse: collapse; color: white; }
     .table-excel th, .table-excel td { 
         border: 1px solid var(--border-color); 
         padding: 0 !important; 
         text-align: center;
         vertical-align: middle;
     }
+
     .excel-input {
         width: 100%; border: none; padding: 6px 2px;
         outline: none; background: transparent; text-align: center;
+        color: white;
     }
     
-    /* Estilo de "Solo Lectura" más marcado para evitar confusiones */
     .excel-input[readonly] { 
-        background-color: #fcfcfc; 
-        color: #555; 
+        background-color: rgba(255,255,255,0.02); 
+        color: #aaa; 
         cursor: default; 
         font-style: italic;
     }
-    .excel-input:focus:not([readonly]) { background-color: #fff9c4; }
 
-    .header-main { background-color: #f1f3f4; font-weight: bold; font-size: 12px; }
-    .bg-cp { background-color: #e3f2fd; }
-    .bg-sm { background-color: #fff3e0; }
-    .bg-ev { background-color: #e8f5e9; }
+    .excel-input:focus:not([readonly]) { 
+        background-color: rgba(0, 210, 255, 0.1); 
+        box-shadow: inset 0 0 5px var(--neon-blue);
+    }
+
+    /* Colores de cabeceras adaptados al modo oscuro */
+    .header-main { background-color: rgba(255, 255, 255, 0.1); font-weight: bold; font-size: 12px; color: var(--neon-blue); }
+    .bg-cp { background-color: rgba(0, 210, 255, 0.05) !important; }
+    .bg-sm { background-color: rgba(255, 243, 224, 0.05) !important; }
+    .bg-ev { background-color: rgba(232, 245, 233, 0.05) !important; }
+
     .sticky-col { 
         position: sticky; left: 0; 
-        background-color: #f8f9fa !important; z-index: 5; 
-        min-width: 140px; border-right: 2px solid #ddd !important;
+        background-color: #1a1a2e !important; z-index: 5; 
+        min-width: 140px; border-right: 2px solid var(--neon-blue) !important;
     }
     .sticky-sem { left: 140px; min-width: 90px; }
-    .btn-reaccion { font-size: 16px; opacity: 0.2; transition: 0.2s; cursor: pointer; border: none; background: none; }
-    .btn-reaccion.active { opacity: 1; transform: scale(1.2); }
-    /* Deshabilitar clicks en reacciones si no es el dueño */
+
+    /* Reacciones Estilo Neón */
+    .btn-reaccion { font-size: 16px; opacity: 0.2; transition: 0.2s; cursor: pointer; border: none; background: none; filter: grayscale(1); }
+    .btn-reaccion.active { opacity: 1; transform: scale(1.2); filter: grayscale(0); }
     .btn-reaccion.disabled { cursor: default; pointer-events: none; }
+
+    /* Scrollbar personalizado para la tabla */
+    .table-responsive::-webkit-scrollbar { height: 8px; }
+    .table-responsive::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+    .table-responsive::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+</style>
+
+<style>
+    /* Localiza la columna de créditos y aplica el color negro */
+.table-excel td:nth-child(3) {
+    background-color: rgba(255, 255, 255, 0.8) !important; /* Fondo claro para que el negro se vea */
+}
+
+/* Fuerza el color negro en el input de esa columna */
+.table-excel td:nth-child(3) .excel-input {
+    color: #000000 !important;
+    font-weight: bold;
+}
+
+/* Opcional: Si solo quieres cambiar el color sin poner fondo blanco, usa este en su lugar: */
+/* .table-excel td:nth-child(3) .excel-input { color: #000000 !important; } */
 </style>
 
 <div class="card shadow-sm m-4">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
         <div>
-            <h5 class="mb-0 text-primary fw-bold">Notas de: {{ nombre_perfil }}</h5>
-            <span class="badge {{ 'bg-success' if puedo_editar else 'bg-secondary' }}">
+            <h5 class="mb-0 text-info fw-bold">Notas de: {{ nombre_perfil }}</h5>
+            <span class="badge {{ 'bg-success' if puedo_editar else 'bg-secondary' }} rounded-pill border border-light border-opacity-25">
                 {{ "Mi Blog de Notas (Editable)" if puedo_editar else "Vista de Visitante (Solo Lectura)" }}
             </span>
         </div>
         {% if puedo_editar %}
         <div>
-            <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="agregarFila()">+ Añadir Asignatura</button>
-            <button type="button" class="btn btn-success btn-sm fw-bold" onclick="guardarCambios()">💾 Guardar Mis Cambios</button>
+            <button type="button" class="btn btn-outline-info btn-sm me-2 rounded-pill" onclick="agregarFila()">+ Añadir Asignatura</button>
+            <button type="button" class="btn btn-info btn-sm fw-bold rounded-pill shadow" onclick="guardarCambios()">💾 Guardar Mis Cambios</button>
         </div>
         {% endif %}
     </div>
@@ -75,7 +133,6 @@
                     </tr>
                 </thead>
                 <tbody id="cuerpo-tabla">
-                    {# 1. MOSTRAR DATOS: Solo se mostrarán los que el servidor filtre por el ID del perfil visitado #}
                     {% for fila in tabla_datos %}
                     <tr data-reaccion="{{ fila.reaccion or '' }}">
                         <td class="sticky-col">
@@ -87,13 +144,11 @@
                         <td>
                             <input type="number" class="excel-input" value="{{ fila.creditos }}" {{ 'readonly' if not puedo_editar }}>
                         </td>
-                        
                         {% for nota in fila.lista_notas %}
                         <td class="{{ 'bg-cp' if loop.index <= 10 else 'bg-sm' if loop.index <= 20 else 'bg-ev' }}">
                             <input type="text" class="excel-input" value="{{ nota }}" {{ 'readonly' if not puedo_editar }}>
                         </td>
                         {% endfor %}
-                        
                         <td>
                             <button type="button" class="btn-reaccion {{ 'active' if fila.reaccion == 'like' }} {{ 'disabled' if not puedo_editar }}" 
                                     {% if puedo_editar %}onclick="reaccionar(this, 'like')"{% endif %}>👍</button>
@@ -103,7 +158,6 @@
                     </tr>
                     {% endfor %}
 
-                    {# 2. FILA VACÍA: Solo aparece si el DUEÑO entra y no tiene nada guardado aún #}
                     {% if not tabla_datos and puedo_editar %}
                     <tr data-reaccion="">
                         <td class="sticky-col"><input type="text" class="excel-input fw-bold" placeholder="Escribe asignatura..."></td>
@@ -127,9 +181,13 @@
 </div>
 
 <script>
-// Bloqueo de seguridad en JS
-const PUE_EDITAR = {{ 'true' if puedo_editar else 'false' }};
+// Forzar el fondo oscuro al cargar
+document.addEventListener("DOMContentLoaded", function() {
+    document.body.classList.add("fondo-mensajes");
+});
 
+// --- EL RESTO DE TU CÓDIGO JS SE MANTIENE EXACTAMENTE IGUAL ---
+const PUE_EDITAR = {{ 'true' if puedo_editar else 'false' }};
 function reaccionar(btn, tipo) {
     if(!PUE_EDITAR) return;
     const parent = btn.parentElement;
@@ -138,7 +196,6 @@ function reaccionar(btn, tipo) {
     btn.classList.add('active');
     fila.setAttribute('data-reaccion', tipo);
 }
-
 function agregarFila() {
     if(!PUE_EDITAR) return;
     const cuerpo = document.getElementById('cuerpo-tabla');
@@ -147,26 +204,21 @@ function agregarFila() {
         <td class="sticky-col"><input type="text" class="excel-input fw-bold" placeholder="Asignatura..."></td>
         <td class="sticky-col sticky-sem"><input type="text" class="excel-input" placeholder="Semestre..."></td>
         <td><input type="number" class="excel-input" value="0"></td>`;
-    
     for(let i=0; i<30; i++) {
         let clase = i < 10 ? 'bg-cp' : (i < 20 ? 'bg-sm' : 'bg-ev');
         html += `<td class="${clase}"><input type="text" class="excel-input"></td>`;
     }
-    
     html += `<td>
         <button type="button" class="btn-reaccion" onclick="reaccionar(this, 'like')">👍</button>
         <button type="button" class="btn-reaccion" onclick="reaccionar(this, 'dislike')">👎</button>
     </td>`;
-    
     tr.innerHTML = html;
     cuerpo.appendChild(tr);
 }
-
 async function guardarCambios() {
     if(!PUE_EDITAR) return;
     const filas = document.querySelectorAll('#cuerpo-tabla tr');
     const data = [];
-
     filas.forEach(f => {
         const inputs = f.querySelectorAll('input');
         if(inputs.length > 0 && inputs[0].value.trim() !== "") {
@@ -179,9 +231,7 @@ async function guardarCambios() {
             });
         }
     });
-
     if (data.length === 0) return;
-
     try {
         const res = await fetch('/guardar_matriz', {
             method: 'POST',
@@ -190,7 +240,7 @@ async function guardarCambios() {
         });
         if(res.ok) {
             alert("✅ Notas guardadas solo en tu perfil.");
-            location.reload(); // Recargar para confirmar vista
+            location.reload();
         } else {
             alert("❌ Error al guardar.");
         }
@@ -198,5 +248,13 @@ async function guardarCambios() {
         alert("Error de conexión.");
     }
 }
+window.addEventListener('beforeunload', () => { sessionStorage.setItem('scrollPos', window.scrollY); });
+window.addEventListener('load', () => {
+    const scrollPos = sessionStorage.getItem('scrollPos');
+    if (scrollPos) {
+        window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' });
+        sessionStorage.removeItem('scrollPos');
+    }
+});
 </script>
 {% endblock %}

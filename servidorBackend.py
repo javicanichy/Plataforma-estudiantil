@@ -61,7 +61,7 @@ from models import (
     CodigoEstudiante, Asignatura, Noticia, Debate, Notificacion, Comentario,
     Biblioteca, Buzon, OpinionSelectividad, Selectividad, SolicitudMatricula, Expediente, Profesor,
     Directivo, SecretariaActa, Carpeta, DocumentoArchivo, Secretaria, AnuncioDirectivo, DocumentoRecibido,
-    CandidatoDelegado, VotoProfesor, Propuesta, VotoDelegado
+    CandidatoDelegado, VotoProfesor, Propuesta, VotoDelegado, Prestamo, Configuracion
     )
     
 from config import Config
@@ -450,7 +450,7 @@ def inicio():
             except Exception as e:
                 print(f"Error enviando acuse: {e}")
     
-            return redirect(url_for('inicio', _anchor='buzon'))
+            return redirect(url_for('inicio' + '#buzon', _anchor='buzon'))
 
         except Exception as e:
             db.session.rollback()
@@ -784,7 +784,7 @@ def calendario_page():
 @login_required
 @requiere_rol(['estudiante'])
 def perfil_page():
-    return redirect(url_for('ver_perfil', usuario_id=current_user.id))
+    return redirect(url_for('ver_perfil', user_id=current_user.id))
 
 
 
@@ -1672,7 +1672,6 @@ def ver_perfil(user_id):
 
 
 # RUTA: EDITAR PERFIL
-from sqlalchemy.orm.attributes import flag_modified
 
 @app.route('/perfil/editar', methods=['GET', 'POST'])
 @login_required
@@ -2054,8 +2053,22 @@ def biblioteca_eliminar(item_id):
 @app.route('/biblioteca/editar', methods=['GET', 'POST'])
 @app.route('/biblioteca/editar/<int:item_id>', methods=['GET', 'POST'])
 @login_required
-@requiere_rol(['admin', 'bibliotecario'])
 def biblioteca_editar(item_id=None):
+
+    if current_user.rol in ['estudiante:']:
+        # --- VALIDACIÓN DE SEGURIDAD DIGITAL ---
+        permiso = Configuracion.query.filter_by(clave='permiso_subida_digital').first()
+    
+        # Si el interruptor está en OFF o no existe
+        if not permiso or not permiso.valor:
+            flash("🚫 El acceso al repositorio digital está cerrado actualmente por el bibliotecario.", "warning")
+            return redirect(url_for('biblioteca_digital')) # O a tu página principal de biblioteca
+        else:
+            pass
+    else:
+        pass
+
+    
 
     item = Biblioteca.query.get(item_id) if item_id else None
     form = BibliotecaForm(obj=item)
@@ -2149,8 +2162,19 @@ def biblioteca_editar(item_id=None):
 # Agregar libro físico
 @app.route('/biblioteca/fisicos/agregar', methods=['GET', 'POST'])
 @login_required
-@requiere_rol(['admin', 'bibliotecario'])
 def agregar_libro_fisico():
+    if current_user.rol in ['estudiante']:
+
+        # Validar permiso en DB
+        permiso = Configuracion.query.filter_by(clave='permiso_subida_fisico').first()
+        if not permiso or not permiso.valor:
+            # Si el bibliotecario lo apagó, el link "caduca" para el estudiante
+            flash("La convocatoria para libros físicos ha finalizado.", "danger")
+            return redirect(url_for('biblioteca_fisicos'))
+        else:
+            pass
+    
+
     form = LibroFisicoForm()
     
     if form.validate_on_submit():
@@ -2190,10 +2214,9 @@ def agregar_libro_fisico():
 # Eliminar libro físico
 @app.route('/biblioteca/fisicos/eliminar/<int:item_id>', methods=['POST'])
 @login_required
+@requiere_rol(['bibliotecario', 'admin'])
 def eliminar_libro_fisico(item_id):
-    if current_user.rol != 'admin':
-        flash('Acceso denegado: Solo el personal administrativo puede eliminar libros físicos.', 'danger')
-        return redirect(url_for('biblioteca_fisicos'))
+
     libro = Biblioteca.query.get_or_404(item_id)
     # Opcional: eliminar archivo de portada del disco
     if libro.portada:
@@ -2251,37 +2274,251 @@ def solicitar_prestamo(id):
     form = SolicitudPrestamoForm()
 
     if form.validate_on_submit():
-        # Datos del usuario desde la sesión
-        nombre = session.get('nombre')
-        apellidos = session.get('apellidos')
-        dip = session.get('dip')
-        correo = session.get('correo')
-        fecha_envio = datetime.utcnow()
-        motivo = form.motivo.data
+        # 1. Identificar al bibliotecario receptor del DM
+        bibliotecario = Usuario.query.filter_by(rol='admin').first() 
 
-        msg = Message(
-            subject=f"Solicitud de préstamo: {libro.titulo}",
-            sender=correo,
-            recipients=["bibliotecario@universidad.com"],  # correo del bibliotecario
-            body=f"""
-Solicitud de préstamo de libro:
-
-Libro: {libro.titulo}
-Solicitante: {nombre} {apellidos}
-DIP: {dip}
-Correo: {correo}
-Fecha: {fecha_envio.strftime('%d/%m/%Y %H:%M')}
-Motivo: {motivo}
-"""
+        # 2. CREAR EL REGISTRO EN LA TABLA PRESTAMO
+        nuevo_prestamo = Prestamo(
+            libro_id=libro.id,
+            usuario_id=current_user.id, # El ID del alumno logueado
+            motivo=form.motivo.data,
+            estado='pendiente'
         )
-        mail.send(msg)
+        db.session.add(nuevo_prestamo)
+        db.session.flush() # Asegura que nuevo_prestamo tenga un ID asignado
 
-        flash("Solicitud enviada correctamente.", "success")
+        # 3. CREAR EL DM DE NOTIFICACIÓN (Para que aparezca en el Centro de Mando)
+        if bibliotecario:
+            cuerpo_dm = f"""
+            📥 **NUEVA SOLICITUD DE PRÉSTAMO**
+            
+            **Libro:** {libro.titulo}
+            **Solicitante:** {session.get('nombre')} {session.get('apellidos')}
+            **DIP:** {session.get('dip')}
+            **Motivo:** {form.motivo.data}
+            
+            *Se ha generado un registro formal en la sección de préstamos.*
+            """
+            
+            notificacion_dm = Mensaje(
+                emisor_id=current_user.id,
+                receptor_id=bibliotecario.id,
+                contenido=cuerpo_dm,
+                fecha=datetime.utcnow()
+            )
+            db.session.add(notificacion_dm)
+
+            # 3. La Notificación de Campana (Centro de Mando)
+            nueva_notif = Notificacion(
+                usuario_id=bibliotecario.id,
+                tipo='solicitud_prestamo', # El tipo que busca la ruta /ir/
+                mensaje=f"Nueva solicitud de {libro.titulo}",
+                item_id=nuevo_prestamo.id, # Para el ancla #solicitud-ID
+                leida = False
+            )
+            db.session.add(nueva_notif)
+
+        # 4. Guardar todo en la base de datos
+        db.session.commit()
+
+        flash("Solicitud de préstamo enviada y registrada correctamente.", "success")
+        print("Enviado correctamente")
         return redirect(url_for('biblioteca_fisicos'))
 
     return render_template('solicitud_prestamo.html', form=form, libro=libro, body_class="prestar-libro")
 
 
+# Listar estudiantes que solicitan.
+# --- TU RUTA DE LISTADO (SE MANTIENE) ---
+@app.route('/biblioteca/gestion-prestamos')
+@login_required
+@requiere_rol(['admin', 'bibliotecario'])
+def lista_solicitudes_prestamo():
+    solicitudes = Prestamo.query.filter_by(estado='pendiente').all()
+    return render_template('lista_prestamos_libros.html', solicitudes=solicitudes)
+
+# --- NUEVA RUTA PARA PROCESAR LAS ACCIONES ---
+@app.route('/biblioteca/procesar-prestamo/<int:id>/<string:accion>', methods=['POST'])
+@login_required
+@requiere_rol(['admin', 'bibliotecario'])
+def respuestas_bibliotecario(id, accion):
+    solicitud = Prestamo.query.get_or_404(id)
+    libro = solicitud.libro
+    alumno = solicitud.usuario
+
+    if accion == 'aprobar':
+        solicitud.estado = 'aprobado'
+        # Restamos una unidad del inventario si tienes el campo 'cantidad'
+        if hasattr(libro, 'cantidad') and libro.cantidad > 0:
+            libro.cantidad -= 1
+        
+        titulo_dm = "BIBLIOTECA DICE:   ✅ PRESTAMO APROBADO"
+        mensaje_texto = f"Hola {alumno.nombre}, tu solicitud para '{libro.titulo}' ha sido aceptada. Puedes recogerlo en biblioteca."
+    
+    elif accion == 'rechazar':
+        solicitud.estado = 'rechazado'
+        titulo_dm = "BIBLIOTECA DICE:   ❌ PRESTAMO RECHAZADO"
+        mensaje_texto = f"Hola {alumno.nombre}, lamentamos informarte que tu solicitud para '{libro.titulo}' ha sido rechazada."
+    
+    # Creamos el DM automático
+    nuevo_mensaje = Mensaje(
+        emisor_id=current_user.id,
+        receptor_id=alumno.id,
+        contenido=f"### {titulo_dm}\n\n{mensaje_texto}",
+        fecha=datetime.utcnow()
+    )
+
+    db.session.add(nuevo_mensaje)
+    db.session.flush() # Le damos una ID antes de la notificacion
+
+
+    # 2. Creamos la Notificación de Campana vinculada al mensaje
+    alerta_campana = Notificacion(
+        usuario_id=alumno.id,
+        tipo='respuesta_bibliotecario', # Tipo específico para solicitudes de préstamo
+        mensaje=f"Tu solicitud del libro '{libro.titulo}' ha sido {accion}ada",
+        item_id=nuevo_mensaje.id, # El ID del DM para que al hacer clic lo lleve a leerlo
+        leida = False,
+        fecha_creacion=datetime.utcnow()
+    )
+    db.session.add(alerta_campana)
+
+    # Guardamos todo en db
+    db.session.commit()
+    
+    flash(f"Solicitud {accion}ada con éxito y notificada al alumno.", "success")
+    return redirect(url_for('lista_solicitudes_prestamo'))
+
+# ==========================================================
+# SALA DEL BIBLIOTECARIO
+# ==========================================================
+@app.route('/biblioteca/sala')
+@requiere_login
+def biblioteca_sala():
+    # --- LÓGICA DE PERMISOS (Interruptores) ---
+    def obtener_valor_permiso(clave):
+        p = Configuracion.query.filter_by(clave=clave).first()
+        if not p:
+            # Si no existe en la DB, lo creamos apagado por defecto
+            p = Configuracion(clave=clave, valor=False)
+            db.session.add(p)
+            db.session.commit()
+        return p.valor
+
+    permiso_fisico = obtener_valor_permiso('permiso_subida_fisico')
+    permiso_digital = obtener_valor_permiso('permiso_subida_digital')
+
+    # --- TUS CONTEOS EXISTENTES ---
+    stats = {
+        'fisicos': Biblioteca.query.filter_by(tipo_libro='fisico').count(),
+        'digitales': Biblioteca.query.filter_by(tipo_libro='libro').count(),
+        'tfg': Biblioteca.query.filter_by(tipo_libro='tfg').count()
+    }
+    stats['total_general'] = sum(stats.values())
+
+    # --- TUS REGISTROS RECIENTES ---
+    recientes = Biblioteca.query.order_by(Biblioteca.id.desc()).limit(5).all()
+
+    # --- NUEVAS CONSULTAS PARA LOS PANELES ---
+    # 1. Libros que alumnos subieron pero no son públicos aún
+    pendientes_validacion = Biblioteca.query.filter_by(publico=False).all()
+    
+    # 2. Solicitudes de préstamo (asumiendo que tienes el modelo Prestamo)
+    solicitudes_prestamo = []
+    try:
+        solicitudes_prestamo = Prestamo.query.filter_by(estado='pendiente').all()
+    except:
+        pass # Por si aún no has migrado la tabla Prestamo
+
+    # Traer los últimos 5 mensajes recibidos para el mini-chat
+    ultimos_mensajes = Mensaje.query.filter_by(receptor_id=current_user.id)\
+                              .order_by(Mensaje.fecha.desc()).limit(5).all()
+
+    return render_template(
+        'sala_bibliotecario.html', 
+        info=stats, 
+        recientes=recientes,
+        permiso_fisico=permiso_fisico,     # <--- Vital para el HTML
+        permiso_digital=permiso_digital,   # <--- Vital para el HTML
+        pendientes=pendientes_validacion,
+        solicitudes=solicitudes_prestamo, 
+        mensajes_recientes=ultimos_mensajes
+    )
+
+
+
+# Botones de permiso a la subida de libros
+@app.route('/biblioteca/toggle_permiso/<tipo>')
+@login_required
+@requiere_rol(['admin', 'bibliotecario'])
+def toggle_permiso(tipo):
+    # 1. Cambiar estado en la configuración
+    clave = f'permiso_subida_{tipo}'
+    permiso = Configuracion.query.filter_by(clave=clave).first()
+    
+    if not permiso:
+        permiso = Configuracion(clave=clave, valor=False)
+        db.session.add(permiso)
+
+    permiso.valor = not permiso.valor
+    
+    # 2. LÓGICA DE MENSAJERÍA MASIVA (Solo si se activa el permiso)
+    if permiso.valor:
+        estudiantes = Usuario.query.filter_by(rol='estudiante').all()
+        
+        # Generar el enlace dinámico según el tipo
+        link = url_for('agregar_libro_fisico', _external=True) if tipo == 'fisico' else url_for('biblioteca_editar', _external=True)
+        
+        # CONTENIDO CON HTML (Botón cliqueable)
+        contenido_aviso = f"""
+        <div style="font-family: sans-serif;">
+            <h4 style="color: #1565c0;">🔔 PERMISOS DEL BIBLIOTECA</h4>
+            <p>El BIBLIOTECARIO ha habilitado el permiso para subir libros en formato <b>{tipo.upper()}</b>.</p>
+            <p>Puedes proceder a subir tus libros siguiendo el enlace a continuación:</p>
+            <p>Asegurese de publicar material verificable.</p>
+            <br>
+            <a href="{link}" 
+               style="background-color: #1565c0; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+               IR AL FORMULARIO DE SUBIDA
+            </a>
+            <br><br>
+            <small style="color: #666;">Nota: Este enlace caducará automáticamente cuando el bibliotecario cierre la recepción.</small>
+        </div>
+        """
+
+        try:
+            for est in estudiantes:
+                nuevo_msg = Mensaje(
+                    emisor_id=current_user.id,
+                    receptor_id=est.id,
+                    contenido=contenido_aviso, # Guardamos el HTML
+                    enviado=True,
+                    recibido=True,
+                    leido=False,
+                    fecha=datetime.utcnow()
+                )
+                db.session.add(nuevo_msg)
+                db.session.flush()  # Asegura que nuevo_msg tenga un ID asignado
+                
+                nueva_notif = Notificacion(
+                    usuario_id=est.id,
+                    tipo='permiso_bibliotecario',
+                    mensaje=f"Biblioteca habilitó: Libros {tipo}",
+                    item_id=nuevo_msg.id,
+                    leida=False
+                )
+                db.session.add(nueva_notif)
+            
+            db.session.commit()
+            flash(f"Acceso {tipo} abierto. Se han enviado {len(estudiantes)} mensajes.", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash("Error al enviar la mensajería masiva.", "danger")
+    else:
+        db.session.commit()
+        flash(f"Recepción de libros {tipo} cerrada correctamente.", "warning")
+
+    return redirect(url_for('biblioteca_sala'))
 
 
 # =========================================================
@@ -4516,6 +4753,7 @@ def enviar_reporte():
                     db.session.add(nuevo_reporte)
                     db.session.commit()
                     flash("Reporte enviado correctamente.", "success")
+                    print("Enviado ya")
                     return redirect(url_for('perfil_directivo_publico', user_id=destinatario_id))
                 
                 except Exception as e:
@@ -5176,14 +5414,21 @@ def ir_a_notificacion(notif_id):
         return redirect(url_for('noticia_completa', noticia_id=notif.item_id))
     elif notif.tipo == 'mensaje' and notif.item_id:
         return redirect(url_for('ver_mensaje', id=notif.item_id))
-    elif notif.tipo == 'anuncio_directivo':
+    elif notif.tipo == 'anuncio_directivo' and notif.item_id:
         return redirect(url_for('ver_mensaje', id=notif.item_id))
-    elif notif.tipo == 'success':
+    elif notif.tipo == 'success' and notif.item_id:
         return redirect(url_for('ver_mensaje', id=notif.item_id))
-    elif notif.tipo == 'rechazado':
+    elif notif.tipo == 'rechazado' and notif.item_id:
+        return redirect(url_for('ver_mensaje', id=notif.item_id))
+    elif notif.tipo == 'solicitud_prestamo' and notif.item_id:
+        return redirect(url_for('ver_mensaje', id=notif.item_id))
+    elif notif.tipo == 'respuesta_bibliotecario' and notif.item_id:
+        return redirect(url_for('ver_mensaje', id=notif.item_id))
+    elif notif.tipo == 'permiso_bibliotecario' and notif.item_id:
         return redirect(url_for('ver_mensaje', id=notif.item_id))
     
-    return redirect(url_for('inicio'))
+    
+    abort(403)  # Si no se reconoce el tipo, mostrar error 404
 
 
 
@@ -6364,6 +6609,16 @@ def votar_delegado():
 @app.route('/nueva_propuesta', methods=['POST'])
 @login_required
 def nueva_propuesta():
+    # 1. Borrado automático: Eliminamos propuestas con más de 30 días
+    try:
+        limite_30_dias = datetime.now() - timedelta(days=30)
+        # Filtramos por fecha_publicacion que es el nombre que usas en tu modelo
+        Propuesta.query.filter(Propuesta.fecha_publicacion < limite_30_dias).delete()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error limpiando propuestas antiguas: {e}")
+        
     # Buscamos al estudiante asociado al usuario actual
     estudiante = Estudiante.query.filter_by(usuario_id=current_user.id).first()
     
@@ -6480,6 +6735,9 @@ def reiniciar_votos_profesor():
     else:
         flash("Código incorrecto.", "danger")
     return redirect(url_for('estadisticas'))
+
+
+
 
 # ==========================================================
 # CONFIGURACIÓN DE FLASK-LOGIN (PROFESIONAL)

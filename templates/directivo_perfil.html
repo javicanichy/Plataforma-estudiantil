@@ -1,6 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+    /* Estilo para la foto de 150px (Perfil Estudiante/Usuario) */
+    .mb-3 img.rounded-circle, 
+    .mb-3 div.rounded-circle {
+        width: 150px !important;
+        height: 150px !important;
+        min-width: 150px !important;
+        min-height: 150px !important;
+        max-width: 150px !important;
+        max-height: 150px !important;
+        object-fit: cover !important; /* Recorta los bordes sobrantes */
+        border-radius: 50% !important; /* Fuerza el círculo */
+        display: inline-flex !important; /* Alinea contenido interno si es el div */
+        vertical-align: middle;
+    }
+</style>
+
 <div class="container py-5">
     <div class="mb-4">
         <a href="{{ url_for('facultad') }}" class="text-decoration-none text-muted">
@@ -91,4 +108,24 @@
     </div>
 </div>
 
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
 {% endblock %}

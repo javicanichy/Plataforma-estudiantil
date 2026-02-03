@@ -9,24 +9,73 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* Estilos globales del panel */
         :root { --sidebar-width: 260px; }
-        body { background-color: #f4f7f6; }
+        body { background-color: #f4f7f6; overflow-x: hidden; }
         
+        /* SIDEBAR (Escritorio) */
         .sidebar { 
             width: var(--sidebar-width); 
             height: 100vh; 
             position: fixed; 
             background: #2c3e50; 
             color: white; 
+            z-index: 1000;
+            transition: all 0.3s ease;
         }
 
         .main-content { 
             margin-left: var(--sidebar-width); 
             padding: 20px; 
+            transition: all 0.3s ease;
         }
 
-        /* Tus estilos de transparencia para cuentas desactivadas */
+        /* CONFIGURACIÓN MÓVIL (Media Query) */
+        @media (max-width: 992px) {
+            .sidebar {
+                left: -260px; /* Escondido */
+                z-index: 2000;
+            }
+            .sidebar.active {
+                left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+                padding-top: 70px; /* Espacio para el botón */
+            }
+
+            /* Botón Hamburguesa Pegado a la pared */
+            #btnToggle {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 50px;
+                height: 50px;
+                background: #2c3e50;
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                z-index: 2100;
+                border-radius: 0 0 12px 0;
+                box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+            }
+
+            /* Fondo oscuro al abrir menú */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1900;
+            }
+            .sidebar-overlay.active { display: block; }
+        }
+
+        /* Estilos de tabla pausada */
         .row-pausada { opacity: 0.5; filter: grayscale(100%); background-color: #f8f9fa !important; }
         .row-pausada td:last-child { opacity: 1; filter: none; }
     </style>
@@ -35,12 +84,17 @@
 </head>
 <body>
 
+    <button id="btnToggle" class="d-lg-none">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="sidebar-overlay" id="overlay"></div>
+
     <nav class="sidebar p-3">
         <div class="text-center mb-4">
             {% if current_user.foto_perfil %}
                 <img src="{{ url_for('static', filename='uploads/perfiles/' ~ current_user.foto_perfil) }}" class="rounded-circle img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
             {% else %}
-                <div class="bg-primary rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <div class="bg-primary rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; color: white;">
                     {{ current_user.nombre[0] }}
                 </div>
             {% endif %}
@@ -49,9 +103,11 @@
         </div>
         
         <ul class="nav flex-column">
-            <li class="nav-item"><a href="/panel_admin" class="nav-link text-white"><i class="fas fa-home me-2"></i> Inicio</a></li>
-            <li class="nav-item mt-5">
-                <a href="/logout" class="nav-link text-danger" onclick="confirmarSalida(event)">
+            <li class="nav-item">
+                <a href="/panel_admin" class="nav-link text-white"><i class="fas fa-home me-2"></i> Inicio</a>
+            </li>
+            <li class="nav-item mt-auto">
+                <a href="/logout" class="nav-link text-danger mt-5" onclick="confirmarSalida(event)">
                     <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                 </a>
             </li>
@@ -68,21 +124,43 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-function confirmarSalida(event) {
-    // Evita que el enlace se abra inmediatamente
-    event.preventDefault(); 
-    
-    const url = event.currentTarget.getAttribute('href');
-    
-    // Usamos el confirm nativo del navegador (rápido y efectivo)
-    const respuesta = confirm("¿Estás seguro de que deseas cerrar tu sesión académica?");
-    
-    if (respuesta) {
-        // Si el usuario acepta, lo redirigimos al logout
-        window.location.href = url;
+    // LÓGICA DEL MENÚ MÓVIL
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('btnToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if (btn) {
+            btn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+                
+                // Cambia icono de barras a X
+                const icon = btn.querySelector('i');
+                icon.classList.toggle('fa-bars');
+                icon.classList.toggle('fa-times');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                const icon = btn.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            });
+        }
+    });
+
+    function confirmarSalida(event) {
+        event.preventDefault(); 
+        const url = event.currentTarget.getAttribute('href');
+        if (confirm("¿Estás seguro de que deseas cerrar tu sesión académica?")) {
+            window.location.href = url;
+        }
     }
-}
-</script>
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

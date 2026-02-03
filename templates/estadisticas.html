@@ -1,38 +1,98 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-    .sticky-column { position: -webkit-sticky; position: sticky; top: 2rem; height: fit-content; }
-    .text-navy { color: #1a237e; }
-    .bg-info-soft { background-color: #e1f5fe; }
-    .avatar-circle {
-        width: 40px; height: 40px; background-color: #1a237e; color: white;
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 0.9rem; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* 1. FONDO Y COLORES BASE (Estilo Directorio/Notas) */
+    body.fondo-mensajes {
+        background: radial-gradient(circle at center, #1e1e2f 0%, #0d0d15 100%);
+        background-attachment: fixed;
+        color: #ffffff;
     }
-    .avatar-circle-sm { width: 35px; height: 35px; font-size: 0.8rem; }
-    .border-dashed { border-style: dashed !important; }
+
+    :root { 
+        --neon-blue: #00d2ff;
+        --neon-purple: #9d50bb;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --text-muted: #aaa;
+    }
+
+    .sticky-column { position: -webkit-sticky; position: sticky; top: 2rem; height: fit-content; }
+    
+    /* Adaptación de textos */
+    .text-navy, .text-primary { color: var(--neon-blue) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+
+    /* 2. TARJETAS GLASSMORPHISM */
+    .card {
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border) !important;
+        color: white !important;
+    }
+
+    .card-header {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border-bottom: 1px solid var(--glass-border) !important;
+        color: white !important;
+    }
+
+    /* 3. TABLAS Y ELEMENTOS INTERNOS */
+    .table { color: white !important; }
+    .table-hover tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+    .bg-light { background-color: rgba(255, 255, 255, 0.03) !important; color: white; }
+    
+    .avatar-circle {
+        width: 40px; height: 40px; 
+        background: linear-gradient(45deg, #1a237e, var(--neon-blue)); 
+        color: white;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 0.9rem; text-transform: uppercase; 
+        box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+    }
+
+    .bg-info-soft { background-color: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.2); }
+    
+    /* Contenedor de profesores con scroll neón */
+    .profesores-container { max-height: 600px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; }
+    .profesores-container::-webkit-scrollbar { width: 5px; }
+    .profesores-container::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+    .profesores-container::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+
+    /* Inputs y Forms */
+    .form-control, .form-select {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid var(--glass-border) !important;
+        color: white !important;
+    }
+    .form-control:focus {
+        border-color: var(--neon-blue) !important;
+        box-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
+    }
+    .form-control::placeholder { color: #666; }
+
+    /* Badge de puntos */
+    .text-primary.fw-bold { color: var(--neon-blue) !important; text-shadow: 0 0 5px rgba(0, 210, 255, 0.5); }
 </style>
 
-<div class="container-fluid py-5" style="background: #f0f2f5; min-height: 100vh;">
+<div class="container-fluid py-5" style="min-height: 100vh;">
     <div class="container">
         <div class="text-center mb-5">
-            <h1 class="display-5 fw-bold text-navy">Panel FCS: Honor y Democracia</h1>
+            <h1 class="display-5 fw-bold text-navy">Estadísticas de la Facultad</h1>
             <p class="lead text-muted">Gestión de excelencia y participación estudiantil activa.</p>
         </div>
 
         <div class="row g-4 align-items-start"> 
-            
             <div class="col-lg-7 sticky-column">
                 <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
                     <div class="card-body p-4">
-                        <h5 class="fw-bold text-navy mb-3"><i class="fas fa-chart-line me-2"></i>Rendimiento Académico Global</h5>
+                        <h5 class="fw-bold text-navy mb-3"><i class="fas fa-chart-line me-2"></i>Rendimiento estudiantil</h5>
                         <canvas id="canvasRanking" height="100"></canvas>
                     </div>
                 </div>
 
                 <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px; overflow: hidden;">
-                    <div class="card-header bg-white border-0 py-4 px-4">
-                        <h4 class="mb-0 fw-bold text-success"><i class="fas fa-trophy me-2"></i>Cuadro de Honor</h4>
+                    <div class="card-header border-0 py-4 px-4">
+                        <h4 class="mb-0 fw-bold text-success"><i class="fas fa-trophy me-2"></i>Mejor puntuación en notas (Top 10)</h4>
                     </div>
                     <div class="table-responsive px-4 pb-4">
                         <table class="table table-hover align-middle">
@@ -46,7 +106,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for est in ranking %}
+                                {% for est in ranking[:10] %}
                                 <tr>
                                     <td class="fw-bold">
                                         {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
@@ -55,7 +115,7 @@
                                         <div class="d-flex align-items-center">
                                             {% if est.foto_perfil %}
                                                 <img src="{{ url_for('static', filename='uploads/perfiles/' + est.foto_perfil) }}" 
-                                                     class="rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                                     class="rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; object-fit: cover; border: 1px solid var(--neon-blue);">
                                             {% else %}
                                                 <div class="avatar-circle me-3">{{ est.nombre[0] }}{{ est.apellidos[0] if est.apellidos else '' }}</div>
                                             {% endif %}
@@ -64,7 +124,7 @@
                                     </td>
                                     <td>
                                         <div class="small text-muted">{{ est.curso if est.curso else 'N/A' }}</div>
-                                        <div class="badge bg-light text-dark border fw-normal" style="font-size: 0.65rem;">ID: {{ est.matricula if est.matricula else '---' }}</div>
+                                        <div class="badge bg-dark text-light border border-secondary fw-normal" style="font-size: 0.65rem;">ID: {{ est.matricula if est.matricula else '---' }}</div>
                                     </td>
                                     <td><span class="badge rounded-pill bg-info-soft text-info" style="font-size: 0.7rem;">{{ est.carrera }}</span></td>
                                     <td class="text-center fw-bold text-primary">{{ est.puntos_totales }}</td>
@@ -76,27 +136,51 @@
                 </div>
 
                 <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
-                    <div class="card-header bg-white border-0 py-4 px-4 d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0 fw-bold text-danger"><i class="fas fa-chalkboard-teacher me-2"></i>Docente Estrella</h4>
-                        <button class="btn btn-outline-secondary btn-sm border-0" data-bs-toggle="modal" data-bs-target="#modalResetProf">
-                            <i class="fas fa-redo"></i>
-                        </button>
+                    <div class="card-header border-0 py-4 px-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0 fw-bold text-danger"><i class="fas fa-chalkboard-teacher me-2"></i>Docentes</h4>
+                            {% set max_votos = 0 %}
+                            {% if profesores %}
+                                {% set max_votos = profesores[0].num_votos %}
+                                {% set estrella = profesores[0] %}
+                            {% endif %}
+
+                            {% if max_votos > 0 %}
+                            <div class="d-none d-md-block text-center bg-dark px-3 py-1 rounded-pill border border-warning shadow">
+                                <small class="fw-bold text-warning">
+                                    <i class="fas fa-medal me-1"></i>
+                                    Mejor profe: {{ estrella.nombre }}
+                                </small>
+                                <button class="btn btn-link btn-sm text-muted p-0 ms-2" data-bs-toggle="modal" data-bs-target="#modalResetProf">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="input-group input-group-sm shadow-sm mb-2">
+                            <span class="input-group-text bg-dark border-end-0 border-secondary"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="filterProfesor" class="form-control border-start-0" placeholder="Buscar docente...">
+                        </div>
                     </div>
                     <div class="card-body px-4">
-                        <div class="row">
+                        {% set max_votos = 0 %}
+                        {% for p in profesores %}{% if p.num_votos > max_votos %}{% set max_votos = p.num_votos %}{% endif %}{% endfor %}
+
+                        <div class="profesores-container row g-3" id="listaProfesores">
                             {% for prof in profesores %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card border-0 {{ 'border border-warning bg-white' if loop.first and prof.num_votos > 0 else 'bg-light' }} h-100 p-3 shadow-sm" style="border-radius: 15px;">
+                            <div class="col-12 col-md-6 prof-card" data-nombre="{{ prof.nombre.lower() }}">
+                                <div class="card border-0 {{ 'border-start border-warning border-5' if prof.num_votos == max_votos and max_votos > 0 else '' }} h-100 p-3 shadow-sm bg-light" style="border-radius: 15px;">
                                     <div class="d-flex align-items-center">
                                         <img src="{{ url_for('static', filename='uploads/fotos/' + (prof.archivo_foto if prof.archivo_foto else 'prof-default.png')) }}" 
-                                             class="rounded-3 shadow-sm me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                             class="rounded-3 shadow-sm me-3" style="width: 55px; height: 55px; object-fit: cover; border: 1px solid var(--glass-border);">
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-0 fw-bold small">{{ prof.nombre }}</h6>
-                                            {% if loop.first and prof.num_votos > 0 %}
-                                                <span class="badge bg-warning text-dark p-1 mt-1" style="font-size: 0.55rem;"><i class="fas fa-crown me-1"></i>LÍDER EN VOTOS</span>
+                                            <h6 class="mb-0 fw-bold small text-white">{{ prof.nombre }} {{ prof.apellidos }}</h6>
+                                            <p class="mb-0 small text-muted">{{ prof.especialidad if prof.especialidad else 'Sin especialidad' }}</p>
+                                            {% if prof.num_votos == max_votos and max_votos > 0 %}
+                                                <span class="badge bg-warning text-dark p-1 mt-1" style="font-size: 0.55rem;"><i class="fas fa-crown me-1"></i>MÁS VOTADO</span>
                                             {% endif %}
                                             <div class="d-flex justify-content-between align-items-center mt-2">
-                                                <span class="text-danger fw-bold small">{{ prof.num_votos }} votos.</span>
+                                                <span class="text-danger fw-bold small"><i class="fas fa-heart me-1"></i>{{ prof.num_votos }}</span>
                                                 {% if not ya_voto_profesor %}
                                                 <form action="{{ url_for('votar_profesor', profesor_id=prof.id) }}" method="POST">
                                                     <button class="btn btn-danger btn-sm rounded-circle p-1" style="width: 25px; height: 25px; line-height: 1;"><i class="fas fa-heart fa-xs"></i></button>
@@ -114,10 +198,10 @@
             </div>
 
             <div class="col-lg-5 sticky-column">
-                <div class="card border-0 shadow-lg mb-4 text-white" style="border-radius: 25px; background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);">
+                <div class="card border-0 shadow-lg mb-4 text-white" style="border-radius: 25px; background: linear-gradient(135deg, #1a237e 0%, #0d0d15 100%) !important; border: 1px solid var(--neon-blue) !important;">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="fw-bold mb-0"><i class="fas fa-vote-yea me-2"></i>Elecciones</h4>
+                            <h4 class="fw-bold mb-0 text-warning"><i class="fas fa-vote-yea me-2"></i>Elecciones</h4>
                             <button class="btn btn-link text-white p-0 opacity-50" data-bs-toggle="modal" data-bs-target="#modalResetDel">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
@@ -130,14 +214,14 @@
                             {% endfor %}
 
                             {% if not ya_es_candidato %}
-                            <button class="btn btn-sm btn-outline-warning w-100 border-dashed mb-3 fw-bold shadow-sm" data-bs-toggle="collapse" data-bs-target="#boxPostularse">
+                            <button class="btn btn-sm btn-outline-warning w-100 border-dashed mb-3 fw-bold" data-bs-toggle="collapse" data-bs-target="#boxPostularse">
                                 <i class="fas fa-user-plus me-2"></i>POSTULARME COMO DELEGADO
                             </button>
                             <div class="collapse mb-3" id="boxPostularse">
                                 <form action="{{ url_for('postular_delegado') }}" method="POST" class="bg-white bg-opacity-10 p-3 rounded border border-white border-opacity-20">
                                     <div class="mb-2">
                                         <label class="small fw-bold text-warning">Lema de Campaña:</label>
-                                        <input type="text" name="lema" class="form-control form-control-sm bg-transparent text-white border-white border-opacity-25" placeholder="Tu frase inspiradora..." required>
+                                        <input type="text" name="lema" class="form-control" placeholder="Tu frase..." required>
                                     </div>
                                     <button class="btn btn-warning btn-sm w-100 fw-bold">ENVIAR CANDIDATURA</button>
                                 </form>
@@ -147,9 +231,9 @@
 
                         <div class="candidates-list mb-4">
                             {% for cand in candidatos %}
-                            <div class="d-flex align-items-center p-2 mb-2 bg-white bg-opacity-10 rounded border border-white border-opacity-10">
+                            <div class="d-flex align-items-center p-2 mb-2 bg-dark bg-opacity-50 rounded border border-white border-opacity-10">
                                 {% if cand.foto_perfil %}
-                                    <img src="{{ url_for('static', filename='uploads/perfiles/' + cand.foto_perfil) }}" class="rounded-circle me-3" style="width: 35px; height: 35px; object-fit: cover;">
+                                    <img src="{{ url_for('static', filename='uploads/perfiles/' + cand.foto_perfiles) }}" class="rounded-circle me-3" style="width: 35px; height: 35px; object-fit: cover; border: 1px solid gold;">
                                 {% else %}
                                     <div class="avatar-circle avatar-circle-sm me-3">{{ cand.nombre[0] }}</div>
                                 {% endif %}
@@ -158,54 +242,56 @@
                                         <span class="fw-bold small">{{ cand.nombre }}</span>
                                         <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">{{ cand.total_votos }} votos</span>
                                     </div>
-                                    <small class="opacity-75 d-block" style="font-size: 0.6rem; font-style: italic;">"{{ cand.lema }}"</small>
+                                    <small class="text-muted d-block" style="font-size: 0.6rem; font-style: italic;">"{{ cand.lema }}"</small>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
 
                         {% if ya_voto_delegado %}
-                        <div class="alert bg-success bg-opacity-25 border-0 text-white text-center small py-2">
-                            <i class="fas fa-check-circle me-2"></i>Voto procesado correctamente
+                        <div class="alert bg-success bg-opacity-20 border-0 text-success text-center small py-2">
+                            <span class="fw-bold small" style="color: #0d0d15;">
+                                <i class="fas fa-check-circle me-2" style="color: #0d0d15;"></i>Voto procesado correctamente
+                            </span>
                         </div>
                         {% elif candidatos %}
                         <form action="{{ url_for('votar_delegado') }}" method="POST">
-                            <select name="candidato_id" class="form-select form-select-sm mb-3 bg-white bg-opacity-25 text-white border-0" required>
+                            <select name="candidato_id" class="form-select form-select-sm mb-3" required>
                                 <option value="" class="text-dark">Selecciona candidato...</option>
                                 {% for cand in candidatos %}
                                 <option value="{{ cand.id }}" class="text-dark">{{ cand.nombre }}</option>
                                 {% endfor %}
                             </select>
-                            <button class="btn btn-warning w-100 fw-bold shadow-sm">CONFIRMAR VOTO</button>
+                            <button class="btn btn-warning w-100 fw-bold">CONFIRMAR VOTO</button>
                         </form>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
-                    <div class="card-header bg-white border-0 py-4 d-flex justify-content-between align-items-center">
+                    <div class="card-header border-0 py-4 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold text-navy">Propuestas Estudiantiles</h5>
                         <button class="btn btn-primary btn-sm rounded-circle shadow" data-bs-toggle="collapse" data-bs-target="#boxPropuesta"><i class="fas fa-plus"></i></button>
                     </div>
                     <div class="card-body">
                         <div class="collapse mb-4" id="boxPropuesta">
-                            <form action="{{ url_for('nueva_propuesta') }}" method="POST" class="bg-light p-3 rounded border">
-                                <input type="text" name="titulo" class="form-control form-control-sm mb-2" placeholder="Título" required>
-                                <textarea name="desc" class="form-control form-control-sm mb-2" rows="2" placeholder="¿Qué quieres proponer?" required></textarea>
-                                <button class="btn btn-success btn-sm w-100 fw-bold">PUBLICAR AHORA</button>
+                            <form action="{{ url_for('nueva_propuesta') }}" method="POST" class="bg-dark p-3 rounded border border-secondary">
+                                <input type="text" name="titulo" class="form-control mb-2" placeholder="Título" required>
+                                <textarea name="desc" class="form-control mb-2" rows="2" placeholder="¿Qué propones?" required></textarea>
+                                <button class="btn btn-success btn-sm w-100 fw-bold">PUBLICAR</button>
                             </form>
                         </div>
                         <div class="list-propuestas" style="max-height: 400px; overflow-y: auto;">
                             {% for p in propuestas %}
                             <div class="p-3 mb-3 border-start border-4 border-primary bg-light rounded shadow-sm">
-                                <h6 class="fw-bold mb-1 small">{{ p.titulo }}</h6>
-                                <p class="small mb-2 opacity-75" style="font-size: 0.8rem;">{{ p.descripcion }}</p>
-                                <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-2">
+                                <h6 class="fw-bold mb-1 small text-info">{{ p.titulo }}</h6>
+                                <p class="small mb-2 text-white-50" style="font-size: 0.8rem;">{{ p.descripcion }}</p>
+                                <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-2 mt-2">
                                     <span class="small text-navy fw-bold" style="font-size: 0.65rem;">
-                                        <i class="fas fa-user-edit me-1"></i>{{ p.autor.usuario.nombre }} {{ p.autor.usuario.apellidos }}
+                                        <i class="fas fa-user-edit me-1"></i>{{ p.autor.usuario.nombre }}
                                     </span>
                                     <span class="text-muted" style="font-size: 0.6rem;">
-                                        <i class="far fa-calendar-alt me-1"></i>{{ p.fecha.strftime('%d/%m/%Y %H:%M') if p.fecha else '25/01/2026' }}
+                                        <i class="far fa-calendar-alt me-1"></i>{{ p.fecha.strftime('%d/%m/%Y') if p.fecha else '25/01/2026' }}
                                     </span>
                                 </div>
                             </div>
@@ -215,17 +301,51 @@
                 </div>
             </div>
         </div>
+
+        <div class="row g-4 mt-2">
+            <div class="col-12">
+                <div class="card border-0 shadow-lg" style="border-radius: 25px;">
+                    <div class="card-body p-4">
+                        <h4 class="fw-bold text-navy mb-4"><i class="fas fa-chart-bar me-2"></i>Indicadores de Rendimiento por Curso</h4>
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div style="height: 350px;">
+                                    <canvas id="canvasCursosBar"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-4 bg-light rounded-4 border border-secondary text-center shadow-sm">
+                                    <h6 class="fw-bold small text-muted text-uppercase mb-3">Rendimiento Institucional</h6>
+                                    <div class="display-6 fw-bold text-primary mb-2">{{ promedio }}%</div>
+                                    <div class="progress bg-dark" style="height: 12px; border-radius: 10px;">
+                                        <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" style="width: {{ promedio }}%"></div>
+                                    </div>
+                                    <p class="small text-muted mt-3 mb-0">Promedio total acumulado.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
+
+{# Modales de Reinicio #}
 <div class="modal fade" id="modalResetDel" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
-        <form action="{{ url_for('reiniciar_elecciones') }}" method="POST" class="modal-content border-0" style="border-radius: 20px;">
+        <form action="{{ url_for('reiniciar_elecciones') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 20px; background-color: #ffffff !important;">
             <div class="modal-body text-center p-4">
                 <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
-                <h5 class="fw-bold">Reiniciar Delegado</h5>
+                <h5 class="fw-bold" style="color: #000000 !important;">Reiniciar Delegado</h5>
                 <p class="small text-muted">Se borrarán todos los candidatos y sus votos actuales.</p>
-                <input type="password" name="codigo" class="form-control form-control-sm text-center mb-3" placeholder="Código Admin" required>
+                
+                <input type="password" name="codigo" 
+                       class="form-control form-control-sm text-center mb-3 shadow-sm" 
+                       placeholder="Código Admin" required 
+                       style="background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ced4da !important; display: block; width: 100%;">
+                
                 <button class="btn btn-danger w-100 btn-sm fw-bold">LIMPIAR ELECCIONES</button>
             </div>
         </form>
@@ -234,124 +354,82 @@
 
 <div class="modal fade" id="modalResetProf" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
-        <form action="{{ url_for('reiniciar_votos_profesor') }}" method="POST" class="modal-content border-0" style="border-radius: 20px;">
+        <form action="{{ url_for('reiniciar_votos_profesor') }}" method="POST" class="modal-content border-0 shadow-lg" style="border-radius: 20px; background-color: #ffffff !important;">
             <div class="modal-body text-center p-4">
                 <i class="fas fa-user-shield text-danger fa-3x mb-3"></i>
-                <h5 class="fw-bold">Reiniciar Docentes</h5>
+                <h5 class="fw-bold" style="color: #000000 !important;">Reiniciar Docentes</h5>
                 <p class="small text-muted">Esta acción borrará todos los corazones acumulados.</p>
-                <input type="password" name="codigo" class="form-control form-control-sm text-center mb-3" placeholder="Código Admin" required>
+                
+                <input type="password" name="codigo" 
+                       class="form-control form-control-sm text-center mb-3 shadow-sm" 
+                       placeholder="Código Admin" required 
+                       style="background-color: #ffffff !important; color: #000000 !important; border: 1px solid #ced4da !important; display: block; width: 100%;">
+                
                 <button class="btn btn-dark w-100 btn-sm fw-bold">LIMPIAR VOTOS</button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="row g-4 mt-2">
-    <div class="col-12">
-        <div class="card border-0 shadow-lg" style="border-radius: 25px; background: #fff;">
-            <div class="card-body p-4">
-                <h4 class="fw-bold text-navy mb-4"><i class="fas fa-chart-bar me-2"></i>Indicadores de Rendimiento por Curso</h4>
-                
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <div style="height: 350px;">
-                            <canvas id="canvasCursosBar"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="p-4 bg-light rounded-4 border text-center shadow-sm">
-                            <h6 class="fw-bold small text-muted text-uppercase mb-3">Rendimiento Institucional</h6>
-                            <div class="display-6 fw-bold text-primary mb-2">{{ promedio }}%</div>
-                            <div class="progress" style="height: 12px; border-radius: 10px;">
-                                <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" 
-                                     style="width: {{ promedio }}%">
-                                </div>
-                            </div>
-                            <p class="small text-muted mt-3 mb-0">Promedio total acumulado de todos los niveles académicos.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const ctxBar = document.getElementById('canvasCursosBar').getContext('2d');
+        document.body.classList.add("fondo-mensajes");
 
+        // Configuración de colores para Chart.js en modo oscuro
+        Chart.defaults.color = '#aaa';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
+
+        // Filtro de búsqueda
+        const filterInput = document.getElementById('filterProfesor');
+        filterInput.addEventListener('keyup', function() {
+            const term = filterInput.value.toLowerCase();
+            document.querySelectorAll('.prof-card').forEach(card => {
+                card.style.display = card.getAttribute('data-nombre').includes(term) ? 'block' : 'none';
+            });
+        });
+
+        // Gráfico de Cursos
+        const ctxBar = document.getElementById('canvasCursosBar').getContext('2d');
         new Chart(ctxBar, {
             type: 'bar', 
             data: {
-                // Estas son las etiquetas que verá el usuario abajo
                 labels: ['1er Curso', '2do Curso', '3er Curso', '4to Curso', '5to Curso', '6to Curso'],
                 datasets: [{
                     label: 'Puntuación Total',
-                    // Mapeo directo con los nombres EXACTOS de tu base de datos
-                    data: [
-                        {{ stats_cursos.get('PRIMER CURSO', 0) }},
-                        {{ stats_cursos.get('SEGUNDO CURSO', 0) }},
-                        {{ stats_cursos.get('TERCER CURSO', 0) }},
-                        {{ stats_cursos.get('CUARTO CURSO', 0) }},
-                        {{ stats_cursos.get('QUINTO CURSO', 0) }},
-                        {{ stats_cursos.get('SEXTO CURSO', 0) }}
-                    ],
-                    backgroundColor: '#ffa500', 
-                    borderColor: '#cc8400',
-                    borderWidth: 1,
+                    data: [{{ stats_cursos.get('PRIMER CURSO', 0) }}, {{ stats_cursos.get('SEGUNDO CURSO', 0) }}, {{ stats_cursos.get('TERCER CURSO', 0) }}, {{ stats_cursos.get('CUARTO CURSO', 0) }}, {{ stats_cursos.get('QUINTO CURSO', 0) }}, {{ stats_cursos.get('SEXTO CURSO', 0) }}],
+                    backgroundColor: '#00d2ff', 
                     borderRadius: 5
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        grid: { borderDash: [5, 5] },
-                        title: { display: true, text: 'Puntos Acumulados' }
-                    },
-                    x: { 
-                        grid: { display: false }
-                    }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        // Gráfico Ranking Estudiantes
+        const ctx = document.getElementById('canvasRanking').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for est in ranking[:5] %}"{{ est.nombre }}",{% endfor %}],
+                datasets: [{
+                    label: 'Puntos Totales',
+                    data: [{% for est in ranking[:5] %}{{ est.puntos_totales }},{% endfor %}],
+                    backgroundColor: 'rgba(0, 210, 255, 0.5)',
+                    borderColor: '#00d2ff',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                }]
+            },
+            options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } } }
         });
     });
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    const ctx = document.getElementById('canvasRanking').getContext('2d');
-    const rankingData = {
-        labels: [{% for est in ranking[:5] %}"{{ est.nombre }}",{% endfor %}],
-        datasets: [{
-            label: 'Puntos Totales',
-            data: [{% for est in ranking[:5] %}{{ est.puntos_totales }},{% endfor %}],
-            backgroundColor: 'rgba(26, 35, 126, 0.7)',
-            borderColor: '#1a237e',
-            borderWidth: 2,
-            borderRadius: 10,
-        }]
-    };
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: rankingData,
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { beginAtZero: true, grid: { display: false } },
-                y: { grid: { display: false } }
-            }
-        }
+    // Restauración de Scroll
+    window.addEventListener('beforeunload', () => { sessionStorage.setItem('scrollPos', window.scrollY); });
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) { window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' }); sessionStorage.removeItem('scrollPos'); }
     });
 </script>
 {% endblock %}

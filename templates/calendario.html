@@ -81,6 +81,25 @@
         border-left: 4px solid var(--unge-green);
     }
 </style>
+
+<style>
+    @media (max-width: 768px) {
+    .calendar-container {
+        padding: 0.5rem; /* Menos espacio interno en móvil */
+        border-radius: 0.5rem;
+    }
+    
+    /* Forzar al calendario a ajustar su altura */
+    .fc {
+        font-size: 0.85rem; 
+    }
+
+    .fc .fc-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -206,7 +225,7 @@
 
 <script>
     // Inyectamos el rol desde la sesión de Flask
-    var usuarioRol = "{{ session['rol'] if 'rol' in session else '' }}";
+    var usuarioRol = "{{ current_user.rol if current_user.is_authenticated else '' }}";
 </script>
 <script src="{{ url_for('static', filename='calendario.js') }}"></script>
 {% endblock %}

@@ -80,6 +80,77 @@
     }
 </style>
 
+<style>
+    .bibliotecario-section {
+        background-color: #1a237e; /* Azul profundo de fondo */
+        padding: 40px 0;
+        border-radius: 15px;
+    }
+
+    .bibliotecario-card {
+        background: linear-gradient(135deg, #741616 0%, #9e1b1b 100%);
+        border: none;
+        border-radius: 20px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Efecto de brillo al pasar el mouse */
+    .bibliotecario-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(45deg);
+        transition: 0.6s;
+        pointer-events: none;
+    }
+
+    .bibliotecario-card:hover::before {
+        left: 100%;
+        top: 100%;
+    }
+
+    /* Elevación y sombra */
+    .bibliotecario-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .icon-box {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        font-size: 1.5rem;
+        border: 2px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .bibliotecario-card h4 {
+        color: #ffffff !important;
+        letter-spacing: 1px;
+    }
+
+    .bibliotecario-card p {
+        color: rgba(255, 255, 255, 0.8) !important;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+</style>
+
+
+
+
 <div class="container-fluid bg-white border-bottom shadow-sm">
     <div class="container py-2">
         <nav aria-label="breadcrumb">
@@ -148,6 +219,23 @@
                 </a>
             </div>
         </div>
+        <!-- Aula o sala del bibliotecario-->
+        <div class="row mb-5 bibliotecario-section justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <a href="{{ url_for('biblioteca_sala') }}" class="text-decoration-none">
+            <div class="card bibliotecario-card shadow-sm p-4 text-center">
+                <div class="icon-box">
+                    <i class="bi bi-building"></i>
+                </div>
+                <h4 class="mb-0 fw-bold">SALA DEL BIBLIOTECARIO</h4>
+                <p class="small mt-2">
+                    Consulta sobre la funcionalidad y almacén de nuestros artículos, TFG y libros. 
+                    Acceso exclusivo para gestión de recursos académicos.
+                </p>
+            </div>
+        </a>
+    </div>
+</div>
 
         <div class="card border-0 shadow-sm p-4" style="background: #fdfdfd;">
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
@@ -225,4 +313,24 @@
 
     </div>
 </div>
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
 {% endblock %}

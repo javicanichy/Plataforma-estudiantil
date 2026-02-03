@@ -684,4 +684,27 @@ class VotoProfesor(db.Model):
     # RESTRICCIÓN DEFINITIVA: 
     # Un estudiante (estudiante_id) solo puede emitir un voto en esta tabla por semestre.
     # Nota: Si quieres permitir un voto POR CADA profesor, usa ('estudiante_id', 'profesor_id')
-    __table_args__ = (db.UniqueConstraint('estudiante_id', name='unique_voto_profesor_estudiante'),)
+
+
+
+
+#============================================================
+#   TABLA 29: PONER SOLICITAR LIBROS
+# ============================================================
+# Modelos para la gestión administrativa
+class Configuracion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    clave = db.Column(db.String(50), unique=True, nullable=False) 
+    valor = db.Column(db.Boolean, default=False) # True = Abierto, False = Cerrado
+
+class Prestamo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    libro_id = db.Column(db.Integer, db.ForeignKey('biblioteca.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    motivo = db.Column(db.Text)
+    estado = db.Column(db.String(20), default='pendiente') # pendiente, aprobado, rechazado
+    fecha_solicitud = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Relaciones para obtener datos fácilmente en el HTML
+    libro = db.relationship('Biblioteca', backref='solicitar_prestamo')
+    usuario = db.relationship('Usuario', backref='lista_solicitudes_prestamo')

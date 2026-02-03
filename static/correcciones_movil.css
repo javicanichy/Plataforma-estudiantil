@@ -318,3 +318,46 @@ img.logo-grande-movil {
     }
 }
 
+
+/* ================================================= */
+/* AJUSTES DEL ADMIN */
+
+/* --- CONFIGURACIÓN PARA MÓVILES (Definitiva) --- */
+@media (max-width: 992px) {
+    /* Posicionamiento del botón */
+    #btnToggle {
+        position: fixed !important;
+        top: 0 !important;    /* 0 para pegarlo al techo */
+        left: 0 !important;   /* 0 para pegarlo a la pared izquierda */
+        width: 50px !important;
+        height: 50px !important;
+        z-index: 2000 !important; /* Super alto para que nada lo tape */
+        
+        /* Estética */
+        background-color: #1a1a1a !important; 
+        color: white !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        border: none !important;
+        border-radius: 0 0 10px 0 !important; /* Solo redondeado abajo a la derecha */
+        padding: 0 !important;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+    }
+
+    /* El oscurecedor de fondo */
+    .sidebar-overlay {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.5);
+        z-index: 1500 !important;
+        display: none;
+    }
+
+    .sidebar-overlay.active {
+        display: block !important;
+    }
+}

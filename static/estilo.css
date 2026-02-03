@@ -731,6 +731,14 @@ html, body, h1, h2, h3, h4, h5, h6, p, a, span, label, input, button, select, te
 
 
 
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    /* Opcional: añade un margen superior al ID para que no quede pegado al borde del navegador */
+    #seccion-buzon {
+        scroll-margin-top: 80px; 
+    }
 
 
 

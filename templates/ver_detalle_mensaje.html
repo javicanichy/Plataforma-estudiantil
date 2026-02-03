@@ -2,109 +2,194 @@
 
 {% block content %}
 <style>
-    .message-detail-container { background: #fff; min-height: 85vh; border-radius: 16px; border: 1px solid #f1f3f4; }
-    .msg-header { border-bottom: 1px solid #f1f3f4; padding: 20px; }
-    .msg-body { padding: 30px; font-size: 1rem; line-height: 1.6; color: #3c4043; white-space: pre-wrap; }
-    .avatar-md { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; }
-    .attachment-box { border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; display: inline-flex; align-items: center; background: #f8f9fa; transition: 0.2s; text-decoration: none; color: inherit; }
-    .attachment-box:hover { background: #f1f3f4; border-color: #d0d0d0; }
-    .encryption-note { font-size: 0.75rem; color: #1a73e8; margin-bottom: 0; }
+    /* 1. FONDO COHERENTE CON LA BANDEJA */
+    body.fondo-mensajes {
+        background: radial-gradient(circle at center, #1e1e2f 0%, #0d0d15 100%);
+        background-attachment: fixed;
+        color: #ffffff;
+    }
+
+    :root { 
+        --neon-blue: #00d2ff;
+        --deep-dark: rgba(20, 20, 30, 0.95);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 2. CONTENEDOR TIPO CRISTAL */
+    .message-detail-container { 
+        background: var(--deep-dark); 
+        backdrop-filter: blur(15px);
+        min-height: 85vh; 
+        border-radius: 20px; 
+        border: 1px solid var(--glass-border); 
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        overflow: hidden;
+    }
+
+    .msg-header { 
+        border-bottom: 1px solid var(--glass-border); 
+        padding: 25px; 
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* 3. CUERPO DEL MENSAJE */
+    .msg-body { 
+        padding: 40px; 
+        font-size: 1.05rem; 
+        line-height: 1.7; 
+        color: #e0e0e0; 
+        white-space: pre-wrap; 
+        background: transparent;
+    }
+
+    /* 4. AVATARES Y ELEMENTOS VISUALES */
+    .avatar-md { width: 55px; height: 55px; object-fit: cover; border-radius: 12px; border: 2px solid var(--neon-blue); }
+    
+    .attachment-box { 
+        border: 1px solid var(--glass-border); 
+        border-radius: 12px; 
+        padding: 15px; 
+        display: inline-flex; 
+        align-items: center; 
+        background: rgba(255, 255, 255, 0.05); 
+        transition: 0.3s; 
+        text-decoration: none; 
+        color: #fff; 
+    }
+    .attachment-box:hover { 
+        background: rgba(0, 210, 255, 0.1); 
+        border-color: var(--neon-blue); 
+        transform: translateY(-2px);
+    }
+
+    .encryption-note { font-size: 0.8rem; color: var(--neon-blue); font-weight: 500; }
+    
+    .btn-action-mail {
+        border: 1px solid var(--glass-border);
+        color: #ccc;
+        background: rgba(255,255,255,0.05);
+        transition: 0.3s;
+    }
+    .btn-action-mail:hover {
+        background: var(--neon-blue);
+        color: #000;
+        border-color: var(--neon-blue);
+    }
 </style>
 
-<div class="container mt-4">
-    <div class="message-detail-container shadow-sm">
-        <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
+<div class="container mt-4 mb-5">
+    <div class="message-detail-container shadow-lg">
+        <div class="p-3 border-bottom border-secondary d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-                <a href="{{ url_for('bandeja_entrada') }}" class="btn btn-light btn-sm rounded-circle me-3">
+                <a href="{{ url_for('bandeja_entrada') }}" class="btn btn-outline-info btn-sm rounded-circle me-3" title="Volver">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 <div class="d-flex flex-column">
-                    <p class="encryption-note"><i class="fas fa-lock me-1"></i> Cifrado de extremo a extremo</p>
+                    <p class="encryption-note mb-0"><i class="fas fa-shield-alt me-1"></i> Canal de comunicación seguro</p>
                 </div>
             </div>
 
-            <form action="{{ url_for('eliminar_mensaje', id=msg.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro?');">
-                <button type="submit" class="btn btn-light btn-sm text-danger" title="Eliminar">
-                    <i class="fas fa-trash"></i>
+            <form action="{{ url_for('eliminar_mensaje', id=msg.id) }}" method="POST" onsubmit="return confirm('¿Eliminar este mensaje permanentemente?');">
+                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Eliminar">
+                    <i class="fas fa-trash-alt me-2"></i> Eliminar
                 </button>
             </form>
         </div>
 
-        <div class="msg-header d-flex justify-content-between align-items-start">
-            <div class="d-flex">
-                {% if msg.emisor.rol in ['estudiante', 'admin', 'directivo', 'administrador'] %}
-                    {% set archivo_autor = msg.emisor.foto_perfil or 'default.jpg' %}
-                    {% set carpeta_autor = 'uploads/perfiles/' %}
-                {% elif msg.emisor.rol == 'profesor' %}
+        <div class="msg-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                {% if msg.emisor.rol == 'profesor' %}
                     {% set archivo_autor = msg.emisor.profesor.archivo_foto if (msg.emisor.profesor and msg.emisor.profesor.archivo_foto) else 'default.jpg' %}
                     {% set carpeta_autor = 'uploads/fotos/' %}
                 {% else %}
-                    {% set archivo_autor = 'default.jpg' %}
-                    {% set carpeta_autor = 'uploads/fotos/' %}
+                    {% set archivo_autor = msg.emisor.foto_perfil or 'default.jpg' %}
+                    {% set carpeta_autor = 'uploads/perfiles/' %}
                 {% endif %}
 
                 <img src="{{ url_for('static', filename=carpeta_autor + archivo_autor) }}" 
-                     class="avatar-md me-3 border"
+                     class="avatar-md me-3"
                      onerror="this.src='{{ url_for('static', filename='uploads/perfiles/default.jpg') }}'">
                 
                 <div>
-                    <h5 class="mb-0 fw-bold">{{ msg.emisor.nombre }} {{ msg.emisor.apellidos }}</h5>
-                    <div class="text-muted small">Para: Yo ({{ msg.receptor.correo_institucional }})</div>
+                    <h4 class="mb-0 fw-bold text-info">{{ msg.emisor.nombre }} {{ msg.emisor.apellidos }}</h4>
+                    <div class="opacity-75 small">
+                        <span class="text-white-50">Para:</span> <span class="text-info">mí</span> 
+                        <span class="mx-2 text-secondary">|</span>
+                        <span class="text-white-50">{{ msg.emisor.correo_institucional }}</span>
+                    </div>
                 </div>
             </div>
-            <div class="text-end text-muted small">
-                {{ msg.fecha.strftime('%d %b %Y, %H:%M') }}
+            <div class="text-end text-white-50 small">
+                <i class="far fa-calendar-alt me-1"></i> {{ msg.fecha.strftime('%d %b %Y') }}<br>
+                <i class="far fa-clock me-1"></i> {{ msg.fecha.strftime('%H:%M') }}
             </div>
         </div>
 
-        <div class="msg-body" id="cuerpoMensaje">{{ msg.contenido }}</div>
+        <div class="msg-body" id="cuerpoMensaje">{{ msg.contenido|safe }}</div>
 
         {% if msg.archivo_adjunto %}
-        <div class="px-4 pb-4">
-            <h6 class="small fw-bold text-muted mb-3"><i class="fas fa-paperclip me-2"></i> Archivos adjuntos</h6>
+        <div class="px-5 pb-5">
+            <h6 class="small fw-bold text-info mb-3"><i class="fas fa-paperclip me-2"></i> Documentación Adjunta</h6>
             <a href="{{ url_for('static', filename='uploads/' + msg.archivo_adjunto) }}" class="attachment-box" target="_blank">
-                <i class="far fa-file-alt fa-2x me-3 text-primary"></i>
+                <i class="fas fa-file-download fa-2x me-3 text-info"></i>
                 <div>
-                    <div class="small fw-bold text-truncate" style="max-width: 200px;">{{ msg.archivo_adjunto }}</div>
-                    <div class="text-muted" style="font-size: 0.7rem;">Descargar</div>
+                    <div class="small fw-bold text-truncate" style="max-width: 250px;">{{ msg.archivo_adjunto }}</div>
+                    <div class="text-info small" style="font-size: 0.7rem;">Click para descargar</div>
                 </div>
             </a>
         </div>
         {% endif %}
 
-        <div class="p-4 border-top">
-            <button class="btn btn-outline-secondary btn-sm px-4 rounded-pill me-2" 
+        <div class="p-4 border-top border-secondary bg-black bg-opacity-25">
+            <button class="btn btn-action-mail btn-sm px-4 rounded-pill me-3" 
                     onclick="responderMensaje('{{ msg.emisor.correo_institucional }}', '{{ msg.emisor.nombre }} {{ msg.emisor.apellidos }}')">
                 <i class="fas fa-reply me-2"></i> Responder
             </button>
             
-            <button class="btn btn-outline-secondary btn-sm px-4 rounded-pill" 
+            <button class="btn btn-action-mail btn-sm px-4 rounded-pill" 
                     onclick="reenviarMensaje()">
-                <i class="fas fa-share me-2"></i> Reenviar
+                <i class="fas fa-share me-2"></i> Reenviar Mensaje
             </button>
         </div>
     </div>
 </div>
 
 <script>
-function responderMensaje(email, nombre) {
-    sessionStorage.setItem('accion_mail', 'responder');
-    sessionStorage.setItem('mail_email', email);
-    sessionStorage.setItem('mail_nombre', nombre);
-    window.location.href = "{{ url_for('bandeja_entrada') }}?accion=redactar";
-}
+    // Se mantiene la lógica del body class
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.add("fondo-mensajes");
+    });
 
-function reenviarMensaje() {
-    const contenido = document.getElementById('cuerpoMensaje').innerText;
-    const emisor = "{{ msg.emisor.nombre }}";
-    const fecha = "{{ msg.fecha.strftime('%Y-%m-%d %H:%M') }}";
-    
-    // Formateamos el texto de reenvío
-    const textoReenvio = `\n\n---------- Mensaje reenviado ----------\nDe: ${emisor}\nFecha: ${fecha}\nAsunto: Reenvío de mensaje\n\n${contenido}`;
-    
-    sessionStorage.setItem('accion_mail', 'reenviar');
-    sessionStorage.setItem('mail_contenido', textoReenvio);
-    window.location.href = "{{ url_for('bandeja_entrada') }}?accion=redactar";
-}
+    function responderMensaje(email, nombre) {
+        sessionStorage.setItem('accion_mail', 'responder');
+        sessionStorage.setItem('mail_email', email);
+        sessionStorage.setItem('mail_nombre', nombre);
+        window.location.href = "{{ url_for('bandeja_entrada') }}?accion=redactar";
+    }
+
+    function reenviarMensaje() {
+        const contenido = document.getElementById('cuerpoMensaje').innerText;
+        const emisor = "{{ msg.emisor.nombre }}";
+        const fecha = "{{ msg.fecha.strftime('%Y-%m-%d %H:%M') }}";
+        
+        const textoReenvio = `\n\n---------- Mensaje reenviado ----------\nDe: ${emisor}\nFecha: ${fecha}\n\n${contenido}`;
+        
+        sessionStorage.setItem('accion_mail', 'reenviar');
+        sessionStorage.setItem('mail_contenido', textoReenvio);
+        window.location.href = "{{ url_for('bandeja_entrada') }}?accion=redactar";
+    }
+
+    // Gestión de scroll
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' });
+            sessionStorage.removeItem('scrollPos');
+        }
+    });
 </script>
 {% endblock %}

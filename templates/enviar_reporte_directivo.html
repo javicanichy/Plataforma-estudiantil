@@ -1,25 +1,65 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+<style>
+    /* Estilo para avatares pequeños de 48px */
+    .me-3 img.rounded-circle, 
+    .me-3 div.rounded-circle {
+        width: 48px !important;
+        height: 48px !important;
+        min-width: 48px !important;
+        min-height: 48px !important;
+        max-width: 48px !important;
+        max-height: 48px !important;
+        object-fit: cover !important; /* Mantiene la proporción de la cara */
+        border-radius: 50% !important;
+        flex-shrink: 0 !important; /* Evita que el contenedor flex lo aplaste */
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
 <div class="container mt-3">
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="border-radius: 15px;">
-            <div class="d-flex align-items-center">
-                {% if category == 'success' %}
-                    <i class="fas fa-check-circle me-2 fs-4"></i>
-                {% else %}
-                    <i class="fas fa-exclamation-circle me-2 fs-4"></i>
-                {% endif %}
-                <div><strong>{{ '¡Éxito!' if category == 'success' else 'Atención' }}</strong> {{ message }}</div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0" role="alert" style="border-radius: 12px;">
+                    <div class="d-flex align-items-center">
+                        {% if category == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% elif category == 'warning' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endwith %}
 </div>
+<style>
+    /* Estilo para los mensajes flash */
+    .alert {
+        font-weight: 500;
+        animation: slideIn 0.5s ease-out;
+    }
+
+    /* Animación de entrada suave */
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Colores personalizados suaves para que no cansen la vista */
+    .alert-success { background-color: #d1e7dd; color: #0f5132; }
+    .alert-danger { background-color: #f8d7da; color: #842029; }
+    .alert-warning { background-color: #fff3cd; color: #664d03; }
+</style>
 
 <div class="container py-5">
     <div class="row justify-content-center">
@@ -104,4 +144,25 @@
     .list-group::-webkit-scrollbar { width: 6px; }
     .list-group::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
 </style>
+
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
 {% endblock %}

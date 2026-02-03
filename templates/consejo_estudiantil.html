@@ -116,6 +116,33 @@
         <a href="{{ url_for('contacto') }}" class="btn btn-primary px-4 py-2 rounded-pill mt-2">Contactar al Consejo</a>
     </div>
 
+    <!-- Foto de presidente, vicepresidenta y secretaria-->
+    <!-- Un contenedor que muestra sus 3 fotos-->
+    <div class="mt-5">
+        <h3 class="text-center fw-bold mb-4"><i class="bi bi-people-fill me-2"></i>Equipo Directivo del Consejo Estudiantil</h3>
+        <div class="row justify-content-center g-4">
+            <div class="col-md-4 text-center">
+                <img src="{{ url_for('static', filename='img/equipo/presidente.jpg') }}" class="rounded-circle mb-3 border border-3 border-primary" style="width: 150px; height: 150px; object-fit: cover;">
+                <h5 class="fw-bold mb-0">Santiago Marcos Mbá Bindang</h5>
+                <p class="text-primary small fw-bold mb-1">PRESIDENTE</p>
+                <p class="text-muted small mb-0">Medicina</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="{{ url_for('static', filename='img/equipo/presidente.jpg') }}" class="rounded-circle mb-3 border border-3 border-primary" style="width: 150px; height: 150px; object-fit: cover;">
+                <h5 class="fw-bold mb-0">Josefa Compaña Coffi</h5>
+                <p class="text-primary small fw-bold mb-1">VICEPRESIDENTA</p>
+                <p class="text-muted small mb-0">Grado II Enfermería</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="{{ url_for('static', filename='img/equipo/presidente.jpg') }}" class="rounded-circle mb-3 border border-3 border-primary" style="width: 150px; height: 150px; object-fit: cover;">
+                <h5 class="fw-bold mb-0">Rusmila Pilar Nzang Ondó</h5>
+                <p class="text-primary small fw-bold mb-1">SECRETARIA</p>
+                <p class="text-muted small mb-0">Laboratorio Clínico</p>
+            </div>
+        </div>
+        
+    </div>
+<hr>
     <section class="mb-5">
     <h3 class="text-center fw-bold mb-5"><i class="bi bi-person-badge me-2"></i>Liderazgo de los Comités</h3>
     
@@ -128,13 +155,13 @@
                     <div class="row g-0">
                         <div class="col-sm-6 border-end p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/juan_obiang.jpg') }}" class="rounded-circle mb-2 border border-2 border-primary" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Juan Obiang</h6>
+                            <h6 class="fw-bold mb-0 small">Fernando Bolekia Buale</h6>
                             <p class="text-primary x-small fw-bold mb-1">PRESIDENTE/A</p>
-                            <p class="text-muted x-small mb-1">Ing. Informática</p>
+                            <p class="text-muted x-small mb-1">Grado II Enfermería</p>
                         </div>
                         <div class="col-sm-6 p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/maria_nchama.jpg') }}" class="rounded-circle mb-2 border border-2 border-primary" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">María Nchama</h6>
+                            <h6 class="fw-bold mb-0 small">Eduardo Bekuy Bekuynzang</h6>
                             <p class="text-primary x-small fw-bold mb-1">SECRETARIO/A</p>
                             <p class="text-muted x-small mb-1">Ing. Informática</p>
                         </div>
@@ -150,15 +177,15 @@
                     <div class="row g-0">
                         <div class="col-sm-6 border-end p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/antonio_logistica.jpg') }}" class="rounded-circle mb-2 border border-2 border-secondary" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Antonio Ndong</h6>
+                            <h6 class="fw-bold mb-0 small">Juan de Dios Nguema Esono</h6>
                             <p class="text-secondary x-small fw-bold mb-1">PRESIDENTE/A</p>
-                            <p class="text-muted x-small mb-1">Administración de Empresas</p>
+                            <p class="text-muted x-small mb-1">Desconicido</p>
                         </div>
                         <div class="col-sm-6 p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/elena_m.png') }}" class="rounded-circle mb-2 border border-2 border-secondary" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Elena Mangue</h6>
+                            <h6 class="fw-bold mb-0 small">Hipólito Alogo Obama</h6>
                             <p class="text-secondary x-small fw-bold mb-1">SECRETARIO/A</p>
-                            <p class="text-muted x-small mb-1">Administración de Empresas</p>
+                            <p class="text-muted x-small mb-1">Desconocido</p>
                         </div>
                     </div>
                 </div>
@@ -172,15 +199,15 @@
                     <div class="row g-0">
                         <div class="col-sm-6 border-end p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/isabel_b.jpg') }}" class="rounded-circle mb-2 border border-2 border-danger" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Isabel Bakale</h6>
+                            <h6 class="fw-bold mb-0 small">Gabriel Naufal Aboha</h6>
                             <p class="text-danger x-small fw-bold mb-1">PRESIDENTE/A</p>
-                            <p class="text-muted x-small mb-1">Enfermería</p>
+                            <p class="text-muted x-small mb-1">Grado II Enfermería</p>
                         </div>
                         <div class="col-sm-6 p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/pedro_o.jpg') }}" class="rounded-circle mb-2 border border-2 border-danger" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Pedro Obama</h6>
+                            <h6 class="fw-bold mb-0 small">Flavia Magdalena Nseng Ecomo</h6>
                             <p class="text-danger x-small fw-bold mb-1">SECRETARIO/A</p>
-                            <p class="text-muted x-small mb-1">Enfermería</p>
+                            <p class="text-muted x-small mb-1">Grado II Enfermería</p>
                         </div>
                     </div>
                 </div>
@@ -215,16 +242,16 @@
                 <div class="card-body p-0">
                     <div class="row g-0">
                         <div class="col-sm-6 border-end p-3 text-center">
-                            <img src="{{ url_for('static', filename='img/comites/felipe_cultural.jpg') }}" class="rounded-circle mb-2 border border-2 border-dark" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Felipe Ondó</h6>
+                            <img src="{{ url_for('static', filename='img/adela_matrona.jpeg') }}" class="rounded-circle mb-2 border border-2 border-dark" style="width: 80px; height: 80px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0 small">Adela Nchama Osá</h6>
                             <p class="text-dark x-small fw-bold mb-1">PRESIDENTE/A</p>
-                            <p class="text-muted x-small mb-1">Humanidades</p>
+                            <p class="text-muted x-small mb-1">Ginecogía-Obstetricia</p>
                         </div>
                         <div class="col-sm-6 p-3 text-center">
                             <img src="{{ url_for('static', filename='img/comites/carmen_b.jpg') }}" class="rounded-circle mb-2 border border-2 border-dark" style="width: 80px; height: 80px; object-fit: cover;">
-                            <h6 class="fw-bold mb-0 small">Carmen Bindang</h6>
+                            <h6 class="fw-bold mb-0 small">Nathán Ramón Michá</h6>
                             <p class="text-dark x-small fw-bold mb-1">SECRETARIO/A</p>
-                            <p class="text-muted x-small mb-1">Humanidades</p>
+                            <p class="text-muted x-small mb-1">Grado II Enfermería</p>
                         </div>
                     </div>
                 </div>
@@ -261,4 +288,24 @@
         background-color: #f8f9fa;
     }
 </style>
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
 {% endblock %}

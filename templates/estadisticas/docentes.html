@@ -1,0 +1,60 @@
+<div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
+    <div class="card-header bg-white border-0 py-4 px-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0 fw-bold text-danger"><i class="fas fa-chalkboard-teacher me-2"></i>Docentes</h4>
+            {% set max_votos = 0 %}
+            {% if profesores %}
+                {% set max_votos = profesores[0].num_votos %}
+                {% set estrella = profesores[0] %}
+            {% endif %}
+
+            {% if max_votos > 0 %}
+            <div class="d-none d-md-block text-center bg-warning-subtle px-3 py-1 rounded-pill border border-warning">
+                <small class="fw-bold text-dark">
+                    <i class="fas fa-medal me-1 text-warning"></i>
+                    Líder: {{ estrella.nombre }} ({{ estrella.especialidad }})
+                </small>
+                <button class="btn btn-outline-secondary btn-sm border-0" data-bs-toggle="modal" data-bs-target="#modalResetProf">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        <div class="input-group input-group-sm shadow-sm mb-2">
+            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="filterProfesor" class="form-control border-start-0" placeholder="Buscar docente por nombre...">
+        </div>
+    </div>
+    <div class="card-body px-4">
+        {% set max_votos = 0 %}
+        {% for p in profesores %}{% if p.num_votos > max_votos %}{% set max_votos = p.num_votos %}{% endif %}{% endfor %}
+
+        <div class="profesores-container row g-3" id="listaProfesores">
+            {% for prof in profesores %}
+            <div class="col-12 col-md-6 prof-card" data-nombre="{{ prof.nombre.lower() }}">
+                <div class="card border-0 {{ 'border-start border-warning border-5 shadow' if prof.num_votos == max_votos and max_votos > 0 else 'bg-light' }} h-100 p-3 shadow-sm" style="border-radius: 15px;">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='uploads/fotos/' + (prof.archivo_foto if prof.archivo_foto else 'prof-default.png')) }}" 
+                             class="rounded-3 shadow-sm me-3" style="width: 55px; height: 55px; object-fit: cover;">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold small">{{ prof.nombre }} {{ prof.apellidos }}</h6>
+                            <p class="mb-0 fw-bold small">{{ prof.especialidad if prof.especialidad else 'Sin especialidad' }}</p>
+                            {% if prof.num_votos == max_votos and max_votos > 0 %}
+                                <span class="badge bg-warning text-dark p-1 mt-1" style="font-size: 0.55rem;"><i class="fas fa-crown me-1"></i>DOCENTE MÁS VOTADO</span>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="text-danger fw-bold small">{{ prof.num_votos }} votos.</span>
+                                {% if not ya_voto_profesor %}
+                                <form action="{{ url_for('votar_profesor', profesor_id=prof.id) }}" method="POST">
+                                    <button class="btn btn-danger btn-sm rounded-circle p-1" style="width: 25px; height: 25px; line-height: 1;"><i class="fas fa-heart fa-xs"></i></button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

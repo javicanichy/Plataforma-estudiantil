@@ -1,0 +1,52 @@
+<div class="card border-0 shadow-lg mb-4" style="border-radius: 25px;">
+    <div class="card-body p-4">
+        <h5 class="fw-bold text-navy mb-3"><i class="fas fa-chart-line me-2"></i>Rendimiento Académico Global</h5>
+        <canvas id="canvasRanking" height="100"></canvas>
+    </div>
+</div>
+
+<div class="card border-0 shadow-lg mb-4" style="border-radius: 25px; overflow: hidden;">
+    <div class="card-header bg-white border-0 py-4 px-4">
+        <h4 class="mb-0 fw-bold text-success"><i class="fas fa-trophy me-2"></i>Cuadro de Honor (Top 10)</h4>
+    </div>
+    <div class="table-responsive px-4 pb-4">
+        <table class="table table-hover align-middle">
+            <thead class="text-muted small">
+                <tr>
+                    <th>POS</th>
+                    <th>ESTUDIANTE</th>
+                    <th>CURSO / MATRÍCULA</th>
+                    <th>CARRERA</th>
+                    <th class="text-center">PUNTOS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {# CAMBIO: Limitado a Top 10 #}
+                {% for est in ranking[:10] %}
+                <tr>
+                    <td class="fw-bold">
+                        {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% if est.foto_perfil %}
+                                <img src="{{ url_for('static', filename='uploads/perfiles/' + est.foto_perfil) }}" 
+                                     class="rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                                <div class="avatar-circle me-3">{{ est.nombre[0] }}{{ est.apellidos[0] if est.apellidos else '' }}</div>
+                            {% endif %}
+                            <div class="fw-bold small">{{ est.nombre }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small text-muted">{{ est.curso if est.curso else 'N/A' }}</div>
+                        <div class="badge bg-light text-dark border fw-normal" style="font-size: 0.65rem;">ID: {{ est.matricula if est.matricula else '---' }}</div>
+                    </td>
+                    <td><span class="badge rounded-pill bg-info-soft text-info" style="font-size: 0.7rem;">{{ est.carrera }}</span></td>
+                    <td class="text-center fw-bold text-primary">{{ est.puntos_totales }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,6 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+    /* Fuerza el círculo perfecto sin mover la posición */
+    .position-relative img.rounded-circle, 
+    .position-relative div.rounded-circle {
+        width: 120px !important;
+        height: 120px !important;
+        min-width: 120px !important;
+        min-height: 120px !important;
+        max-width: 120px !important;
+        max-height: 120px !important;
+        object-fit: cover !important; /* Recorta la foto al centro */
+        border-radius: 50% !important; /* Asegura círculo */
+        flex-shrink: 0; /* Evita que Bootstrap la aplaste */
+    }
+
+    /* Asegura que el contenedor no deforme el contenido */
+    .position-relative {
+        display: inline-block;
+        width: 120px;
+        height: 120px;
+    }
+</style>
+
 <div class="container-fluid py-4" style="background-color: #f4f7f6; min-height: 100vh;">
     
     <div class="row mb-5 mt-3">
@@ -12,7 +35,7 @@
                     ID Docente: #{{ usuario.id }}
                 </small>
             </div>
-            <div class="position-relative">
+            <div class="position-relative" >
                 {% if profe and profe.archivo_foto %}
                     <img src="{{ url_for('static', filename='uploads/fotos/' + profe.archivo_foto) }}" 
                          class="rounded-circle border border-4 border-white shadow-lg" 
@@ -239,4 +262,25 @@
     .bg-info-subtle { background-color: #cff4fc !important; }
     .bg-primary-subtle { background-color: #cfe2ff !important; }
 </style>
+
+
+
+<script>
+    // Guardar la posición antes de salir o recargar
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    // Restaurar la posición al cargar
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({
+                top: parseInt(scrollPos),
+                behavior: 'instant' // 'smooth' si prefieres que se vea el desplazamiento
+            });
+            sessionStorage.removeItem('scrollPos'); // Limpiar para no afectar otras cargas
+        }
+    });
+</script>
 {% endblock %}

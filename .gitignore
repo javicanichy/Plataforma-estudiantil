@@ -4,12 +4,6 @@
 # Archivos de logs
 *.log
 
-# Carpeta de uploads
-static/uploads/
 
 # Login directo
 cuentas_directas.py
-
-# Basura
-__pycache__/
-*.pyc

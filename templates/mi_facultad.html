@@ -1,47 +1,115 @@
 {% extends "base.html" %}
 {% block content %}
 <style>
-    /* Estilo para el avatar con iniciales */
+    /* 1. FONDO Y COLORES BASE */
+    body.fondo-mensajes {
+        background: radial-gradient(circle at center, #1e1e2f 0%, #0d0d15 100%);
+        background-attachment: fixed;
+        color: #ffffff;
+    }
+
+    :root { 
+        --neon-blue: #00d2ff;
+        --neon-green: #0dbd2a;
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 2. SOLUCIÓN A FOTOS TORCIDAS (Círculos Perfectos) */
+    .avatar-circular {
+        width: 100px !important;
+        height: 100px !important;
+        aspect-ratio: 1 / 1 !important; /* Fuerza cuadrado perfecto */
+        object-fit: cover !important;   /* Evita deformación */
+        border-radius: 50% !important;
+        border: 3px solid var(--neon-blue);
+        margin: 0 auto 1rem;
+        display: block;
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+    }
+
     .avatar-iniciales {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
+        aspect-ratio: 1 / 1;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         color: white;
-        background: linear-gradient(135deg, #1a73e8, #0d47a1);
+        background: linear-gradient(135deg, #00d2ff, #3a7bd5);
         margin: 0 auto 1rem;
         border-radius: 50%;
         text-transform: uppercase;
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
     }
-    .btn-modulo { transition: transform 0.2s; }
-    .btn-modulo:hover { transform: translateY(-5px); }
+
+    /* 3. TARJETAS DE USUARIO */
+    .btn-modulo { 
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    .btn-modulo:hover { 
+        transform: translateY(-10px); 
+        border-color: var(--neon-blue);
+        box-shadow: 0 10px 30px rgba(0, 210, 255, 0.2);
+    }
+
+    /* 4. BARRA DE BÚSQUEDA */
+    .search-card {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+    }
+    .input-custom {
+        background: rgba(255,255,255,0.05) !important;
+        border: 1px solid var(--glass-border) !important;
+        color: white !important;
+        border-radius: 15px !important;
+    }
+    .input-custom::placeholder { color: rgba(255,255,255,0.4); }
+
+    .badge-rol {
+        background: rgba(255,255,255,0.1);
+        color: var(--neon-blue);
+        border: 1px solid var(--neon-blue);
+        font-size: 0.75rem;
+        padding: 5px 12px;
+    }
 </style>
 
 <div class="container py-5">
-    <h2 class="fw-bold mb-4 text-primary"><i class="bi bi-search me-2"></i>Directorio Universitario</h2>
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-info"><i class="fas fa-address-book me-3"></i>Directorio Universitario</h1>
+        <p class="text-white-50">Encuentra a docentes, estudiantes y directivos de la facultad</p>
+    </div>
 
-    <div class="card border-0 shadow-sm p-4 mb-5" style="border-radius: 15px;">
-        <form action="{{ url_for('facultad') }}" method="GET" class="row g-2">
-            <div class="col-md-10">
-                <input type="text" name="search" class="form-control form-control-lg border-0 bg-light" 
-                       placeholder="Buscar por nombre, carrera o DIP..." value="{{ request.args.get('search', '') }}">
+    <div class="card search-card p-4 mb-5 shadow-lg">
+        <form action="{{ url_for('facultad') }}" method="GET" class="row g-3">
+            <div class="col-md-9">
+                <input type="text" name="search" class="form-control form-control-lg input-custom" 
+                       placeholder="Buscar por nombre, carrera o identificación..." value="{{ request.args.get('search', '') }}">
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill">Buscar</button>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-info btn-lg w-100 rounded-pill fw-bold">
+                    <i class="fas fa-search me-2"></i>Buscar
+                </button>
             </div>
         </form>
     </div>
 
     <div class="row g-4">
         {% for u in usuarios_lista %}
-            <div class="col-md-4">
-                <div class="card h-100 border-0 shadow-sm text-center p-3 btn-modulo" style="border-radius: 15px;">
-                    <div class="card-body">
+            <div class="col-md-4 col-sm-6">
+                <div class="card h-100 text-center p-4 btn-modulo">
+                    <div class="card-body d-flex flex-column">
                         
-                        {# --- LÓGICA DE FOTO E INICIALES --- #}
+                        {# --- LÓGICA DE FOTO CON FIX DE CÍRCULO --- #}
                         {% if u.rol == 'profesor' and u.profesor %}
                             {% set foto_perfil = u.profesor.archivo_foto %}
                             {% set carpeta = 'fotos/' %}
@@ -52,8 +120,7 @@
 
                         {% if foto_perfil %}
                             <img src="{{ url_for('static', filename='uploads/' + carpeta + foto_perfil) }}" 
-                                 class="rounded-circle mb-3 shadow-sm" width="80" height="80" 
-                                 style="object-fit: cover;"
+                                 class="avatar-circular mb-3"
                                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                             
                             <div class="avatar-iniciales shadow-sm" style="display: none;">
@@ -65,38 +132,87 @@
                             </div>
                         {% endif %}
 
-                        <h5 class="fw-bold mb-1">{{ u.nombre }} {{ u.apellidos }}</h5>
-                        <p class="text-muted small mb-3">
-                            {{ u.carrera if u.carrera else 'Información no disponible' }} <br>
-                            <span class="badge bg-light text-dark border">{{ u.rol|capitalize }}</span>
+                        <h5 class="fw-bold mb-1 text-white">{{ u.nombre }} {{ u.apellidos }}</h5>
+
+                        <p class="text-white-50 small mb-3 flex-grow-1">
+                            {% if u.rol == 'estudiante' %}
+                                {# Atributo directo en la tabla Usuario #}
+                                {{ u.carrera if u.carrera else 'Grado Académico' }}
+
+                            {% elif u.rol == 'profesor' %}
+                                {# Relación u.profesor -> tabla Profesor #}
+                                {{ u.profesor.especialidad if (u.profesor and u.profesor.especialidad) else 'Especialista Institucional' }}
+
+                            {% elif u.rol == 'directivo' %}
+                                {# Relación u.directivo -> tabla Directivo #}
+                                {{ u.directivo.cargo if (u.directivo and u.directivo.cargo) else 'Dirección' }}
+
+                            {% elif u.rol == 'admin' %}
+                                {# Relación u.admin -> tabla Administrador #}
+                                {{ u.admin.cargo if (u.admin and u.admin.cargo) else 'Administrador de Sistema' }}
+
+                            {% else %}
+                                {# Caso por defecto para cualquier otro personal #}
+                                Personal de la Institución
+                            {% endif %}
+
+                            <br>
+                            {# Badge estilizado para el rol #}
+                            <span class="badge rounded-pill mt-2 bg-white bg-opacity-25 text-white fw-normal" style="font-size: 0.7rem;">
+                                {{ u.rol|upper }}
+                            </span>
                         </p>
                         
-                        {# --- LÓGICA DE BOTÓN DINÁMICO SEGÚN ROL --- #}
-                        {% if u.rol == 'estudiante' %}
-                            <a href="{{ url_for('ver_perfil', user_id=u.id) }}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
-                                Ver Perfil Estudiante
-                            </a>
-                        {% elif u.rol == 'profesor' %}
-                            <a href="{{ url_for('profesor_panel', user_id=u.id) }}" class="btn btn-outline-success btn-sm rounded-pill px-4">
-                                Ver Perfil Docente
-                            </a>
-                        {% elif u.rol == 'directivo' %}
-                             <a href="{{ url_for('perfil_directivo_publico', user_id=u.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-4">
-                                Ver Perfil Directivo
-                            </a>
-                        {% else %}
-                            <button class="btn btn-light btn-sm rounded-pill px-4" disabled>Perfil Privado</button>
-                        {% endif %}
+                        {# --- BOTONES DINÁMICOS --- #}
+                        <div class="mt-auto">
+                            {% if u.rol == 'estudiante' %}
+                                <a href="{{ url_for('ver_perfil', user_id=u.id) }}" class="btn btn-outline-info btn-sm rounded-pill w-100">
+                                    Ver Perfil Estudiante
+                                </a>
+                            {% elif u.rol == 'profesor' %}
+                                <a href="{{ url_for('profesor_panel', user_id=u.id) }}" class="btn btn-outline-success btn-sm rounded-pill w-100">
+                                    Ver Perfil Docente
+                                </a>
+                            {% elif u.rol == 'directivo' %}
+                                 <a href="{{ url_for('perfil_directivo_publico', user_id=u.id) }}" class="btn btn-outline-warning btn-sm rounded-pill w-100">
+                                    Ver Perfil Directivo
+                                </a>
+                            {% else %}
+                                <button class="btn btn-dark btn-sm rounded-pill w-100" disabled>Perfil Privado</button>
+                            {% endif %}
+                        </div>
 
                     </div>
                 </div>
             </div>
         {% else %}
             <div class="col-12 text-center py-5">
-                <i class="bi bi-person-x fs-1 text-muted"></i>
-                <p class="text-muted mt-2">No se encontraron miembros con ese nombre o criterio.</p>
+                <div class="opacity-25 mb-3">
+                    <i class="fas fa-user-slash fa-5x"></i>
+                </div>
+                <h4 class="text-white-50">No se encontraron resultados</h4>
+                <p class="text-muted small">Intenta con otros términos de búsqueda.</p>
             </div>
         {% endfor %}
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.body.classList.add("fondo-mensajes");
+    });
+
+    // Restaurar posición del scroll
+    window.addEventListener('beforeunload', () => {
+        sessionStorage.setItem('scrollPos', window.scrollY);
+    });
+
+    window.addEventListener('load', () => {
+        const scrollPos = sessionStorage.getItem('scrollPos');
+        if (scrollPos) {
+            window.scrollTo({ top: parseInt(scrollPos), behavior: 'instant' });
+            sessionStorage.removeItem('scrollPos');
+        }
+    });
+</script>
 {% endblock %}
